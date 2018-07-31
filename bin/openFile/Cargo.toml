@@ -1,0 +1,8 @@
+[package]
+name = "openFile"
+version = "0.1.0"
+authors = ["monsterkodi <monsterkodi@gmx.net>"]
+
+[dependencies]
+open = "1.2.1"
+structopt = "0.2.10"
