@@ -10,7 +10,7 @@
 
 log = console.log
 MapScroll = require './mapscroll'
-Highlight = require './highlight'
+# Highlight = require './highlight'
 
 class Minimap
 
@@ -82,7 +82,7 @@ class Minimap
             diss = @editor.cache[li].info.highlightDiss
             
             if empty(diss) and not empty @editor.cache[li].info.str
-                Highlight.line @editor.cache[li]
+                # Highlight.line @editor.cache[li]
                 diss = @editor.cache[li].info.highlightDiss
                 
             if diss?.length

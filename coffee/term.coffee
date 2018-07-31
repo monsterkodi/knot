@@ -6,7 +6,7 @@
    000     00000000  000   000  000   000  
 ###
 
-{ post, setStyle, prefs, valid, slash, empty, elem, str, log, $, _ } = require 'kxk'
+{ post, setStyle, keyinfo, valid, slash, elem, log, $ } = require 'kxk'
 
 { Terminal } = require 'xterm'
 pty          = require 'node-pty'
@@ -19,7 +19,7 @@ class Term
     constructor: ->
         
         @num = 0   
-        @lines =$ '#term'
+        @lines =$ '#terminal'
         
         @term = new Terminal
             fontFamily:                 '"Meslo LG S", "Liberation Mono", "Menlo", "Cousine", "Andale Mono"'
@@ -28,10 +28,9 @@ class Term
             enableBold:                 true
             rendererType:               'dom'
             drawBoldTextInBrightColors: true
-        @term.attachCustomKeyEventHandler -> false
+        @term.attachCustomKeyEventHandler @customKey
         @term.open @lines
         
-        @command   = ''
         @cache     = []
         @icons     = {}
         @scroll    = new Scroll    @lines
@@ -52,6 +51,8 @@ class Term
         
         @spawnShell()
         
+    customKey: (event) => return false
+        
     #  0000000  000   000  00000000  000      000      
     # 000       000   000  000       000      000      
     # 0000000   000000000  0000000   000      000      
@@ -63,38 +64,9 @@ class Term
             name:   'xterm-256color'
             cwd:    process.env.HOME
             env:    process.env
-            cols:   1000
 
         @shell.on 'data',  @onShellData
         @shell.on 'error', @onShellError
-
-    #  0000000   0000000   00     00  0000000     0000000   
-    # 000       000   000  000   000  000   000  000   000  
-    # 000       000   000  000000000  0000000    000   000  
-    # 000       000   000  000 0 000  000   000  000   000  
-    #  0000000   0000000   000   000  0000000     0000000   
-    
-    onCombo: (combo, info) =>
-
-        log info.mod, info.key, info.combo, info.char
-        # return stopEvent(info.event) if 'unhandled' != window.keys.globalModKeyComboEvent info.mod, info.key, info.combo, info.event
-        
-        switch combo
-            when 'ctrl+v'           then return @paste()
-            when 'ctrl+c'           then return @copy()
-            when 'ctrl+x'           then return @cut()
-            when 'enter', 'return'  then return @shell.write '\n'
-            else 
-                if info.char
-                    @command += info.char
-                    # @term.write info.char
-                    @shell.write info.char
-            
-    shellCmd: =>
-        log 'shellCmd', @command
-        @term.write '\n'
-        @shell.write @command + '\n'
-        @command = ''
 
     restartShell: =>
 
@@ -106,8 +78,32 @@ class Term
     onShellData: (data) =>
 
         log 'shell data', data
+        data = data.replace '⏎', ''
         @term.write data
+        
+    #  0000000   0000000   00     00  0000000     0000000   
+    # 000       000   000  000   000  000   000  000   000  
+    # 000       000   000  000000000  0000000    000   000  
+    # 000       000   000  000 0 000  000   000  000   000  
+    #  0000000   0000000   000   000  0000000     0000000   
+    
+    onCombo: (combo, info) =>
 
+        # log info.mod, info.key, info.combo, info.char
+        # return stopEvent(info.event) if 'unhandled' != window.keys.globalModKeyComboEvent info.mod, info.key, info.combo, info.event
+        
+        switch combo
+            when 'ctrl+v'           then return @paste()
+            when 'ctrl+c'           then return @copy()
+            when 'ctrl+x'           then return @cut()
+            when 'enter', 'return'  then return @shell.write '\n'
+            else 
+                if info.char
+                    @shell.write info.char
+                else
+                    switch info.event.keyCode
+                        when 27 then @shell.write '\x1b'
+            
     #  0000000  00000000  000      00000000   0000000  000000000  
     # 000       000       000      000       000          000     
     # 0000000   0000000   000      0000000   000          000     
@@ -292,7 +288,7 @@ class Term
         cols = Math.floor availableWidth / @term._core.renderer.dimensions.actualCellWidth
         rows = Math.floor availableHeight / @term._core.renderer.dimensions.actualCellHeight
           
-        @term._core.renderer.clear()
+        # @term._core.renderer.clear()
         @term.resize cols, rows
         @shell.resize cols, rows
         
@@ -300,6 +296,8 @@ class Term
     
         @scroll.setNumLines 0
         @cache = []
+        # @shell.
+        # @term._core.renderer.clear()
             
     # 00000000   0000000   000   000  000000000       0000000  000  0000000  00000000  
     # 000       000   000  0000  000     000         000       000     000   000       

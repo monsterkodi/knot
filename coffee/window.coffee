@@ -6,7 +6,7 @@
 00     00  000  000   000  0000000     0000000   00     00  
 ###
 
-{ post, stopEvent, getStyle, setStyle, keyinfo, childp, prefs, first, empty, slash, clamp, args, open, win, udp, str, fs, error, log, _ } = require 'kxk'
+{ post, stopEvent, keyinfo, childp, prefs, slash, clamp, empty, open, udp, win, error, log, _ } = require 'kxk'
 
 Term = require './term'
 log  = console.log
@@ -14,7 +14,7 @@ klog = require('kxk').log
 
 window.term = term = new Term
 
-w = new win 
+w = new win
     dir:    __dirname
     pkg:    require '../package.json'
     menu:   '../coffee/menu.noon'
