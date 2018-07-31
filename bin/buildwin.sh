@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 cd `dirname $0`/..
 
-if rm -rf koks-win32-x64; then
+if rm -rf knot-win32-x64; then
     
     konrad
 
@@ -9,6 +9,6 @@ if rm -rf koks-win32-x64; then
 
     node_modules/electron-packager/cli.js . --overwrite --icon=img/app.ico
     
-    rm -rf koks-win32-x64/resources/app/inno
+    rm -rf knot-win32-x64/resources/app/inno
 
 fi

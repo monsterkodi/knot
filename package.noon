@@ -1,11 +1,11 @@
-name            koks
-productName     koks
-version         0.1.0
+name            knot
+productName     knot
+version         0.2.0
 description     terminal
 main            js/main.js
 repository
                 type  git
-                url   git+https://github.com/monsterkodi/koks.git
+                url   git+https://github.com/monsterkodi/knot.git
 scripts
                 mac   bash ./bin/buildmac.sh
                 win   bash ./bin/buildwin.sh
@@ -15,7 +15,7 @@ keywords
 author          monsterkodi
 license         Unlicense
 bugs
-                url  https://github.com/monsterkodi/koks/issues
+                url  https://github.com/monsterkodi/knot/issues
 dependencies
                 kork      ../kork
                 kxk       ../kxk

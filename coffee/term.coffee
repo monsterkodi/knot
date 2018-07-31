@@ -83,11 +83,12 @@ class Term
             when 'ctrl+v'           then return @paste()
             when 'ctrl+c'           then return @copy()
             when 'ctrl+x'           then return @cut()
-            when 'enter', 'return', 'ctrl+e' then return @shellCmd() 
+            when 'enter', 'return'  then return @shell.write '\n'
             else 
                 if info.char
                     @command += info.char
-                    @term.write info.char
+                    # @term.write info.char
+                    @shell.write info.char
             
     shellCmd: =>
         log 'shellCmd', @command

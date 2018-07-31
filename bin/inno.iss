@@ -1,8 +1,8 @@
-#define MyAppName "koks"
+#define MyAppName "knot"
 #define MyAppVersion "0.1.0"
 #define MyAppPublisher "monsterkodi"
-#define MyAppURL "https://github.com/monsterkodi/koks"
-#define MyAppExeName "koks.exe"
+#define MyAppURL "https://github.com/monsterkodi/knot"
+#define MyAppExeName "knot.exe"
 
 [Setup]
 AppId={{321BB4B4-696D-4A09-B73F-CA684BF21EE8}
