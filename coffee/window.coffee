@@ -20,6 +20,7 @@ w = new win
     menu:   '../coffee/menu.noon'
     icon:   '../img/menu@2x.png'
     onLoad: -> term.onResize()
+    context: (items) -> onContext items
 
 #  0000000   00000000   00000000  000   000  
 # 000   000  000   000  000       0000  000  
@@ -126,6 +127,19 @@ post.on 'menuAction', (action) ->
             
         when 'Visual Studio', 'VS Code', 'Atom', 'ko'
             setEditor action
+
+#  0000000   0000000   000   000  000000000  00000000  000   000  000000000  
+# 000       000   000  0000  000     000     000        000 000      000     
+# 000       000   000  000 0 000     000     0000000     00000       000     
+# 000       000   000  000  0000     000     000        000 000      000     
+#  0000000   0000000   000   000     000     00000000  000   000     000     
+    
+onContext = (items) ->
+    [    
+         text:'Clear', accel:'alt+ctrl+k'
+    ,
+         text: ''
+    ].concat items
             
 # 000  000   000  000  000000000    
 # 000  0000  000  000     000       

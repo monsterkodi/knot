@@ -35,6 +35,10 @@ class Term
         
         @term.open @lines
         
+        log '@term.selectionManager', @term._core.selectionManager?
+        log '@term.renderer', @term._core.renderer?
+        log @term._core?
+        
         @cache      = []
         @icons      = {}
         @scroll     = new Scroll    @lines
@@ -83,7 +87,7 @@ class Term
     
     onShellData: (data) =>
 
-        log 'shell data', data
+        # log 'shell data', data
         data = data.replace '⏎', ''
         @term.write data
                     
@@ -267,6 +271,8 @@ class Term
         
     clear: -> 
     
+        log 'clear'
+        @shell.clear()
         @scroll.setNumLines 0
         @cache = []
             
@@ -279,16 +285,10 @@ class Term
     onFontSize: (size) =>
         
         return if not @lines?
-        
-        if @lines.firstChild
-            setStyle '.line', 'height', ''
-            lineHeight = @lines.firstChild.clientHeight
-            if lineHeight > 0
-                @scroll?.setLineHeight lineHeight
-                setStyle '.line', 'height', "#{lineHeight}px"
-        else if size > 0
-            @scroll?.setLineHeight size
-            setStyle '.line', 'height', "#{lineHeight}px"
+        if size > 0
+            # @scroll?.setLineHeight size
+            log "size #{size}"
+            setStyle '.line', 'height', "#{size}px"
 
     #  0000000  000      000   0000000  000   000  
     # 000       000      000  000       000  000   

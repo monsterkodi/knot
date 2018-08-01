@@ -6,15 +6,15 @@
 # 000   000  00000000  000   000   0000000
 
 knot
-    About                   cmdctrl+,
+    About                   
     ---
     Quit                    cmdctrl+q
 
 Editor
-    Visual Studio           cmdctrl+1
-    VS Code                 cmdctrl+2
-    Atom                    cmdctrl+3
-    ko                      cmdctrl+4
+    Visual Studio           alt+cmdctrl+1
+    VS Code                 alt+cmdctrl+2
+    Atom                    alt+cmdctrl+3
+    ko                      alt+cmdctrl+4
     
 # 000   000  000  00000000  000   000  
 # 000   000  000  000       000 0 000  
@@ -23,7 +23,7 @@ Editor
 #     0      000  00000000  00     00  
 
 View
-    Clear                   cmdctrl+k
+    Clear                   alt+cmdctrl+k
     ---
     Font Size   
         Increase            cmdctrl+=
@@ -37,7 +37,7 @@ View
 # 00     00  000  000   000  0000000     0000000   00     00
 
 Window
-    Close                   cmdctrl+w
+    Close                   alt+cmdctrl+w
     -
     Toggle Menu             alt+m
     Toggle Scheme           alt+i
