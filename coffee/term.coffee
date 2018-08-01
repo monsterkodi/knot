@@ -13,32 +13,36 @@ pty          = require 'node-pty'
 Scroll       = require './scroll'
 ScrollBar    = require './scrollbar'
 Minimap      = require './minimap'
+KeyHandler   = require './keyhandler'
 
 class Term
 
     constructor: ->
         
-        @num = 0   
+        @num   = 0   
+        @main  =$ '#main' 
         @lines =$ '#terminal'
         
         @term = new Terminal
             fontFamily:                 '"Meslo LG S", "Liberation Mono", "Menlo", "Cousine", "Andale Mono"'
-            fontSize:                   17
+            fontSize:                   16
             lineHeight:                 1
-            enableBold:                 true
             rendererType:               'dom'
+            enableBold:                 true
             drawBoldTextInBrightColors: true
-        @term.attachCustomKeyEventHandler @customKey
+            
+        @keyHandler = new KeyHandler @
+        
         @term.open @lines
         
-        @cache     = []
-        @icons     = {}
-        @scroll    = new Scroll    @lines
-        @scrollBar = new ScrollBar @scroll
-        @minimap   = new Minimap   @
+        @cache      = []
+        @icons      = {}
+        @scroll     = new Scroll    @lines
+        @scrollBar  = new ScrollBar @scroll
+        @minimap    = new Minimap   @
         
         @lines.addEventListener 'click', @onClick
-        post.on 'combo',        @onCombo
+        
         post.on 'fontSize',     @onFontSize
         post.on 'showLines',    @onShowLines 
         post.on 'shiftLines',   @onShiftLines
@@ -50,9 +54,7 @@ class Term
         window.addEventListener 'resize', @onResize
         
         @spawnShell()
-        
-    customKey: (event) => return false
-        
+                
     #  0000000  000   000  00000000  000      000      
     # 000       000   000  000       000      000      
     # 0000000   000000000  0000000   000      000      
@@ -60,8 +62,11 @@ class Term
     # 0000000   000   000  00000000  0000000  0000000  
     
     spawnShell: =>
+        
+        process.env.TERM = 'cygwin'
+        
         @shell = pty.spawn 'C:\\msys64\\usr\\bin\\bash.exe', ['-i'],
-            name: 'xterm-256color'
+            name: 'cygwin'
             cwd:  process.env.HOME
             env:  process.env
             cols: 1000
@@ -81,30 +86,7 @@ class Term
         log 'shell data', data
         data = data.replace '⏎', ''
         @term.write data
-        
-    #  0000000   0000000   00     00  0000000     0000000   
-    # 000       000   000  000   000  000   000  000   000  
-    # 000       000   000  000000000  0000000    000   000  
-    # 000       000   000  000 0 000  000   000  000   000  
-    #  0000000   0000000   000   000  0000000     0000000   
-    
-    onCombo: (combo, info) =>
-
-        # log info.mod, info.key, info.combo, info.char
-        # return stopEvent(info.event) if 'unhandled' != window.keys.globalModKeyComboEvent info.mod, info.key, info.combo, info.event
-        
-        switch combo
-            when 'ctrl+v'           then return @paste()
-            when 'ctrl+c'           then return @copy()
-            when 'ctrl+x'           then return @cut()
-            when 'enter', 'return'  then return @shell.write '\n'
-            else 
-                if info.char
-                    @shell.write info.char
-                else
-                    switch info.event.keyCode
-                        when 27 then @shell.write '\x1b'
-            
+                    
     #  0000000  00000000  000      00000000   0000000  000000000  
     # 000       000       000      000       000          000     
     # 0000000   0000000   000      0000000   000          000     
@@ -272,36 +254,21 @@ class Term
         
         @scroll.setViewHeight @lines.parentNode.clientHeight
         
-        parentElementStyle = window.getComputedStyle(@term.element.parentElement)
-        parentElementHeight = parseInt parentElementStyle.getPropertyValue 'height'
-        parentElementWidth = Math.max 0, parseInt parentElementStyle.getPropertyValue 'width'
-        elementStyle = window.getComputedStyle @term.element
-        ptop    = parseInt elementStyle.getPropertyValue 'padding-top'
-        pbottom = parseInt elementStyle.getPropertyValue 'padding-bottom'
-        pright  = parseInt elementStyle.getPropertyValue 'padding-right'
-        pleft   = parseInt elementStyle.getPropertyValue 'padding-left'
-        elementPaddingVer = ptop + pbottom
-        elementPaddingHor = pright + pleft
-        availableHeight = parentElementHeight - elementPaddingVer
-        availableWidth = parentElementWidth - elementPaddingHor #- @term._core.viewport.scrollBarWidth
+        availableHeight = @main.clientHeight - 10
+        availableWidth  = @main.clientWidth - 130
 
-        log "Term.onResize #{parentElementWidth} #{availableWidth}"
-        
-        cols = Math.floor availableWidth / @term._core.renderer.dimensions.actualCellWidth
+        cols = Math.floor availableWidth  / @term._core.renderer.dimensions.actualCellWidth
         rows = Math.floor availableHeight / @term._core.renderer.dimensions.actualCellHeight
         
-        log "Term.onResize cols:#{str cols} rows:#{str rows}"
+        # log "Term.onResize cols:#{str cols} rows:#{str rows} w:#{availableWidth} h:#{availableHeight}"
         
-        @term._core.renderer.clear()
-        @term.resize cols, rows
+        @term.resize  cols, rows
         @shell.resize cols, rows
         
     clear: -> 
     
         @scroll.setNumLines 0
         @cache = []
-        # @shell.
-        # @term._core.renderer.clear()
             
     # 00000000   0000000   000   000  000000000       0000000  000  0000000  00000000  
     # 000       000   000  0000  000     000         000       000     000   000       
