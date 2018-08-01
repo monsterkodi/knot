@@ -45,19 +45,22 @@ body
 // 000  000  0000  000        000   000     000     
 // 000  000   000  000         0000000      000     
 
-.input
-    flex                10 1 0
-    width               0
-    cursor              text
-    -webkit-user-select text
-    -webkit-app-region  no-drag
-    border              none
-    pointer-events      all
-    font-size           titlebarFontSize
-    font-family         titlebarFont
+// .input
+    // flex                10 1 0
+    // width               0
+    // cursor              text
+    // -webkit-user-select text
+    // -webkit-app-region  no-drag
+    // border              none
+    // pointer-events      all
+    // font-size           titlebarFontSize
+    // font-family         titlebarFont
     
-// .terminal .xterm-viewport
-    // overflow            hidden
+.terminal .xterm-viewport
+    overflow            hidden
+    
+.terminal
+    border 1px solid green
     
 // 00     00  000  000   000  000  00     00   0000000   00000000
 // 000   000  000  0000  000  000  000   000  000   000  000   000
@@ -66,12 +69,14 @@ body
 // 000   000  000  000   000  000  000   000  000   000  000
 
 .minimap
+    display             flex
     flex                0 0 minimapWidth
     width               minimapWidth
     overflow            hidden
     cursor              pointer
     border-left         thinBorder
     pointer-events      auto
+    border              1px solid red
 
 .minimap canvas
     pointer-events      none
@@ -130,11 +135,12 @@ body
 // 000      000  000  0000  000            000  
 // 0000000  000  000   000  00000000  0000000   
 
-#term
+#terminal
     font-size               logFontSize
     -webkit-user-select     text
     flex                    1 1 0
     padding                 5px
+    display                 flex
     // overflow                hidden
     // padding-left            6px
     // position                relative

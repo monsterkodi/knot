@@ -6,7 +6,7 @@
    000     00000000  000   000  000   000  
 ###
 
-{ post, setStyle, keyinfo, valid, slash, elem, log, $ } = require 'kxk'
+{ post, setStyle, valid, slash, elem, str, log, $ } = require 'kxk'
 
 { Terminal } = require 'xterm'
 pty          = require 'node-pty'
@@ -61,9 +61,10 @@ class Term
     
     spawnShell: =>
         @shell = pty.spawn 'C:\\msys64\\usr\\bin\\bash.exe', ['-i'],
-            name:   'xterm-256color'
-            cwd:    process.env.HOME
-            env:    process.env
+            name: 'xterm-256color'
+            cwd:  process.env.HOME
+            env:  process.env
+            cols: 1000
 
         @shell.on 'data',  @onShellData
         @shell.on 'error', @onShellError
@@ -275,20 +276,23 @@ class Term
         parentElementHeight = parseInt parentElementStyle.getPropertyValue 'height'
         parentElementWidth = Math.max 0, parseInt parentElementStyle.getPropertyValue 'width'
         elementStyle = window.getComputedStyle @term.element
-        elementPadding = 
-          top:      parseInt elementStyle.getPropertyValue 'padding-top'
-          bottom:   parseInt elementStyle.getPropertyValue 'padding-bottom'
-          right:    parseInt elementStyle.getPropertyValue 'padding-right'
-          left:     parseInt elementStyle.getPropertyValue 'padding-left'
-        elementPaddingVer = elementPadding.top + elementPadding.bottom
-        elementPaddingHor = elementPadding.right + elementPadding.left
+        ptop    = parseInt elementStyle.getPropertyValue 'padding-top'
+        pbottom = parseInt elementStyle.getPropertyValue 'padding-bottom'
+        pright  = parseInt elementStyle.getPropertyValue 'padding-right'
+        pleft   = parseInt elementStyle.getPropertyValue 'padding-left'
+        elementPaddingVer = ptop + pbottom
+        elementPaddingHor = pright + pleft
         availableHeight = parentElementHeight - elementPaddingVer
-        availableWidth = parentElementWidth - elementPaddingHor - @term._core.viewport.scrollBarWidth
+        availableWidth = parentElementWidth - elementPaddingHor #- @term._core.viewport.scrollBarWidth
 
+        log "Term.onResize #{parentElementWidth} #{availableWidth}"
+        
         cols = Math.floor availableWidth / @term._core.renderer.dimensions.actualCellWidth
         rows = Math.floor availableHeight / @term._core.renderer.dimensions.actualCellHeight
-          
-        # @term._core.renderer.clear()
+        
+        log "Term.onResize cols:#{str cols} rows:#{str rows}"
+        
+        @term._core.renderer.clear()
         @term.resize cols, rows
         @shell.resize cols, rows
         
