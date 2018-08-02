@@ -6,13 +6,12 @@
 00     00  000  000   000  0000000     0000000   00     00  
 ###
 
-{ post, stopEvent, keyinfo, childp, prefs, slash, clamp, empty, open, udp, win, error, log, _ } = require 'kxk'
+{ post, stopEvent, keyinfo, childp, prefs, clamp, empty, slash, open, udp, win, error, log, $, _ } = require 'kxk'
 
 Term = require './term'
+Tabs = require './tabs'
 log  = console.log
 klog = require('kxk').log
-
-window.term = term = new Term
 
 w = new win
     dir:    __dirname
@@ -21,6 +20,9 @@ w = new win
     icon:   '../img/menu@2x.png'
     onLoad: -> term.onResize()
     context: (items) -> onContext items
+    
+window.tabs = new Tabs $ "#titlebar"
+window.term = term = new Term
 
 #  0000000   00000000   00000000  000   000  
 # 000   000  000   000  000       0000  000  
@@ -59,17 +61,16 @@ post.on 'openFile', openFile
 # 000       000   000  000  0000     000             000  000   000     000
 # 000        0000000   000   000     000        0000000   000  0000000  00000000
 
-defaultFontSize = 15
+defaultFontSize = 18
 
 getFontSize = -> prefs.get 'fontSize', defaultFontSize
 
 setFontSize = (s) ->
         
     s = getFontSize() if not _.isFinite s
-    s = clamp 8, 44, s
+    s = clamp 8, 88, s
 
     prefs.set 'fontSize', s
-    # lines.lines.style.fontSize = "#{s}px"
     post.emit 'fontSize', s
 
 window.setFontSize = setFontSize
@@ -119,11 +120,11 @@ setEditor = (editor) ->
 post.on 'menuAction', (action) ->
     
     switch action
-        
-        when 'Increase'             then changeFontSize +1
-        when 'Decrease'             then changeFontSize -1
-        when 'Reset'                then resetFontSize()
-        when 'Clear'                then term.clear()
+        when 'New Tab'  then window.tabs.addTab '~'
+        when 'Increase' then changeFontSize +1
+        when 'Decrease' then changeFontSize -1
+        when 'Reset'    then resetFontSize()
+        when 'Clear'    then term.clear()
             
         when 'Visual Studio', 'VS Code', 'Atom', 'ko'
             setEditor action

@@ -8,9 +8,8 @@
 
 { post, getStyle, empty, clamp, elem, drag, str, log, $ } = require 'kxk'
 
-log = console.log
+log       = console.log
 MapScroll = require './mapscroll'
-# Highlight = require './highlight'
 
 class Minimap
 

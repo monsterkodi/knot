@@ -6,7 +6,9 @@
 # 000   000  00000000  000   000   0000000
 
 knot
-    About                   
+    New Tab                 cmdctrl+n
+    --
+    About  
     ---
     Quit                    cmdctrl+q
 
@@ -40,7 +42,6 @@ Window
     Close                   alt+cmdctrl+w
     -
     Toggle Menu             alt+m
-    Toggle Scheme           alt+i
     --
     Minimize                alt+cmdctrl+shift+m
     Maximize                alt+cmdctrl+m

@@ -6,7 +6,7 @@
 000   000  00000000     000     000   000  000   000  000   000  0000000    0000000  00000000  000   000
 ###
 
-{ post, valid, log } = require 'kxk'
+{ post, stopEvent, valid, log } = require 'kxk'
 
 ESC = '\x1b'
 electron = require 'electron'
@@ -47,13 +47,11 @@ class KeyHandler
                     
             when 'enter'
                 return @write '\x0d'
-
-        if info.char
-            if valid info.mod
-                log 'write char', info.char, info.mod
+            
+        event = info.event
+        if info.char and event.keyCode not in [9]
             @write info.char
         else
-            event = info.event
             modifiers = (event.shiftKey and 1 or 0) | (event.altKey and 2 or 0) | (event.ctrlKey and 4 or 0) | (event.metaKey and 8 or 0)
             @onKeyCode event.keyCode, modifiers, info
         
@@ -75,6 +73,12 @@ class KeyHandler
                 
         switch keyCode
             when 27  then @write ESC
+            when 9  # tab
+                if 'shift' in info.mod
+                    @write ESC + '[Z'
+                else
+                    stopEvent info.event
+                    @write '\t' # '\x09'
             when 37  then writeMod '1', 'D', 'D'  # left-arrow 
             when 39  then writeMod '1', 'C', 'C'  # right-arrow
             when 38  then writeMod '1', 'A', 'A'  # up-arrow
@@ -96,6 +100,10 @@ class KeyHandler
             when 120 then writeMod '20', '~', '20~' # F10
             when 121 then writeMod '21', '~', '21~' # F11 +1?
             when 122 then writeMod '22', '~', '22~' # F12 +1?
+            when 56  then @write String.fromCharCode 127 # another delete?
+            when 219 then @write String.fromCharCode 27  # control sequence introducer?
+            when 220 then @write String.fromCharCode 28  # string terminator?
+            when 221 then @write String.fromCharCode 29  # operating system command?
             else
                 log "keyCode #{keyCode}"
                 

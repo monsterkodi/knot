@@ -35,22 +35,73 @@ body
 // 000   000  000   000  000  000   000  
 
 #main
+    position            relative
+    overflow            hidden
+
+// 000000000   0000000   0000000     0000000
+//    000     000   000  000   000  000
+//    000     000000000  0000000    0000000
+//    000     000   000  000   000       000
+//    000     000   000  0000000    0000000
+
+.tabs
+    flex                10 1 0
     display             flex
     flex-direction      row
-    overflow            hidden
+    overflow-x          auto
+    overflow-y          hidden
+    -webkit-app-region  no-drag
 
-// 000000000  00000000  00000000   00     00  000  000   000   0000000   000      
-//    000     000       000   000  000   000  000  0000  000  000   000  000      
-//    000     0000000   0000000    000000000  000  000 0 000  000000000  000      
-//    000     000       000   000  000 0 000  000  000  0000  000   000  000      
-//    000     00000000  000   000  000   000  000  000   000  000   000  0000000  
+    &::-webkit-scrollbar
+        height          2px
 
-.terminal .xterm-viewport
-    overflow            hidden
+// 000000000   0000000   0000000
+//    000     000   000  000   000
+//    000     000000000  0000000
+//    000     000   000  000   000
+//    000     000   000  0000000
+
+.tab
+    flex                1 1 0
+    position            relative
+    border-top-left-radius  6px
+    border-top-right-radius 6px
+    // &:not(:first-child)    
+        // border-top-left-radius  10px
+    // &:not(:last-child)
+        // border-top-right-radius 10px
+    padding-left        6px
+    padding-right       12px
+    padding-top         7px
+    cursor              pointer
     
-// .terminal
-    // border 1px solid green
+    box-sizing          border-box
+    font-size           titlebarFontSize
+    font-family         titlebarFont
+    
+    &:not(.active)
+        opacity         0.5
 
+.tabdrag
+    -webkit-app-region  drag
+    height              titlebarHeight
+    width               titlebarHeight
+    position            absolute
+    top                 0
+    right               0
+
+.tab .dot
+    color               #444
+    &.focus
+        color           #060
+
+.dot
+    display             inline-block
+    vertical-align      top
+    padding-left        6px
+    padding-right       9px
+    margin-top          -1px
+    
 // 000   000  000000000  00000000  00000000   00     00  
 //  000 000      000     000       000   000  000   000  
 //   00000       000     0000000   0000000    000000000  
@@ -101,7 +152,7 @@ body
     
     & .xterm-viewport 
         background-color #000
-        overflow-y       scroll
+        overflow-y       hidden
         cursor           default
         position         absolute
         right            0
@@ -151,14 +202,15 @@ body
 // 000   000  000  000   000  000  000   000  000   000  000
 
 .minimap
-    display             flex
-    flex                0 0 minimapWidth
+    position            absolute
+    top                 0
+    right               0
+    bottom              0
     width               minimapWidth
     overflow            hidden
     cursor              pointer
     border-left         thinBorder
     pointer-events      auto
-    // border              1px solid red
 
 .minimap canvas
     pointer-events      none

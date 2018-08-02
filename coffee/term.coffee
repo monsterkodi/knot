@@ -6,7 +6,7 @@
    000     00000000  000   000  000   000  
 ###
 
-{ post, setStyle, valid, slash, elem, str, log, $ } = require 'kxk'
+{ post, setStyle, prefs, valid, slash, elem, log, $ } = require 'kxk'
 
 { Terminal } = require 'xterm'
 pty          = require 'node-pty'
@@ -22,22 +22,53 @@ class Term
         @num   = 0   
         @main  =$ '#main' 
         @lines =$ '#terminal'
+        @cache = []
         
         @term = new Terminal
             fontFamily:                 '"Meslo LG S", "Liberation Mono", "Menlo", "Cousine", "Andale Mono"'
-            fontSize:                   16
+            fontSize:                   prefs.get 'fontSize', 18
             lineHeight:                 1
             rendererType:               'dom'
             enableBold:                 true
             drawBoldTextInBrightColors: true
+            theme:
+                foreground:    '#cccccc'
+                background:    '#000000'
+                cursor:        '#ffff00'
+                cursorAccent:  '#ffff88'
+                selection:     'rgba(128,128,128,0.2)'
+                black:         '#222222'
+                red:           '#880000'
+                green:         '#008800'
+                yellow:        '#aaaa00'
+                blue:          '#0000ff'
+                magenta:       '#aa00aa'
+                cyan:          '#00aaaa'
+                white:         '#aaaaaa'
+                brightBlack:   '#444444'
+                brightRed:     '#ff0000'
+                brightGreen:   '#00ff00'
+                brightYellow:  '#ffff44'
+                brightBlue:    '#6666ff'
+                brightMagenta: '#ff44ff'
+                brightCyan:    '#00dddd'
+                brightWhite:   '#ffffff'
             
+        @term.wraparoundMode = false # doesn't work?
+        
+        window.tabs.addTab '~'
+        
         @keyHandler = new KeyHandler @
         
         @term.open @lines
         
-        log '@term.selectionManager', @term._core.selectionManager?
-        log '@term.renderer', @term._core.renderer?
-        log @term._core?
+        @term.on 'title', (title) -> 
+            log "term.onTitle #{title}"
+            window.tabs.activeTab()?.update title
+        
+        fromHex = (css) ->
+            css:  css
+            rgba: parseInt(css.slice(1), 16) << 8 | 0xFF
         
         @cache      = []
         @icons      = {}
@@ -69,7 +100,8 @@ class Term
         
         process.env.TERM = 'cygwin'
         
-        @shell = pty.spawn 'C:\\msys64\\usr\\bin\\bash.exe', ['-i'],
+        # @shell = pty.spawn 'C:\\msys64\\usr\\bin\\bash.exe', ['-i'],
+        @shell = pty.spawn 'C:\\msys64\\usr\\bin\\fish.exe', [],
             name: 'cygwin'
             cwd:  process.env.HOME
             env:  process.env
@@ -269,12 +301,19 @@ class Term
         @term.resize  cols, rows
         @shell.resize cols, rows
         
+    #  0000000  000      00000000   0000000   00000000   
+    # 000       000      000       000   000  000   000  
+    # 000       000      0000000   000000000  0000000    
+    # 000       000      000       000   000  000   000  
+    #  0000000  0000000  00000000  000   000  000   000  
+    
     clear: -> 
     
-        log 'clear'
-        @shell.clear()
         @scroll.setNumLines 0
+        @term.reset()
         @cache = []
+        @shell.write 'clear\n'
+        # @keyHandler.onCombo 'enter'
             
     # 00000000   0000000   000   000  000000000       0000000  000  0000000  00000000  
     # 000       000   000  0000  000     000         000       000     000   000       
@@ -288,7 +327,8 @@ class Term
         if size > 0
             # @scroll?.setLineHeight size
             log "size #{size}"
-            setStyle '.line', 'height', "#{size}px"
+            # setStyle '.line', 'height', "#{size}px"
+            @term.setOption 'fontSize', size
 
     #  0000000  000      000   0000000  000   000  
     # 000       000      000  000       000  000   
