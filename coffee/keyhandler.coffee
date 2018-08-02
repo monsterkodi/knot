@@ -49,7 +49,8 @@ class KeyHandler
                 return @write '\x0d'
 
         if info.char
-            log 'write char', info.char
+            if valid info.mod
+                log 'write char', info.char, info.mod
             @write info.char
         else
             event = info.event
