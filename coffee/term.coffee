@@ -63,8 +63,15 @@ class Term
         @term.open @lines
         
         @term.on 'title', (title) -> 
-            log "term.onTitle #{title}"
             window.tabs.activeTab()?.update title
+            
+        @term.on 'refresh', (info) =>
+            top = @term._core.buffer.ydisp
+            dat = @term._core.buffer.lines.get info.start+top
+            num = info.end - info.start
+            # log 'term.onRefresh', num, top, dat
+            for index in [info.start...info.end]
+                log @term._core.buffer.translateBufferLineToString index+top
         
         fromHex = (css) ->
             css:  css
@@ -293,7 +300,7 @@ class Term
         availableHeight = @main.clientHeight - 10
         availableWidth  = @main.clientWidth - 130
 
-        cols = Math.floor availableWidth  / @term._core.renderer.dimensions.actualCellWidth
+        cols = 1000 # Math.floor availableWidth  / @term._core.renderer.dimensions.actualCellWidth
         rows = Math.floor availableHeight / @term._core.renderer.dimensions.actualCellHeight
         
         # log "Term.onResize cols:#{str cols} rows:#{str rows} w:#{availableWidth} h:#{availableHeight}"
