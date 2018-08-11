@@ -12,7 +12,10 @@ class Buffer
 
     constructor: (info) -> 
         
-        @resize info.rows, info.cols
+        rows = Math.max 1,   info.rows ? 1
+        cols = Math.max 100, info.cols ? 100
+        # log "Buffer cols:#{cols} rows:#{rows}"
+        @resize rows, cols
         @reset()
 
     reset: ->

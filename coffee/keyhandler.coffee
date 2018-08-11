@@ -101,6 +101,7 @@ class KeyHandler
             when 219 then @write String.fromCharCode 27  # control sequence introducer?
             when 220 then @write String.fromCharCode 28  # string terminator?
             when 221 then @write String.fromCharCode 29  # operating system command?
+            when 17 then # ctrl
             else
                 log "keyCode #{keyCode}"
                 

@@ -6,9 +6,8 @@
    000     00000000  000   000  000   000  
 ###
 
-{ post, elem, log, $ } = require 'kxk'
+{ post, setStyle, prefs, empty, elem, log, $ } = require 'kxk'
 
-# { Terminal } = require 'xterm'
 { Terminal } = require 'term.js'
 pty          = require 'node-pty'
 Scroll       = require './scroll'
@@ -18,6 +17,7 @@ KeyHandler   = require './keyhandler'
 Render       = require './render'
 Lines        = require './lines'
 Cursor       = require './cursor'
+Buffer       = require './buffer'
 
 class Term
 
@@ -51,7 +51,8 @@ class Term
         
         @main.addEventListener 'click', @onClick
         
-        post.on 'fontSize',     @onFontSize
+        post.on 'fontSize', @onFontSize
+        @onFontSize prefs.get 'fontSize'
 
         document.addEventListener 'selectionchange', @onSelectionChange
         window.addEventListener 'resize', @onResize
@@ -116,7 +117,10 @@ class Term
             html = Render.line @lines.buffer.lines[index], @lines.buffer
             terminal.appendChild elem class:'line', html:html
             
-        log 'term.refresh', @lines.buffer.x, @lines.buffer.y
+        @updateCursor()
+        
+    updateCursor: ->
+        
         @cursor.setPos @lines.buffer.x, @lines.buffer.y
         
     #  0000000  00000000  000      00000000   0000000  000000000  
@@ -150,15 +154,49 @@ class Term
         availableHeight = @main.clientHeight - 10
         availableWidth  = @main.clientWidth - 130
 
+        @calcSize()
+        
         @cols = 1000 # Math.floor availableWidth  / @term._core.renderer.dimensions.actualCellWidth
-        @rows = Math.floor availableHeight / 20 # @term._core.renderer.dimensions.actualCellHeight
+        @rows = Math.floor availableHeight / @size.lineHeight
         
-        # log "Term.onResize cols:#{str cols} rows:#{str rows} w:#{availableWidth} h:#{availableHeight}"
+        log "resize cols:#{@cols} rows:#{@rows}"
         
-        log "resize #{@cols} #{@rows}"
+        @lines.buffer?.resize @cols, @rows
+        @shell?.resize @cols, @rows
+                
+    calcSize: =>
         
-        @lines.buffer.resize @cols, @rows
-        @shell.resize @cols, @rows
+        terminal =$ '#terminal'
+        
+        return if not terminal
+        
+        defAttr = (257 << 9) | 256
+        html = Render.line [[256, 'x'], [0, 'y']], new Buffer @
+        
+        if empty terminal.children
+            line = elem class:'line', html:html
+            terminal.appendChild line
+        else
+            line = terminal.firstChild
+            old = line.innerHTML
+            line.innerHTML = html
+        
+        if not line.children[0]
+            log 'line????', line.innerHTML, empty terminal.children
+            return
+            
+        tr = terminal.getBoundingClientRect()
+        br = line.children[0].getBoundingClientRect()
+        
+        if old
+            terminal.firstChild.innerHTML = old
+            
+        @size.lineHeight = br.height
+        @size.charWidth  = br.width
+        @size.offsetTop  = br.top - tr.top
+        @size.offsetLeft = br.left - tr.left
+        
+        log 'Term.calcSize', @size
         
     #  0000000  000      00000000   0000000   00000000   
     # 000       000      000       000   000  000   000  
@@ -182,10 +220,16 @@ class Term
     onFontSize: (size) =>
         
         return if not @main?
-        if size > 0
-            # @scroll?.setLineHeight size
-            log "size #{size}"
-            # @term.setOption 'fontSize', size
+        return if size <= 0
+        
+        # log "Term.onFontSize #{size}"
+        # @scroll?.setLineHeight size
+        
+        setStyle "#terminal", 'fontSize', "#{size}px"
+        @onResize()
+        setStyle "#cursor", 'width', "#{@size.charWidth}px"
+        setStyle "#cursor", 'height', "#{@size.lineHeight}px"
+        @updateCursor()
 
     #  0000000  000      000   0000000  000   000  
     # 000       000      000  000       000  000   

@@ -254,26 +254,11 @@ class Parse
                         # log "CSI '#{ch}'"
                             
                         switch ch
-
-                            when 'A' # cursor up
-                                @buffer.y -= Math.max 1, @params[0]
-                                if @buffer.y < 0 then @buffer.y = 0
-                                log "cursor up #{@buffer.x} #{@buffer.y}"
-
-                            when 'B' # cursor down
-                                @buffer.y += Math.max 1, @params[0]
-                                if @buffer.y >= @buffer.rows then @buffer.y = @buffer.rows-1
-                                log "cursor down #{@buffer.x} #{@buffer.y}"
-
-                            when 'C' # cursor right
-                                @buffer.x += Math.max 1, @params[0]
-                                if @buffer.x >= @buffer.cols then @buffer.x = @buffer.cols-1
-                                log "cursor right #{@buffer.x} #{@buffer.y}"
-
-                            when 'D' # cursor left
-                                @buffer.x -= Math.max 1, @params[0]
-                                if @buffer.x < 0 then @buffer.x = 0
-                                log "cursor left #{@buffer.x} #{@buffer.y}"
+                            # cursor up, down, right, left
+                            when 'A' then @buffer.y = clamp 0, @buffer.rows-1, @buffer.y - Math.max 1, @params[0]
+                            when 'B' then @buffer.y = clamp 0, @buffer.rows-1, @buffer.y + Math.max 1, @params[0]
+                            when 'C' then @buffer.x = clamp 0, @buffer.cols-1, @buffer.x + Math.max 1, @params[0]
+                            when 'D' then @buffer.x = clamp 0, @buffer.cols-1, @buffer.x - Math.max 1, @params[0]
 
                             when 'H' # cursor position
 
@@ -298,11 +283,26 @@ class Parse
                                 # @buffer.lines[@buffer.y] = @buffer.lines[@buffer.y].slice 0, @buffer.x
                                 # @buffer.lines = @buffer.lines.slice 0, @buffer.y+1
             
+                            when 'J' # erase in display
+                                
+                                switch @params[0]
+                                    when 0
+                                        @eraseRight @buffer.x, @buffer.y
+                                        for j in [@buffer.y + 1...@buffer.rows]
+                                            @eraseLine j
+                                    when 1
+                                        @eraseLeft @buffer.x, @buffer.y
+                                        for j in [@buffer.y-1..0]
+                                            @eraseLine j
+                                    when 2
+                                        for j in [@buffer.rows-1...0]
+                                            @eraseLine j
+                                            
                             when 'K' # erase in line EL
                                 switch @params[0]
                                     when 0 then @eraseRight @buffer.x, @buffer.y
                                     when 1 then @eraseLeft  @buffer.x, @buffer.y
-                                    when 2 then @eraseRight  0, @buffer.y
+                                    when 2 then @eraseLine  @buffer.y
                             
                             when 'm' # character attributes SGR
                                 if empty @buffer.prefix
@@ -323,11 +323,6 @@ class Parse
                                 
                             else
                                 log "unhandled CSI character: '#{ch}'"
-
-          # # CSI Ps J  Erase in Display (ED).
-          # case 'J':
-            # this.eraseInDisplay(this.params);
-            # break;
                                 
           # # CSI Ps E
           # # Cursor Next Line Ps Times (default = 1) (CNL).
@@ -507,6 +502,8 @@ class Parse
         # }
              
     eraseAttr: -> (defAttr & ~0x1ff) | (@buffer.attr & 0x1ff) 
+    
+    eraseLine: (y) -> @eraseRight 0, y
     
     eraseRight: (x, y) ->
         

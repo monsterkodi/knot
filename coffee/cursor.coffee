@@ -6,7 +6,7 @@
  0000000   0000000   000   000  0000000    0000000   000   000
 ###
 
-{ $ } = require 'kxk'
+{ empty, log, $ } = require 'kxk'
 
 class Cursor
 
@@ -14,13 +14,16 @@ class Cursor
         
         @div =$ '#cursor'
         
-        @div.style.width  = "#{@term.size.charWidth}px"
-        @div.style.height = "#{@term.size.lineHeight}px"
-        
     setPos: (col, row) ->
         
-        x = col * @term.size.charWidth
-        y = row * @term.size.lineHeight
+        return if empty @term.size.charWidth
+        return if empty @term.size.lineHeight
+        return if empty @term.size.offsetLeft
+        return if empty @term.size.offsetTop
+        
+        x = @term.size.offsetLeft + col * @term.size.charWidth
+        y = @term.size.offsetTop + row * @term.size.lineHeight
+        # log "Cursor.setPos #{col} #{row} #{x} #{y}", @term.size
         
         @div.style.transform = "translateX(#{x}px) translateY(#{y}px)"
 
