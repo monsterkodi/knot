@@ -270,11 +270,13 @@ body
 // 0000000  000  000   000  00000000  0000000   
 
 #terminal
+    position                relative
     font-size               logFontSize
     -webkit-user-select     text
     flex                    1 1 0
     padding                 5px
     padding-left            scrollbarWidth
+    white-space             pre
     // display                 flex
     // overflow                hidden
     // padding-left            6px
@@ -287,6 +289,11 @@ body
         // display             flex
         // flex-direction      row
 
+#cursor
+    position                    absolute
+    left                        0
+    top                         0
+        
 // 000000000   0000000    0000000   000      000000000  000  00000000
 //    000     000   000  000   000  000         000     000  000   000
 //    000     000   000  000   000  000         000     000  00000000

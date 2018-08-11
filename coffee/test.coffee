@@ -44,11 +44,9 @@ describe 'parse', ->
         chr buf, 0, 6400, '['
         chr buf, 1, 5888, '~'
         chr buf, 2, 6400, ']'
-        chr buf, 3, 131840, ' '
         
         buf = prs "^[[?25l\r^[[0;34;94m[^[[0;33;93m~^[[0;34;94m]^[[0m^[[0K^[[?25h"
         chr buf, 0, 6400, '['
         chr buf, 1, 5888, '~'
         chr buf, 2, 6400, ']'
-        chr buf, 3, 131840, ' '
         

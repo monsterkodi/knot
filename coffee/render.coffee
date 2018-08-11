@@ -49,7 +49,7 @@ fgcolors = [
 
 class Render
 
-    @line: (line, cols=100) ->
+    @line: (line, buffer) ->
 
         out = ''
         
@@ -57,7 +57,7 @@ class Render
         # log "Render.line:", str line
         attr = defAttr
         
-        for i in [0...cols]
+        for i in [0...buffer.cols]
             
             return out if i >= line.length
             
@@ -144,7 +144,7 @@ class Render
         if attr != defAttr
             out += '</span>'
     
-        log "out:'#{out}'"
+        # log "out:'#{out}'"
         out            
 
 module.exports = Render

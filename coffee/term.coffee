@@ -17,6 +17,7 @@ Minimap      = require './minimap'
 KeyHandler   = require './keyhandler'
 Render       = require './render'
 Lines        = require './lines'
+Cursor       = require './cursor'
 
 class Term
 
@@ -26,50 +27,19 @@ class Term
         @main  =$ '#main' 
         @cache = []
         
-        # @term = new Terminal
-            # cursorBlink: false
-            # screenKeys: true
-            # fontFamily:                 '"Meslo LG S", "Liberation Mono", "Menlo", "Cousine", "Andale Mono"'
-            # fontSize:                   prefs.get 'fontSize', 18
-            # lineHeight:                 1
-            # rendererType:               'dom'
-            # enableBold:                 true
-            # drawBoldTextInBrightColors: true
-            # theme:
-                # foreground:    '#cccccc'
-                # background:    '#000000'
-                # cursor:        '#ffff00'
-                # cursorAccent:  '#ffff88'
-                # selection:     'rgba(128,128,128,0.2)'
-                # black:         '#222222'
-                # red:           '#880000'
-                # green:         '#008800'
-                # yellow:        '#aaaa00'
-                # blue:          '#0000ff'
-                # magenta:       '#aa00aa'
-                # cyan:          '#00aaaa'
-                # white:         '#aaaaaa'
-                # brightBlack:   '#444444'
-                # brightRed:     '#ff0000'
-                # brightGreen:   '#00ff00'
-                # brightYellow:  '#ffff44'
-                # brightBlue:    '#6666ff'
-                # brightMagenta: '#ff44ff'
-                # brightCyan:    '#00dddd'
-                # brightWhite:   '#ffffff'
-            
+        @rows = 200
+        @cols = 1000
+        
+        @size =
+            charWidth:  12
+            lineHeight: 20
+        
         window.tabs.addTab '~'
         
         @keyHandler = new KeyHandler @
+        @cursor     = new Cursor @
         @lines      = new Lines @
-        
-        # @term.open $ '#terminal'
-        
-        # @term.on 'title', (title) -> 
-            # window.tabs.activeTab()?.update title
-            
-        # @term.on 'refresh', @onTermRefresh
-        
+                    
         fromHex = (css) ->
             css:  css
             rgba: parseInt(css.slice(1), 16) << 8 | 0xFF
@@ -79,7 +49,6 @@ class Term
         @scrollBar  = new ScrollBar @scroll
         @minimap    = new Minimap   @
         
-        # @lines.addEventListener 'click', @onClick
         @main.addEventListener 'click', @onClick
         
         post.on 'fontSize',     @onFontSize
@@ -109,7 +78,8 @@ class Term
             name: 'knot'
             cwd:  process.env.HOME
             env:  env
-            cols: 1000
+            cols: @cols
+            rows: @rows
 
         @shell.on 'data',  @onShellData
         @shell.on 'error', @onShellError
@@ -138,10 +108,16 @@ class Term
         terminal =$ '#terminal'
         terminal.innerHTML = ''
         # log info
-        for index in [info.start..info.end]
-            html = Render.line @lines.buffer.lines[index]
-            log "html[#{index}]", html
+        # for index in [info.start..info.end]
+            # html = Render.line @lines.buffer.lines[index]
+            # log "html[#{index}]", html
+            # terminal.appendChild elem class:'line', html:html
+        for index in [0...@lines.buffer.lines.length]
+            html = Render.line @lines.buffer.lines[index], @lines.buffer
             terminal.appendChild elem class:'line', html:html
+            
+        log 'term.refresh', @lines.buffer.x, @lines.buffer.y
+        @cursor.setPos @lines.buffer.x, @lines.buffer.y
         
     #  0000000  00000000  000      00000000   0000000  000000000  
     # 000       000       000      000       000          000     
@@ -174,14 +150,15 @@ class Term
         availableHeight = @main.clientHeight - 10
         availableWidth  = @main.clientWidth - 130
 
-        cols = 1000 # Math.floor availableWidth  / @term._core.renderer.dimensions.actualCellWidth
-        rows = Math.floor availableHeight / 20 # @term._core.renderer.dimensions.actualCellHeight
+        @cols = 1000 # Math.floor availableWidth  / @term._core.renderer.dimensions.actualCellWidth
+        @rows = Math.floor availableHeight / 20 # @term._core.renderer.dimensions.actualCellHeight
         
         # log "Term.onResize cols:#{str cols} rows:#{str rows} w:#{availableWidth} h:#{availableHeight}"
         
-        log "resize #{cols} #{rows}"
-        # @term.resize  cols, rows
-        @shell.resize cols, rows
+        log "resize #{@cols} #{@rows}"
+        
+        @lines.buffer.resize @cols, @rows
+        @shell.resize @cols, @rows
         
     #  0000000  000      00000000   0000000   00000000   
     # 000       000      000       000   000  000   000  

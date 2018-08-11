@@ -19,13 +19,17 @@ class Lines
 
     reset: ->
         
-        @buffer = new Buffer @term.cols
+        @buffer = new Buffer @term
         
     write: (data) =>
         
         start = @buffer.y
         
         parse data, @buffer
+        
+        if @buffer.title
+            window.tabs.activeTab()?.update @buffer.title
+            delete @buffer.title
         
         @term.refresh start:start, end:Math.max @buffer.y, 0
        

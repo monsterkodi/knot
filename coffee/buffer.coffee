@@ -10,7 +10,10 @@
 
 class Buffer
 
-    constructor: (@cols) -> @reset()
+    constructor: (info) -> 
+        
+        @resize info.rows, info.cols
+        @reset()
 
     reset: ->
         
@@ -20,5 +23,10 @@ class Buffer
         @x     = 0
         @y     = 0
         @lch   = null
+        
+    resize: (cols, rows) ->
+        
+        @cols = cols
+        @rows = rows
 
 module.exports = Buffer

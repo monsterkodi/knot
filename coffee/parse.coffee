@@ -6,7 +6,7 @@
 000        000   000  000   000  0000000   00000000
 ###
 
-{ empty, log } = require 'kxk'
+{ valid, empty, clamp, log } = require 'kxk'
 
 Attr  = require './attr'
 Mode  = require './mode'
@@ -34,10 +34,6 @@ class Parse
         j  = 0 
         ch = null
         
-        # if  @buffer.ybase !== @buffer.ydisp 
-            # @buffer.ydisp = @buffer.ybase
-            # @maxRange()
-
         log 'parse', JSON.stringify data.replace /\x1b/g, '^['
 
         for i in [0...l]
@@ -46,7 +42,9 @@ class Parse
             ch = data[i]
             
             switch @buffer.state
+                
                 when 0 # normal
+                    
                     switch ch
                         when '\x07'
                             # @bell()
@@ -99,6 +97,7 @@ class Parse
                                     # this.lines[j][this.x] = [this.buffer.attr, ' ']
                                     # this.x++
                 when 1 # escaped
+                    
                     switch ch
                         when '[' # Control Sequence Introducer CSI 0x9b
                             @currentParam = 0
@@ -109,6 +108,10 @@ class Parse
                             @params = []
                             @currentParam = 0
                             @buffer.state = 3
+                        
+                        else
+                            
+                            log "unhandled ESC '#{ch}'"
 
           # # ESC P Device Control String ( DCS is 0x90).
           # case 'P':
@@ -157,81 +160,6 @@ class Parse
             # i++;
             # break;
 
-          # # ESC (,),*,+,-,. Designate G0-G2 Character Set.
-          # case '(': # <-- this seems to get all the attention
-          # case ')':
-          # case '*':
-          # case '+':
-          # case '-':
-          # case '.':
-            # switch (ch) {
-              # case '(':
-                # this.gcharset = 0;
-                # break;
-              # case ')':
-                # this.gcharset = 1;
-                # break;
-              # case '*':
-                # this.gcharset = 2;
-                # break;
-              # case '+':
-                # this.gcharset = 3;
-                # break;
-              # case '-':
-                # this.gcharset = 1;
-                # break;
-              # case '.':
-                # this.gcharset = 2;
-                # break;
-            # }
-            # this.state = charset;
-            # break;
-
-          # # Designate G3 Character Set (VT300).
-          # # A = ISO Latin-1 Supplemental.
-          # # Not implemented.
-          # case '/':
-            # this.gcharset = 3;
-            # this.state = charset;
-            # i--;
-            # break;
-
-          # # ESC N
-          # # Single Shift Select of G2 Character Set
-          # # ( SS2 is 0x8e). This affects next character only.
-          # case 'N':
-            # break;
-          # # ESC O
-          # # Single Shift Select of G3 Character Set
-          # # ( SS3 is 0x8f). This affects next character only.
-          # case 'O':
-            # break;
-          # # ESC n
-          # # Invoke the G2 Character Set as GL (LS2).
-          # case 'n':
-            # this.setgLevel(2);
-            # break;
-          # # ESC o
-          # # Invoke the G3 Character Set as GL (LS3).
-          # case 'o':
-            # this.setgLevel(3);
-            # break;
-          # # ESC |
-          # # Invoke the G3 Character Set as GR (LS3R).
-          # case '|':
-            # this.setgLevel(3);
-            # break;
-          # # ESC }
-          # # Invoke the G2 Character Set as GR (LS2R).
-          # case '}':
-            # this.setgLevel(2);
-            # break;
-          # # ESC ~
-          # # Invoke the G1 Character Set as GR (LS1R).
-          # case '~':
-            # this.setgLevel(1);
-            # break;
-
           # # ESC 7 Save Cursor (DECSC).
           # case '7':
             # this.saveCursor();
@@ -262,8 +190,16 @@ class Parse
         # }
         # break;
 
-                when 3
+                #  0000000    0000000   0000000  
+                # 000   000  000       000       
+                # 000   000  0000000   000       
+                # 000   000       000  000       
+                #  0000000   0000000    0000000  
+                
+                when 3 # OSC
                     if (@buffer.lch == '\x1b' and ch == '\\') or ch == '\x07'
+                        
+                        
                         if @buffer.lch == '\x1b'
                             if typeof(@currentParam) == 'string'
                                @currentParam = @currentParam.slice(0, -1);
@@ -272,17 +208,17 @@ class Parse
 
                         @params.push @currentParam
     
-                        # switch @params[0]
-                            # when 2
-                                # if @params[1]
-                                   # @handleTitle @params[1]
+                        if @params[0] == 0 and valid @params[1]
+                            @buffer.title = @params[1]
 
                         @params = []
                         @currentParam = 0
                         @buffer.state = 0
                         
                     else
-                        if not @params.length
+                        
+                        if empty @params
+                            
                             if '0' <= ch <= '9'
                                 @currentParam = @currentParam * 10 + ch.charCodeAt(0) - 48
                             else if ch == ';'
@@ -290,7 +226,15 @@ class Parse
                                 @currentParam = ''
                             else 
                                 @currentParam += ch
+                        else
+                            @currentParam += ch
 
+                #  0000000   0000000  000  
+                # 000       000       000  
+                # 000       0000000   000  
+                # 000            000  000  
+                #  0000000  0000000   000  
+                
                 when 2 # CSI
                     if ch in '?>!'
                         @buffer.prefix = ch
@@ -304,54 +248,55 @@ class Parse
                         @params.push @currentParam
                         @currentParam = 0
                 
-                        # # ';'
-                        # if (ch == ';') break;
-                        # this.state = normal;
-                        
                         if ch != ';'
                             @buffer.state = 0
             
                         # log "CSI '#{ch}'"
                             
                         switch ch
-          # # CSI Ps A
-          # # Cursor Up Ps Times (default = 1) (CUU).
-          # case 'A':
-            # this.cursorUp(this.params);
-            # break;
 
-          # # CSI Ps B
-          # # Cursor Down Ps Times (default = 1) (CUD).
-          # case 'B':
-            # this.cursorDown(this.params);
-            # break;
+                            when 'A' # cursor up
+                                @buffer.y -= Math.max 1, @params[0]
+                                if @buffer.y < 0 then @buffer.y = 0
+                                log "cursor up #{@buffer.x} #{@buffer.y}"
 
-          # # CSI Ps C
-          # # Cursor Forward Ps Times (default = 1) (CUF).
-          # case 'C':
-            # this.cursorForward(this.params);
-            # break;
+                            when 'B' # cursor down
+                                @buffer.y += Math.max 1, @params[0]
+                                if @buffer.y >= @buffer.rows then @buffer.y = @buffer.rows-1
+                                log "cursor down #{@buffer.x} #{@buffer.y}"
 
-          # # CSI Ps D
-          # # Cursor Backward Ps Times (default = 1) (CUB).
-          # case 'D':
-            # this.cursorBackward(this.params);
-            # break;
+                            when 'C' # cursor right
+                                @buffer.x += Math.max 1, @params[0]
+                                if @buffer.x >= @buffer.cols then @buffer.x = @buffer.cols-1
+                                log "cursor right #{@buffer.x} #{@buffer.y}"
 
-          # # CSI Ps ; Ps H
-          # # Cursor Position [row;column] (default = [1,1]) (CUP).
-          # case 'H':
-            # this.cursorPos(this.params);
-            # break;
+                            when 'D' # cursor left
+                                @buffer.x -= Math.max 1, @params[0]
+                                if @buffer.x < 0 then @buffer.x = 0
+                                log "cursor left #{@buffer.x} #{@buffer.y}"
 
-          # # CSI Ps J  Erase in Display (ED).
-          # case 'J':
-            # this.eraseInDisplay(this.params);
-            # break;
+                            when 'H' # cursor position
 
-                            when 'G': # cursor absolute column 
+                                row = @params[0] - 1
+                                
+                                if @params.length >= 2
+                                    col = @params[1] - 1
+                                else 
+                                    col = 0
+                                
+                                col = clamp 0, @buffer.cols-1, col
+                                row = clamp 0, @buffer.rows-1, col
+                                    
+                                @buffer.x = col
+                                @buffer.y = row
+                                
+                                log "cursor position #{@buffer.x} #{@buffer.y}"
+
+                            when 'G' # cursor absolute column 
                                 log "cursor absolute column #{Math.max 0, @params[0] - 1}"
                                 @buffer.x = Math.max 0, @params[0] - 1
+                                # @buffer.lines[@buffer.y] = @buffer.lines[@buffer.y].slice 0, @buffer.x
+                                # @buffer.lines = @buffer.lines.slice 0, @buffer.y+1
             
                             when 'K' # erase in line EL
                                 switch @params[0]
@@ -374,13 +319,16 @@ class Parse
                             when '@' # @ - blank character(s) ICH
                                 @insertChars @params
                                 
-          # # CSI Ps n  Device Status Report (DSR).
-          # case 'n':
-            # if (!this.prefix) {
-              # this.deviceStatus(this.params);
-            # }
-            # break;
+                            when ';' then # argument
+                                
+                            else
+                                log "unhandled CSI character: '#{ch}'"
 
+          # # CSI Ps J  Erase in Display (ED).
+          # case 'J':
+            # this.eraseInDisplay(this.params);
+            # break;
+                                
           # # CSI Ps E
           # # Cursor Next Line Ps Times (default = 1) (CNL).
           # case 'E':

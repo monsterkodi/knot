@@ -91,26 +91,14 @@ backColor      = #0d0d0d // source line background
     color               #aaa
     background          frameColor
 
-// 000  000   000  00000000   000   000  000000000  
-// 000  0000  000  000   000  000   000     000     
-// 000  000 0 000  00000000   000   000     000     
-// 000  000  0000  000        000   000     000     
-// 000  000   000  000         0000000      000     
+//  0000000  000   000  00000000    0000000   0000000   00000000   
+// 000       000   000  000   000  000       000   000  000   000  
+// 000       000   000  0000000    0000000   000   000  0000000    
+// 000       000   000  000   000       000  000   000  000   000  
+//  0000000   0000000   000   000  0000000    0000000   000   000  
 
-.input
-    font-size           18px
-    color               #aaa
-    &.find
-        color           #aaf
-        &::selection
-            color       #ff8
-            background  #00f
-    &.search
-        color           #ff0
-        &::selection
-            background  #c00
-    border              1px solid frameColor
-    border-radius       3px
+#cursor
+    background           #330
   
 //  0000000  000  0000000  00000000  00000000   
 // 000       000     000   000       000   000  
