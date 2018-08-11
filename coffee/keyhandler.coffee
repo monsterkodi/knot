@@ -11,15 +11,14 @@
 ESC = '\x1b'
 electron = require 'electron'
 
+
 class KeyHandler
 
-    constructor: (@term) ->
-        
-        @term.term.attachCustomKeyEventHandler @customKey
-        
+    constructor: (@term) -> 
+    
         post.on 'combo', @onCombo
         
-    write: (s) -> @term.shell.write s
+    write: (data) => @term.shell.write data
         
     #  0000000   0000000   00     00  0000000     0000000   
     # 000       000   000  000   000  000   000  000   000  
@@ -27,23 +26,21 @@ class KeyHandler
     # 000       000   000  000 0 000  000   000  000   000  
     #  0000000   0000000   000   000  0000000     0000000   
 
-    customKey: (event) => return false
-        
     onCombo: (combo, info) =>
 
-        # log info.mod, info.key, info.combo, info.char
+        # log 'keyhandler.onCombo', info.mod, info.key, info.combo, info.char
         # return stopEvent(info.event) if 'unhandled' != window.keys.globalModKeyComboEvent info.mod, info.key, info.combo, info.event
         
         switch combo
             # when 'ctrl+v'           then return @paste()
-            when 'ctrl+c'    
-                selection = @term.term._core.selectionManager?.selectionText
-                if valid selection
-                    electron.clipboard.writeText selection
-            when 'ctrl+x'           
-                selection = @term.term._core.selectionManager?.selectionText
-                if valid selection
-                    electron.clipboard.writeText selection
+            # when 'ctrl+c'    
+                # selection = @term.term._core.selectionManager?.selectionText
+                # if valid selection
+                    # electron.clipboard.writeText selection
+            # when 'ctrl+x'           
+                # selection = @term.term._core.selectionManager?.selectionText
+                # if valid selection
+                    # electron.clipboard.writeText selection
                     
             when 'enter'
                 return @write '\x0d'
@@ -107,5 +104,4 @@ class KeyHandler
             else
                 log "keyCode #{keyCode}"
                 
-
 module.exports = KeyHandler

@@ -18,7 +18,7 @@ w = new win
     pkg:    require '../package.json'
     menu:   '../coffee/menu.noon'
     icon:   '../img/menu@2x.png'
-    onLoad: -> term.onResize()
+    onLoad: -> window.term.onResize()
     context: (items) -> onContext items
     
 window.tabs = new Tabs $ "#titlebar"
