@@ -219,6 +219,20 @@ class Parse
                                 # log 'CSI mode reset', @buffer.prefix
                                 Mode.reset @buffer, @params
                                 
+                            when 'n' # status report
+                                if not @buffer.prefix
+                                    switch @params[0]
+                                        when 5 # status report
+                                            log 'status'
+                                            window.term.shell.write '\x1b[0n'
+                                        when 6 # cursor position
+                                            log 'cursor'
+                                            window.term.shell.write  '\x1b[' + (@buffer.y + 1) + ';' + (@buffer.x + 1) + 'R'
+                                        else
+                                            log "unhandled CSI status report: '#{@params[0]}'"
+                                else
+                                    log "unhandled CSI status report with prefix: '#{@buffer.prefix}'"
+                                
                             when '@' # @ - blank character(s) ICH
                                 @insertChars @params
                                 

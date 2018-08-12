@@ -30,7 +30,7 @@ colors = [
     '#ffffff'
     ]
 
-colors[256] = '#000000' # background
+colors[256] = 'transparent' # background
 colors[257] = '#f0f0f0' # foreground
 
 class Minimap
@@ -89,14 +89,13 @@ class Minimap
     # 0000000    000   000  000   000  00     00
     
     drawLines: (top=@scroll.exposeTop, bot=@scroll.exposeBot) =>
-        
-        cache = @term.lines.buffer.cache
 
         ctx = @lines.getContext '2d'
         y = parseInt((top-@scroll.exposeTop)*@scroll.lineHeight)
         ctx.clearRect 0, y, @width, ((bot-@scroll.exposeTop)-(top-@scroll.exposeTop)+1)*@scroll.lineHeight
         return if @scroll.exposeBot < 0
 
+        cache = @term.lines.buffer.cache
         bot = Math.min bot, cache.length-1
         
         return if bot < top
