@@ -8,12 +8,34 @@
 
 { post, getStyle, empty, clamp, elem, drag, str, log, $ } = require 'kxk'
 
-log       = console.log
 MapScroll = require './mapscroll'
+
+colors = [
+    '#222222'
+    '#aa0000'
+    '#00aa00'
+    '#cccc00'
+    '#0000ff'
+    '#aa00aa'
+    '#00aaaa'
+    '#aaaaaa'
+    # bright
+    '#666666'
+    '#ff0000'
+    '#00ff00'
+    '#ffff44'
+    '#6666ff'
+    '#880088'
+    '#00ffff'
+    '#ffffff'
+    ]
+
+colors[256] = '#000000' # background
+colors[257] = '#f0f0f0' # foreground
 
 class Minimap
 
-    constructor: (@editor) ->
+    constructor: (@term) ->
 
         minimapWidth = parseInt getStyle '.minimap', 'width'
 
@@ -29,7 +51,7 @@ class Minimap
         @elem.appendChild @topbot
         @elem.appendChild @lines
 
-        @elem.addEventListener 'wheel', @editor.scrollbar?.onWheel
+        @elem.addEventListener 'wheel', @term.scrollbar?.onWheel
 
         main =$ '#main'
         main.appendChild  @elem
@@ -65,33 +87,28 @@ class Minimap
     # 000   000  0000000    000000000  000000000
     # 000   000  000   000  000   000  000   000
     # 0000000    000   000  000   000  00     00
-
+    
     drawLines: (top=@scroll.exposeTop, bot=@scroll.exposeBot) =>
+        
+        cache = @term.lines.buffer.cache
 
         ctx = @lines.getContext '2d'
         y = parseInt((top-@scroll.exposeTop)*@scroll.lineHeight)
         ctx.clearRect 0, y, @width, ((bot-@scroll.exposeTop)-(top-@scroll.exposeTop)+1)*@scroll.lineHeight
         return if @scroll.exposeBot < 0
 
-        bot = Math.min bot, @editor.cache.length-1
+        bot = Math.min bot, cache.length-1
+        
         return if bot < top
 
         for li in [top..bot]
             y = parseInt((li-@scroll.exposeTop)*@scroll.lineHeight)
-            diss = @editor.cache[li].info.highlightDiss
-            
-            if empty(diss) and not empty @editor.cache[li].info.str
-                # Highlight.line @editor.cache[li]
-                diss = @editor.cache[li].info.highlightDiss
-                
+            diss = cache[li].diss
             if diss?.length
                 for r in diss
                     break if 2*r.start >= @width
-                    if r.clss?
-                        ctx.fillStyle = @colorForClassnames r.clss
-                    else
-                        ctx.fillStyle = @colorForStyle r.styl
-                    ctx.fillRect @offsetLeft+2*r.start, y, 2*r.match.length, @scroll.lineHeight
+                    ctx.fillStyle = colors[r.color]
+                    ctx.fillRect @offsetLeft+2*r.start, y, 2*r.length, @scroll.lineHeight
 
     colorForClassnames: (clss) ->
 
@@ -125,10 +142,10 @@ class Minimap
         return if @scroll.exposeBot < 0
 
         lh = @scroll.lineHeight/2
-        th = (@editor.scroll.bot-@editor.scroll.top+1)*lh
+        th = (@term.scroll.bot-@term.scroll.top+1)*lh
         ty = 0
-        if @editor.scroll.scrollMax
-            ty = (Math.min(0.5*@scroll.viewHeight, @scroll.numLines*2)-th) * @editor.scroll.scroll / @editor.scroll.scrollMax
+        if @term.scroll.scrollMax
+            ty = (Math.min(0.5*@scroll.viewHeight, @scroll.numLines*2)-th) * @term.scroll.scroll / @term.scroll.scrollMax
         @topbot.style.height = "#{th}px"
         @topbot.style.top    = "#{ty}px"
 
@@ -160,7 +177,7 @@ class Minimap
 
         return if not changeInfo.changes.length
 
-        @scroll.setNumLines @editor.numLines()
+        @scroll.setNumLines @term.numLines()
 
         for change in changeInfo.changes
             li = change.oldIndex
@@ -182,7 +199,7 @@ class Minimap
             br = @elem.getBoundingClientRect()
             ry = event.clientY - br.top
             pc = 2*ry / @scroll.viewHeight
-            li = parseInt pc * @editor.scroll.numLines
+            li = parseInt pc * @term.scroll.numLines
             @jumpToLine li, event
         else
             @jumpToLine @lineIndexForEvent(event), event
@@ -194,7 +211,7 @@ class Minimap
 
     jumpToLine: (li, event) ->
 
-        @editor.scroll.to (li-5) * @editor.scroll.lineHeight
+        @term.scroll.to (li-5) * @term.scroll.lineHeight
         @onEditorScroll()
 
     lineIndexForEvent: (event) ->
@@ -214,7 +231,7 @@ class Minimap
 
     onEditorScroll: (scrollValue, editorScroll) =>
 
-        editorScroll ?= @editor.scroll
+        editorScroll ?= @term.scroll
         
         if @scroll.viewHeight != 2*editorScroll.viewHeight
             @scroll.setViewHeight 2*editorScroll.viewHeight

@@ -25,7 +25,6 @@ class Term
         
         @num   = 0   
         @main  =$ '#main' 
-        @cache = []
         
         @rows = 200
         @cols = 1000
@@ -44,7 +43,6 @@ class Term
             css:  css
             rgba: parseInt(css.slice(1), 16) << 8 | 0xFF
         
-        @cache      = []
         @scroll     = new Scroll    $ '#terminal'
         @scrollBar  = new ScrollBar @scroll
         @minimap    = new Minimap   @
@@ -90,18 +88,50 @@ class Term
         
     onShellError: (err) => log 'error'
     
+    dissForLine: (line) -> 
+    
+        # log 'dissForLine', line
+    
+        diss = []
+        
+        numCols = Math.min 130, line.length
+        
+        if numCols == 0
+            return diss
+            
+        for i in [0...numCols]
+            
+            attr = line[i][0]
+            ch   = line[i][1]
+            
+            if ch == ' '
+                color = 256
+            else
+                color = (attr >> 9) & 0x1ff
+                
+            dss =
+                start:  i
+                length: 1
+                color:  color
+                
+            diss.push dss
+        
+        diss
+    
     onShellData: (data) =>
 
         # log 'shell data', data
         data = data.replace '⏎', ''
         @lines.write data
+        
+        while @lines.buffer.lines.length > @lines.buffer.cache.length
+            @lines.buffer.cache.push diss:@dissForLine @lines.buffer.lines[@lines.buffer.cache.length]
+
         @scroll.setNumLines @lines.buffer.lines.length
         @scroll.by @size.lineHeight * @lines.buffer.lines.length
                 
     updateCursor: ->
-        # log 'updateCursor', @lines.buffer.y, @lines.buffer.rows, @lines.buffer.lines.length
-        # log 'updateCursor', @lines.buffer.y - (Math.max 0, @lines.buffer.lines.length - @lines.buffer.rows)
-        # @cursor.setPos @lines.buffer.x, @lines.buffer.y - (Math.max 0, @lines.buffer.lines.length - @lines.buffer.rows)
+
         @cursor.setPos @lines.buffer.x, @lines.buffer.y - @lines.top
         
     #  0000000  00000000  000      00000000   0000000  000000000  
@@ -188,8 +218,6 @@ class Term
         
         @scroll.setLineHeight @size.lineHeight
         
-        # log 'Term.calcSize', @size
-        
     #  0000000  000      00000000   0000000   00000000   
     # 000       000      000       000   000  000   000  
     # 000       000      0000000   000000000  0000000    
@@ -197,11 +225,7 @@ class Term
     #  0000000  0000000  00000000  000   000  000   000  
     
     clear: -> 
-    
-        @scroll.setNumLines 0
-        @lines.reset()
-        @cache = []
-        @shell.write 'clear\n'
+        @shell.write 'c\n\x08'
             
     # 00000000   0000000   000   000  000000000       0000000  000  0000000  00000000  
     # 000       000   000  0000  000     000         000       000     000   000       

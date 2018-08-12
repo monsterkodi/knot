@@ -14,13 +14,14 @@ class Buffer
         
         rows = Math.max 1,   size?.rows ? 1
         cols = Math.max 100, size?.cols ? 100
-        # log "Buffer cols:#{cols} rows:#{rows}"
+
         @reset()
         @resize cols, rows
 
     reset: ->
         
         @lines = [[]]
+        @cache = [[]]
         @attr  = 0
         @state = 0
         @x     = 0
@@ -29,10 +30,9 @@ class Buffer
         
     resize: (cols, rows) ->
         
-        @cols = cols
-        @rows = rows
-        
+        @cols  = cols
+        @rows  = rows
         @lines = @lines.slice 0, rows
-        log rows, 'lines', @lines.length
+        @cache = @cache.slice 0, rows
 
 module.exports = Buffer

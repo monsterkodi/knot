@@ -46,7 +46,6 @@ class Lines
         terminal.innerHTML = ''
         
         bot = clamp 0, @buffer.lines.length-1, @top + @buffer.rows
-        log 'refresh', @top, bot, @buffer.lines.length, @buffer.rows
         for index in [@top..bot]
             html = Render.line @buffer.lines[index], @buffer
             terminal.appendChild elem class:'line', html:html

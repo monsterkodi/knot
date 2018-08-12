@@ -125,8 +125,6 @@ class Scroll
         @top = Math.max 0, top
         @bot = Math.min @top+@viewLines-1
         
-        # log 'oldTop', oldTop, oldBot, @top, @bot
-        
         if oldTop != @top or oldBot != @bot
         
             if (@top > oldBot) or (@bot < oldTop) or (oldBot < oldTop) 
@@ -163,7 +161,6 @@ class Scroll
     
     updateOffset: ->
         
-        log @offsetTop, @scroll, @top, @bot
         window.term?.lines.scrollTop @top
         @view.style.transform = "translate3d(0,-#{@offsetTop}px, 0)"
                             

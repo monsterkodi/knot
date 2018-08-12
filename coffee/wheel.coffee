@@ -34,7 +34,7 @@ class Wheel
         delta = event.deltaY * scrollFactor()
         
         if event.target.className != 'minimap'
-            window.term.scroll.by 5 * window.term.scroll.lineHeight * delta/100
+            window.term.scroll.by 1 * window.term.scroll.lineHeight * delta/100
             @accum = 0
         else
             if (@accum < 0 and delta > 0) or (@accum > 0 and delta < 0)

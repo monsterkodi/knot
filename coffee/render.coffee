@@ -74,24 +74,20 @@ class Render
                 if (flags & 2) # underline
                     out += 'text-decoration:underline;'
     
-                # blink
-                if (flags & 4) 
+                if (flags & 4) # blink
                     if (flags & 2)
                         out = out.slice(0, -1)
                         out += ' blink;'
                     else
                         out += 'text-decoration:blink;'
 
-                # inverse
-                if (flags & 8)
+                if (flags & 8) # inverse
                     bg = (attr >> 9) & 0x1ff
                     fg = attr & 0x1ff
                     if (flags & 1) and fg < 8 then fg += 8
 
-                # invisible
-                # if (flags & 16)
+                # if (flags & 16) # invisible
                     # out += 'visibility:hidden;'
-                    # out += 'border: 1px solid;'
     
                 if bg != 256
                     if not colors[bg]
@@ -100,9 +96,7 @@ class Render
     
                 if not colors[fg]
                     log "fgcolor #{fg}"
-                out += "color:#{colors[fg]};"
-    
-                out += '">'
+                out += "color:#{colors[fg]};\">"
     
             switch (ch) 
                 when '&' then out += '&amp;'
@@ -110,8 +104,7 @@ class Render
                 when '>' then out += '&gt;'
                 else
                     if ch <= ' '
-                        out += ' '
-                        # out += '&nbsp;'
+                        out += ' ' # '&nbsp;'
                     else 
                         out += ch
                     
