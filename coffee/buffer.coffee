@@ -10,13 +10,13 @@
 
 class Buffer
 
-    constructor: (info) -> 
+    constructor: (size) -> 
         
-        rows = Math.max 1,   info.rows ? 1
-        cols = Math.max 100, info.cols ? 100
+        rows = Math.max 1,   size?.rows ? 1
+        cols = Math.max 100, size?.cols ? 100
         # log "Buffer cols:#{cols} rows:#{rows}"
-        @resize rows, cols
         @reset()
+        @resize cols, rows
 
     reset: ->
         
@@ -31,5 +31,8 @@ class Buffer
         
         @cols = cols
         @rows = rows
+        
+        @lines = @lines.slice 0, rows
+        log rows, 'lines', @lines.length
 
 module.exports = Buffer

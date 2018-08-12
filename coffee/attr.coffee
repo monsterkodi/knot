@@ -21,10 +21,11 @@ class Attr
         fg    = (curAttr >> 9) & 0x1ff
         bg    = curAttr & 0x1ff
     
-        for i in [0...params.length]
+        i = 0
+        while i < params.length
             p = params[i]
+            # log 'p:', p
             switch p
-                
                 when 0 # default
                     flags = defAttr >> 18
                     fg = (defAttr >> 9) & 0x1ff
@@ -36,7 +37,7 @@ class Attr
                 when 5 # blink
                     flags |= 4
                 when 7 # inverse and positive
-                  # test with: echo -e '\e[31m\e[42mhello\e[7mworld\e[27mhi\e[m'
+                    # test with: echo -e '\e[31m\e[42mhello\e[7mworld\e[27mhi\e[m'
                     flags |= 8
                 when 8 # invisible
                     flags |= 16
@@ -56,14 +57,14 @@ class Attr
                     bg = defAttr & 0x1ff
                 when 38 # fg color 256
                     if params[i + 1] == 2
-                      i += 2
-                      fg = matchColor(params[i] & 0xff, params[i + 1] & 0xff, params[i + 2] & 0xff)
-                      if fg == -1 then fg = 0x1ff
-                      i += 2
+                        i += 2
+                        fg = matchColor(params[i] & 0xff, params[i + 1] & 0xff, params[i + 2] & 0xff)
+                        if fg == -1 then fg = 0x1ff
+                        i += 2
                     if params[i + 1] == 5
-                      i += 2
-                      p = params[i] & 0xff
-                      fg = p
+                        i += 2
+                        p = params[i] & 0xff
+                        fg = p
                 when 48 # bg color 256
                     if params[i + 1] == 2
                         i += 2
@@ -74,9 +75,10 @@ class Attr
                         i += 2
                         p = params[i] & 0xff
                         bg = p
-                when 100 # reset fg/bg
-                    fg = (defAttr >> 9) & 0x1ff
-                    bg = defAttr & 0x1ff
+
+                # when 100 # reset fg/bg
+                    # fg = (defAttr >> 9) & 0x1ff
+                    # bg = defAttr & 0x1ff
                     
                 else
                     if p >= 30 and p <= 37
@@ -84,11 +86,12 @@ class Attr
                     else if p >= 40 and p <= 47
                         bg = p - 40
                     else if p >= 90 and p <= 97
-                        p += 8
-                        fg = p - 90
+                        fg = p - 90 + 8
+                        # flags |= 2 if p == 96
                     else if p >= 100 and p <= 107
-                        p += 8
-                        bg = p - 100
+                        bg = p - 100 + 8
+                        
+            i += 1
     
         return (flags << 18) | (fg << 9) | bg
 

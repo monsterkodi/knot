@@ -67,18 +67,16 @@ class Term
     
     spawnShell: =>
         
-        process.env.TERM = 'cygwin'
+        process.env.TERM = 'xterm-color'
+        process.env.LANG = 'en_US.UTF-8'
+
+        log 'spawnShell', process.env.TERM
         
-        env = Object.assign {}, process.env,
-            LANG: 'en_US.UTF-8',
-            TERM: 'xterm-256color',
-            COLORTERM: 'truecolor'
-        
-        @shell = pty.spawn 'C:\\msys64\\usr\\bin\\bash.exe', ['-i'],
-        # @shell = pty.spawn 'C:\\msys64\\usr\\bin\\fish.exe', [],
-            name: 'knot'
+        # @shell = pty.spawn 'C:\\msys64\\usr\\bin\\bash.exe', ['-i'],
+        @shell = pty.spawn 'C:\\msys64\\usr\\bin\\fish.exe', [],
+            name: process.env.TERM
             cwd:  process.env.HOME
-            env:  env
+            env:  process.env
             cols: @cols
             rows: @rows
 
@@ -97,31 +95,14 @@ class Term
         # log 'shell data', data
         data = data.replace '⏎', ''
         @lines.write data
-        
-    refresh: (info) =>
-        # top = @term._core.buffer.ydisp
-        # dat = @term._core.buffer.lines.get info.start+top
-        # num = info.end - info.start
-        # log 'term.onRefresh', num, top, dat
-        # for index in [info.start...info.end]
-            # log @term._core.buffer.translateBufferLineToString index+top
-            
-        terminal =$ '#terminal'
-        terminal.innerHTML = ''
-        # log info
-        # for index in [info.start..info.end]
-            # html = Render.line @lines.buffer.lines[index]
-            # log "html[#{index}]", html
-            # terminal.appendChild elem class:'line', html:html
-        for index in [0...@lines.buffer.lines.length]
-            html = Render.line @lines.buffer.lines[index], @lines.buffer
-            terminal.appendChild elem class:'line', html:html
-            
-        @updateCursor()
-        
+        @scroll.setNumLines @lines.buffer.lines.length
+        @scroll.by @size.lineHeight * @lines.buffer.lines.length
+                
     updateCursor: ->
-        
-        @cursor.setPos @lines.buffer.x, @lines.buffer.y
+        # log 'updateCursor', @lines.buffer.y, @lines.buffer.rows, @lines.buffer.lines.length
+        # log 'updateCursor', @lines.buffer.y - (Math.max 0, @lines.buffer.lines.length - @lines.buffer.rows)
+        # @cursor.setPos @lines.buffer.x, @lines.buffer.y - (Math.max 0, @lines.buffer.lines.length - @lines.buffer.rows)
+        @cursor.setPos @lines.buffer.x, @lines.buffer.y - @lines.top
         
     #  0000000  00000000  000      00000000   0000000  000000000  
     # 000       000       000      000       000          000     
@@ -151,19 +132,28 @@ class Term
         
         @scroll.setViewHeight @main.clientHeight
         
-        availableHeight = @main.clientHeight - 10
+        availableHeight = @main.clientHeight
         availableWidth  = @main.clientWidth - 130
 
         @calcSize()
+        @scroll.setViewHeight availableHeight
         
-        @cols = 1000 # Math.floor availableWidth  / @term._core.renderer.dimensions.actualCellWidth
-        @rows = Math.floor availableHeight / @size.lineHeight
+        @cols = 1000
+        @rows = Math.max 1, Math.floor availableHeight / @size.lineHeight
         
-        log "resize cols:#{@cols} rows:#{@rows}"
+        @rows = @scroll.viewLines-1
+        log "resize cols:#{@cols} rows:#{@rows} #{@scroll.viewLines}"
         
         @lines.buffer?.resize @cols, @rows
+        @shell?.resize @cols, 1
         @shell?.resize @cols, @rows
-                
+        
+    #  0000000   0000000   000       0000000  
+    # 000       000   000  000      000       
+    # 000       000000000  000      000       
+    # 000       000   000  000      000       
+    #  0000000  000   000  0000000   0000000  
+    
     calcSize: =>
         
         terminal =$ '#terminal'
@@ -196,7 +186,9 @@ class Term
         @size.offsetTop  = br.top - tr.top
         @size.offsetLeft = br.left - tr.left
         
-        log 'Term.calcSize', @size
+        @scroll.setLineHeight @size.lineHeight
+        
+        # log 'Term.calcSize', @size
         
     #  0000000  000      00000000   0000000   00000000   
     # 000       000      000       000   000  000   000  
@@ -222,13 +214,10 @@ class Term
         return if not @main?
         return if size <= 0
         
-        # log "Term.onFontSize #{size}"
-        # @scroll?.setLineHeight size
-        
         setStyle "#terminal", 'fontSize', "#{size}px"
         @onResize()
-        setStyle "#cursor", 'width', "#{@size.charWidth}px"
-        setStyle "#cursor", 'height', "#{@size.lineHeight}px"
+        setStyle "#cursor", 'width', "#{@size.charWidth-1}px"
+        setStyle "#cursor", 'height', "#{@size.lineHeight-1}px"
         @updateCursor()
 
     #  0000000  000      000   0000000  000   000  

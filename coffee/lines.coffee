@@ -6,10 +6,11 @@
 0000000  000  000   000  00000000  0000000 
 ###
 
-{ log, _ } = require 'kxk'
+{ clamp, elem, log, $ } = require 'kxk'
 
 parse  = require './parse'
 Buffer = require './buffer'
+Render = require './render'
 
 class Lines
     
@@ -19,6 +20,7 @@ class Lines
 
     reset: ->
         
+        @top = 0
         @buffer = new Buffer @term
         
     write: (data) =>
@@ -31,6 +33,24 @@ class Lines
             window.tabs.activeTab()?.update @buffer.title
             delete @buffer.title
         
-        @term.refresh start:start, end:Math.max @buffer.y, 0
+        @top = Math.max 0, @buffer.lines.length - @buffer.rows
+        @refresh()
        
+    scrollTop: (@top) ->
+        
+        @refresh()
+        
+    refresh: =>
+            
+        terminal =$ '#terminal'
+        terminal.innerHTML = ''
+        
+        bot = clamp 0, @buffer.lines.length-1, @top + @buffer.rows
+        log 'refresh', @top, bot, @buffer.lines.length, @buffer.rows
+        for index in [@top..bot]
+            html = Render.line @buffer.lines[index], @buffer
+            terminal.appendChild elem class:'line', html:html
+            
+        @term.updateCursor()
+        
 module.exports = Lines

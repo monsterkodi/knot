@@ -21,8 +21,8 @@ class Cursor
         return if empty @term.size.offsetLeft
         return if empty @term.size.offsetTop
         
-        x = @term.size.offsetLeft + col * @term.size.charWidth
-        y = @term.size.offsetTop + row * @term.size.lineHeight
+        x = 1+@term.size.offsetLeft + col * @term.size.charWidth
+        y = -@term.scroll.offsetTop+1+@term.size.offsetTop + row * @term.size.lineHeight
         # log "Cursor.setPos #{col} #{row} #{x} #{y}", @term.size
         
         @div.style.transform = "translateX(#{x}px) translateY(#{y}px)"

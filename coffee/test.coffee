@@ -10,15 +10,42 @@
 
 parse  = require './parse'
 Buffer = require './buffer'
+Render = require './render'
+parse  = require './parse'
 assert = require 'assert'
 chai   = require 'chai'
 expect = chai.expect
 chai.should()
 
+defAttr = (257 << 9) | 256
+
+rndr = (line) -> 
+    buffer = parse line, new Buffer rows:100
+    html = []
+    for line in buffer.lines
+        html.push Render.line line, buffer
+    html
+
+describe 'render', ->
+    
+    it 'empty', ->
+        
+        html = rndr 'hello world'
+        expect(html[0]).to.eql '<span style="color:#f0f0f0;">hello world</span>'
+
+        html = rndr 'hello\nworld'
+        expect(html[0]).to.eql '<span style="color:#f0f0f0;">hello</span>'
+        expect(html[1]).to.eql '<span style="color:#f0f0f0;">world</span>'
+
+        html = rndr '\r\nhello\r\n'
+        log html
+        expect(html[0]).to.eql '<span> </span>'
+        expect(html[1]).to.eql '<span style="color:#f0f0f0;">hello</span>'
+        
 ccc = (buf, line, col, char) -> expect(buf.lines[line][col][1]).to.eql char
 chr = (buf, index, value, char) -> expect(buf.lines[0][index]).to.eql [value, char]
 esc = (data) -> data.replace /\^\[/g, '\x1b'
-prs = (data) -> parse esc(data), new Buffer 100
+prs = (data) -> parse esc(data), new Buffer()
 
 describe 'parse', ->
     

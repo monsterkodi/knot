@@ -8,8 +8,8 @@
 
 { valid, empty, clamp, log } = require 'kxk'
 
-Attr  = require './attr'
-Mode  = require './mode'
+Attr = require './attr'
+Mode = require './mode'
 
 defAttr = (257 << 9) | 256
 
@@ -21,6 +21,7 @@ class Parse
     
         parser = new Parse buffer
         parser.parseData data
+        # log 'parsed lines', buffer.lines
         buffer
             
     parseData: (data) -> 
@@ -34,7 +35,7 @@ class Parse
         j  = 0 
         ch = null
         
-        log 'parse', JSON.stringify data.replace /\x1b/g, '^['
+        log 'parse', JSON.stringify data.replace /\x1b/g, '🅴'
 
         for i in [0...l]
             
@@ -50,38 +51,23 @@ class Parse
                             # @bell()
                             log 'bell!'
                         when '\n', '\x0b', '\x0c'
-                            @buffer.lines.push []
-                            @buffer.y = @buffer.lines.length-1
+                            @buffer.y += 1
+                            if @buffer.y >= @buffer.lines.length
+                                @buffer.lines.push []
                             @buffer.x = 0
                         when '\r'
                             @buffer.x = 0
                             @buffer.attr = defAttr
-                            @buffer.prefix = '' # sure ???
+                            @buffer.prefix = ''
                         when '\x08'
                             log 'backspace?'
                             if @buffer.x > 0 
                               @buffer.x--
                         when '\t'
                             @buffer.x = @nextStop()
-                        # when '\x0e'
-                            # @setgLevel(1)
-                        # when '\x0f'
-                            # @setgLevel(0)
                         when '\x1b'
                             @buffer.state = 1 # escaped
                         else
-                            # if ch >= ' ' 
-                                # if @charset and @charset[ch]
-                                    # ch = @charset[ch]
-                
-                            # if @buffer.x >= @cols
-                                # @buffer.x = 0
-                                # @buffer.y++
-                                
-                            # if @buffer.y > @scrollBottom
-                                  # @buffer.y--
-                                  # @scroll()
-                
                             if @buffer.x <= @buffer.lines[@buffer.y].length-1
                                 @buffer.lines[@buffer.y][@buffer.x] = [@buffer.attr, ch]
                             else
@@ -89,13 +75,6 @@ class Parse
                                 
                             @buffer.x++
                 
-                            # if isWide(ch)
-                                # j = this.y + this.ybase
-                                # if (this.cols < 2 || this.x >= this.cols)
-                                    # this.lines[j][this.x - 1] = [this.buffer.attr, ' ']
-                                # else
-                                    # this.lines[j][this.x] = [this.buffer.attr, ' ']
-                                    # this.x++
                 when 1 # escaped
                     
                     switch ch
@@ -236,6 +215,9 @@ class Parse
                 #  0000000  0000000   000  
                 
                 when 2 # CSI
+                    
+                    # log "CSI '#{ch}'"
+                    
                     if ch in '?>!'
                         @buffer.prefix = ch
                         # log "CSI @buffer.prefix '#{ch}'"
@@ -251,8 +233,6 @@ class Parse
                         if ch != ';'
                             @buffer.state = 0
             
-                        # log "CSI '#{ch}'"
-                            
                         switch ch
                             # cursor up, down, right, left
                             when 'A' then @buffer.y = clamp 0, @buffer.rows-1, @buffer.y - Math.max 1, @params[0]
@@ -278,25 +258,29 @@ class Parse
                                 log "cursor position #{@buffer.x} #{@buffer.y}"
 
                             when 'G' # cursor absolute column 
-                                log "cursor absolute column #{Math.max 0, @params[0] - 1}"
+                                
                                 @buffer.x = Math.max 0, @params[0] - 1
-                                # @buffer.lines[@buffer.y] = @buffer.lines[@buffer.y].slice 0, @buffer.x
-                                # @buffer.lines = @buffer.lines.slice 0, @buffer.y+1
+                                # if @buffer.y == 0
+                                    # log "cursor absolute '#{@params[0]}' column #{@buffer.x} line #{@buffer.y}"
+                                    # # @buffer.lines[@buffer.y] = @buffer.lines[@buffer.y].slice 0, @buffer.x
+                                    # @buffer.lines = @buffer.lines.slice 0, 1
+                                    # @eraseRight @buffer.x, @buffer.y
             
                             when 'J' # erase in display
-                                
                                 switch @params[0]
                                     when 0
+                                        log 'erase in display', @params[0]
                                         @eraseRight @buffer.x, @buffer.y
                                         for j in [@buffer.y + 1...@buffer.rows]
                                             @eraseLine j
                                     when 1
+                                        log 'erase in display', @params[0]
                                         @eraseLeft @buffer.x, @buffer.y
                                         for j in [@buffer.y-1..0]
                                             @eraseLine j
                                     when 2
-                                        for j in [@buffer.rows-1...0]
-                                            @eraseLine j
+                                        log 'CLEAR SCREEN'
+                                        @buffer.lines = [[]]
                                             
                             when 'K' # erase in line EL
                                 switch @params[0]
@@ -507,12 +491,14 @@ class Parse
     
     eraseRight: (x, y) ->
         
+        log "erase in line #{y} from col #{x}"
         line = @buffer.lines[y]
-        ch = [@eraseAttr(), ' ']
-        for i in [x...@buffer.cols]
-            line[i] = ch
+        if line?
+            line = line.splice x, line.length
 
     eraseLeft: (x, y) ->
+        
+        log "erase ---- left #{y} from col #{x}"
         line = @buffer.lines[y]
         ch = [@eraseAttr(), ' ']
         @buffer.x++ # ???
