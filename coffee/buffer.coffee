@@ -22,7 +22,7 @@ class Buffer
         
         @lines = [[]]
         @cache = [[]]
-        @attr  = 0
+        @attr  = (257 << 9) | 256
         @state = 0
         @x     = 0
         @y     = 0

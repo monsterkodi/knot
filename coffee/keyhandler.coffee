@@ -76,10 +76,11 @@ class KeyHandler
                 else
                     stopEvent info.event
                     @write '\t' # '\x09'
+                    
             when 37  then writeMod '1', 'D', 'D'  # left-arrow 
             when 39  then writeMod '1', 'C', 'C'  # right-arrow
-            when 38  then writeMod '1', 'A', 'A'  # up-arrow
-            when 40  then writeMod '1', 'B', 'B'  # down-arrow
+            when 38  then writeMod '1', 'A', 'A'  # up-arrow    ^[OA if @applicationCursor?
+            when 40  then writeMod '1', 'B', 'B'  # down-arrow  ^[OB if @applicationCursor?
             when 33  then writeMod '5', '~', '5~' # page up
             when 34  then writeMod '6', '~', '6~' # page down
             when 35  then writeMod '1', 'F', 'F'  # end

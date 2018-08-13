@@ -59,9 +59,6 @@ backColor      = #0d0d0d // source line background
 .topbot
     background-color    frameColor
 
-// .minimapTopBot
-    // background-color    backColor
-    
 //  0000000   0000000  00000000    0000000   000      000      0000000     0000000   00000000
 // 000       000       000   000  000   000  000      000      000   000  000   000  000   000
 // 0000000   000       0000000    000   000  000      000      0000000    000000000  0000000
@@ -119,6 +116,9 @@ backColor      = #0d0d0d // source line background
 // 000      000  000  0000  000            000  
 // 0000000  000  000   000  00000000  0000000   
 
+::selection
+    background          #aaa
+
 .num
     color               frameColor
 .time
@@ -151,9 +151,6 @@ backColor      = #0d0d0d // source line background
 .line.find 
 .line.empty
     background          backColor
-    
-.line.selected
-    background          frameColor
     
 #term div span
     & .highlight-search

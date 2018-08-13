@@ -6,7 +6,7 @@
 000   000  00000000  000   000  0000000    00000000  000   000
 ###
 
-{ str, _ } = require 'kxk'
+{ colors, empty, log } = require 'kxk'
 
 log = console.log
 
@@ -37,6 +37,9 @@ class Render
 
     @line: (line, buffer) ->
 
+        if empty line
+            return '<span> </span>'
+        
         out = ''
         
         defAttr = (257 << 9) | 256

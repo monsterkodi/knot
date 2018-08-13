@@ -33,6 +33,7 @@ class Mode
             
             switch params
                 when 1
+                    log 'applicationCursor!'
                     buffer.applicationCursor = true
                   
                 when 2
@@ -78,6 +79,8 @@ class Mode
                     log 'alt screen buffer cursor'
                 when 47  
                     log 'alt screen buffer'
+                else
+                    log "unhandled mode ? #{params}"
                 # when 1047 # alt screen buffer
                   # if (!buffer.normal) {
                     # normal = {

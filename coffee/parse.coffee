@@ -25,10 +25,11 @@ class Parse
             
     parseData: (data) -> 
         
+        return if empty data
+        
         @buffer.state   = 0
         @buffer.prefix  = ''
         @buffer.postfix = ''
-        @buffer.attr    = defAttr
         @buffer.changed = new Set()
 
         ch = null
@@ -51,19 +52,14 @@ class Parse
                             @buffer.y += 1
                             
                             if @buffer.y >= @buffer.lines.length
-                                # log "add line #{@buffer.y}"
                                 @buffer.lines.push []
                                 @buffer.y = Math.min @buffer.lines.length-1, @buffer.y
                                 @buffer.changed.add @buffer.y
-                            # else
-                                # # log "clear line #{@buffer.y}"
-                                # @buffer.lines[@buffer.y] = []
                                 
                             @buffer.x = 0
                             
                         when '\r'
                             @buffer.x = 0
-                            @buffer.attr = defAttr
                             @buffer.prefix = ''
                             
                         when '\x1b'
@@ -81,15 +77,17 @@ class Parse
                             @buffer.x = @nextStop()
                                                         
                         else
+                            
+                            if not @buffer.lines[@buffer.y]
+                                log "dafuk? #{@buffer.y} #{@buffer.lines.length}"
+                                return
+                            
                             if @buffer.x <= @buffer.lines[@buffer.y].length-1
-                                # log "change line #{@buffer.y} #{ch}"
                                 @buffer.lines[@buffer.y][@buffer.x] = [@buffer.attr, ch]
                             else
-                                # log "add line #{@buffer.y} #{ch}"
                                 @buffer.lines[@buffer.y].push [@buffer.attr, ch]
                             @buffer.changed.add @buffer.y 
                             @buffer.x++
-                            # log "lines.write #{@buffer.y} #{@buffer.x}", str @buffer.lines
                 
                 # 00000000   0000000   0000000  
                 # 000       000       000       
@@ -126,10 +124,8 @@ class Parse
                     
                     if ch in '?>!'
                         @buffer.prefix = ch
-                        # log "CSI @buffer.prefix '#{ch}'"
                     else if '0' <= ch <= '9'
                         @currentParam = @currentParam * 10 + ch.charCodeAt(0) - 48
-                        # log "CSI @currentParam '#{@currentParam}'"
                     else if ch in '$" \''
                         @buffer.postfix = ch
                     else
@@ -182,7 +178,6 @@ class Parse
                                     when 2
                                         log 'CLEAR SCREEN'
                                         @buffer.lines = [[]]
-                                        # @buffer.cache = [[]]
                                             
                             when 'K' # erase in line EL
                                 switch @params[0]
@@ -263,8 +258,6 @@ class Parse
                         else
                             @currentParam += ch
                             
-        # log 'lines.write', str @buffer.lines
-
     # 00000000  00000000    0000000    0000000  00000000  
     # 000       000   000  000   000  000       000       
     # 0000000   0000000    000000000  0000000   0000000   

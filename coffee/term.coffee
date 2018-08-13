@@ -56,7 +56,20 @@ class Term
         document.addEventListener 'selectionchange', @onSelectionChange
         window.addEventListener 'resize', @onResize
         
+        document.defaultView.addEventListener 'paste', @onPaste
+        
         @spawnShell()
+        
+    # 00000000    0000000    0000000  000000000  00000000  
+    # 000   000  000   000  000          000     000       
+    # 00000000   000000000  0000000      000     0000000   
+    # 000        000   000       000     000     000       
+    # 000        000   000  0000000      000     00000000  
+    
+    onPaste: (event) =>
+
+        if event.clipboardData
+            @shell.write event.clipboardData.getData 'text/plain'
         
     # 000000000   0000000   0000000    
     #    000     000   000  000   000  
@@ -127,7 +140,7 @@ class Term
         
     onShellData: (shell, data) =>
 
-        data = data.replace '⏎', ''
+        data = data.replace /⏎/g, ''
         
         if shell != @shell
             for tab in tabs.tabs
@@ -136,7 +149,6 @@ class Term
                     @lines.writeBufferData tab.buffer, data, tab
             return
             
-        # log 'shell data', data
         @lines.writeData data
         
         @minimap.drawLine @lines.buffer.lines.length-1
@@ -182,11 +194,11 @@ class Term
         @calcSize()
         @scroll.setViewHeight availableHeight
         
-        @cols = 1000
+        @cols = Math.max 1, Math.floor availableWidth / @size.charWidth
         @rows = Math.max 1, Math.floor availableHeight / @size.lineHeight
         
-        @rows = @scroll.viewLines-1
-        log "resize cols:#{@cols} rows:#{@rows} #{@scroll.viewLines}"
+        @rows = @scroll.fullLines
+        log "resize cols:#{@cols} rows:#{@rows} #{@scroll.fullLines}"
         
         @lines.buffer?.resize @cols, @rows
         @shell?.resize @cols, 1

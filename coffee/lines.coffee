@@ -65,7 +65,10 @@ class Lines
     dissForLine: (line) -> 
     
         diss = []
-        
+
+        if not line
+            return diss
+            
         numCols = Math.min 130, line.length
         
         if numCols == 0
