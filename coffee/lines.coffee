@@ -6,7 +6,7 @@
 0000000  000  000   000  00000000  0000000 
 ###
 
-{ clamp, elem, log, $ } = require 'kxk'
+{ clamp, elem, str, log, $ } = require 'kxk'
 
 parse  = require './parse'
 Buffer = require './buffer'
@@ -17,17 +17,34 @@ class Lines
     constructor: (@term) ->
         
         @reset()
-
-    reset: ->
-        
-        @top = 0
-        @buffer = new Buffer @term
-        
+                
+    # 000   000  00000000   000  000000000  00000000  
+    # 000 0 000  000   000  000     000     000       
+    # 000000000  0000000    000     000     0000000   
+    # 000   000  000   000  000     000     000       
+    # 00     00  000   000  000     000     00000000  
+    
     write: (data) =>
         
         start = @buffer.y
         
         parse data, @buffer
+                
+        log 'minimap drawLines', str @buffer.changed.values()
+        log 'minimap drawLines', str @buffer.changed
+        
+        if @buffer.lines.length > @buffer.cache.length
+            while @buffer.lines.length > @buffer.cache.length
+                @buffer.cache.push diss:@dissForLine @buffer.lines[@buffer.cache.length]
+                @buffer.changed.delete @buffer.cache.length-1
+        else
+            @buffer.cache[@buffer.lines.length-1] = diss:@dissForLine @buffer.lines[@buffer.lines.length-1]
+            @buffer.changed.delete @buffer.lines.length-1
+            
+        for lineIndex in @buffer.changed.values()
+            log 'minimap drawLines'
+            @term.minimap.drawLines lineIndex, lineIndex
+        delete @buffer.changed
         
         if @buffer.title
             window.tabs.activeTab()?.update @buffer.title
@@ -36,10 +53,55 @@ class Lines
         @top = Math.max 0, @buffer.lines.length - @buffer.rows
         @refresh()
        
+    # 0000000    000   0000000   0000000  
+    # 000   000  000  000       000       
+    # 000   000  000  0000000   0000000   
+    # 000   000  000       000       000  
+    # 0000000    000  0000000   0000000   
+    
+    dissForLine: (line) -> 
+    
+        diss = []
+        
+        numCols = Math.min 130, line.length
+        
+        if numCols == 0
+            return diss
+            
+        for i in [0...numCols]
+            
+            attr = line[i][0]
+            ch   = line[i][1]
+            if ch == ' '
+                color = attr & 0x1ff
+            else
+                color = (attr >> 9) & 0x1ff
+                
+            dss =
+                start:  i
+                length: 1
+                color:  color
+                
+            diss.push dss
+        
+        diss
+        
+    #  0000000   0000000  00000000    0000000   000      000      
+    # 000       000       000   000  000   000  000      000      
+    # 0000000   000       0000000    000   000  000      000      
+    #      000  000       000   000  000   000  000      000      
+    # 0000000    0000000  000   000   0000000   0000000  0000000  
+    
     scrollTop: (@top) ->
         
         @refresh()
         
+    # 00000000   00000000  00000000  00000000   00000000   0000000  000   000  
+    # 000   000  000       000       000   000  000       000       000   000  
+    # 0000000    0000000   000000    0000000    0000000   0000000   000000000  
+    # 000   000  000       000       000   000  000            000  000   000  
+    # 000   000  00000000  000       000   000  00000000  0000000   000   000  
+    
     refresh: =>
             
         terminal =$ '#terminal'
@@ -51,5 +113,16 @@ class Lines
             terminal.appendChild elem class:'line', html:html
             
         @term.updateCursor()
+        
+    # 00000000   00000000   0000000  00000000  000000000  
+    # 000   000  000       000       000          000     
+    # 0000000    0000000   0000000   0000000      000     
+    # 000   000  000            000  000          000     
+    # 000   000  00000000  0000000   00000000     000     
+    
+    reset: ->
+        
+        @top = 0
+        @buffer = new Buffer @term
         
 module.exports = Lines

@@ -86,9 +86,6 @@ class Render
                     fg = attr & 0x1ff
                     if (flags & 1) and fg < 8 then fg += 8
 
-                # if (flags & 16) # invisible
-                    # out += 'visibility:hidden;'
-    
                 if bg != 256
                     if not colors[bg]
                         log "bgcolor #{bg}"

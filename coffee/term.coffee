@@ -87,46 +87,13 @@ class Term
         @spawnShell()
         
     onShellError: (err) => log 'error'
-    
-    dissForLine: (line) -> 
-    
-        diss = []
         
-        numCols = Math.min 130, line.length
-        
-        if numCols == 0
-            return diss
-            
-        for i in [0...numCols]
-            
-            attr = line[i][0]
-            ch   = line[i][1]
-            if ch == ' '
-                color = attr & 0x1ff
-            else
-                color = (attr >> 9) & 0x1ff
-                
-            dss =
-                start:  i
-                length: 1
-                color:  color
-                
-            diss.push dss
-        
-        diss
-    
     onShellData: (data) =>
 
         # log 'shell data', data
         data = data.replace '⏎', ''
         @lines.write data
         
-        if @lines.buffer.lines.length > @lines.buffer.cache.length
-            while @lines.buffer.lines.length > @lines.buffer.cache.length
-                @lines.buffer.cache.push diss:@dissForLine @lines.buffer.lines[@lines.buffer.cache.length]
-        else
-            @lines.buffer.cache[@lines.buffer.lines.length-1] = diss:@dissForLine @lines.buffer.lines[@lines.buffer.lines.length-1]
-
         @minimap.drawLines @lines.buffer.lines.length-1, @lines.buffer.lines.length-1
         
         @scroll.setNumLines @lines.buffer.lines.length

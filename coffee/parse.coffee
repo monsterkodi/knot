@@ -6,7 +6,7 @@
 000        000   000  000   000  0000000   00000000
 ###
 
-{ valid, empty, clamp, log } = require 'kxk'
+{ clamp, empty, valid, slash, str, log } = require 'kxk'
 
 Attr = require './attr'
 Mode = require './mode'
@@ -25,18 +25,17 @@ class Parse
             
     parseData: (data) -> 
         
+        @buffer.state   = 0
         @buffer.prefix  = ''
         @buffer.postfix = ''
-        @buffer.state = 0
-        @buffer.attr = defAttr
+        @buffer.attr    = defAttr
+        @buffer.changed = new Set()
 
-        l  = data.length
-        j  = 0 
         ch = null
         
-        # log 'parse', JSON.stringify data.replace /\x1b/g, '🅴'
+        log 'parse', JSON.stringify data.replace /\x1b/g, '🅴'
 
-        for i in [0...l]
+        for i in [0...data.length]
             
             @buffer.lch = ch
             ch = data[i]
@@ -46,34 +45,57 @@ class Parse
                 when 0 # normal
                     
                     switch ch
-                        when '\x07'
-                            # @bell()
-                            log 'bell!'
+                        
                         when '\n', '\x0b', '\x0c'
+                            
                             @buffer.y += 1
+                            
                             if @buffer.y >= @buffer.lines.length
+                                # log "add line #{@buffer.y}"
                                 @buffer.lines.push []
-                            @buffer.y = Math.min @buffer.lines.length-1, @buffer.y
+                                @buffer.y = Math.min @buffer.lines.length-1, @buffer.y
+                            else
+                                # log "clear line #{@buffer.y}"
+                                @buffer.lines[@buffer.y] = []
+                                
+                            @buffer.changed.add @buffer.y
                             @buffer.x = 0
+                            
                         when '\r'
                             @buffer.x = 0
                             @buffer.attr = defAttr
                             @buffer.prefix = ''
+                            
+                        when '\x1b'
+                            @buffer.state = 1 # escaped
+                            
                         when '\x08'
                             log 'backspace?'
                             if @buffer.x > 0 
                               @buffer.x--
+
+                        when '\x07'
+                            log 'bell!'
+                              
                         when '\t'
                             @buffer.x = @nextStop()
-                        when '\x1b'
-                            @buffer.state = 1 # escaped
+                                                        
                         else
                             if @buffer.x <= @buffer.lines[@buffer.y].length-1
+                                # log "change line #{@buffer.y} #{ch}"
                                 @buffer.lines[@buffer.y][@buffer.x] = [@buffer.attr, ch]
                             else
+                                # log "add line #{@buffer.y} #{ch}"
                                 @buffer.lines[@buffer.y].push [@buffer.attr, ch]
-                                
+                            @buffer.changed.add @buffer.y 
                             @buffer.x++
+                            # log "lines.write #{@buffer.y} #{@buffer.x}", str @buffer.lines
+                
+                # 00000000   0000000   0000000  
+                # 000       000       000       
+                # 0000000   0000000   000       
+                # 000            000  000       
+                # 00000000  0000000    0000000  
                 
                 when 1 # escaped
                     
@@ -91,45 +113,6 @@ class Parse
                         else
                             
                             log "unhandled ESC '#{ch}'"
-
-                #  0000000    0000000   0000000  
-                # 000   000  000       000       
-                # 000   000  0000000   000       
-                # 000   000       000  000       
-                #  0000000   0000000    0000000  
-                
-                when 3 # OSC
-                    if (@buffer.lch == '\x1b' and ch == '\\') or ch == '\x07'
-                        
-                        
-                        if @buffer.lch == '\x1b'
-                            if typeof(@currentParam) == 'string'
-                               @currentParam = @currentParam.slice(0, -1);
-                            else if typeof(@currentParam) == 'number'
-                               @currentParam = (@currentParam - ('\x1b'.charCodeAt(0) - 48)) / 10
-
-                        @params.push @currentParam
-    
-                        if @params[0] == 0 and valid @params[1]
-                            @buffer.title = @params[1]
-
-                        @params = []
-                        @currentParam = 0
-                        @buffer.state = 0
-                        
-                    else
-                        
-                        if empty @params
-                            
-                            if '0' <= ch <= '9'
-                                @currentParam = @currentParam * 10 + ch.charCodeAt(0) - 48
-                            else if ch == ';'
-                                @params.push @currentParam
-                                @currentParam = ''
-                            else 
-                                @currentParam += ch
-                        else
-                            @currentParam += ch
 
                 #  0000000   0000000  000  
                 # 000       000       000  
@@ -199,7 +182,7 @@ class Parse
                                     when 2
                                         log 'CLEAR SCREEN'
                                         @buffer.lines = [[]]
-                                        @buffer.cache = [[]]
+                                        # @buffer.cache = [[]]
                                             
                             when 'K' # erase in line EL
                                 switch @params[0]
@@ -212,11 +195,9 @@ class Parse
                                     @buffer.attr = Attr.set @params, @buffer.attr
     
                             when 'h' # mouse escape codes, cursor escape codes
-                                # log 'CSI mouse/cursor escape', @buffer.prefix
                                 Mode.set @buffer, @params
 
                             when 'l' # reset mode
-                                # log 'CSI mode reset', @buffer.prefix
                                 Mode.reset @buffer, @params
                                 
                             when 'n' # status report
@@ -241,6 +222,55 @@ class Parse
                             else
                                 log "unhandled CSI character: '#{ch}'"
                                 
+                #  0000000    0000000   0000000  
+                # 000   000  000       000       
+                # 000   000  0000000   000       
+                # 000   000       000  000       
+                #  0000000   0000000    0000000  
+                
+                when 3 # OSC
+                    
+                    if (@buffer.lch == '\x1b' and ch == '\\') or ch == '\x07'
+                                                
+                        if @buffer.lch == '\x1b'
+                            if typeof(@currentParam) == 'string'
+                               @currentParam = @currentParam.slice(0, -1);
+                            else if typeof(@currentParam) == 'number'
+                               @currentParam = (@currentParam - ('\x1b'.charCodeAt(0) - 48)) / 10
+
+                        @params.push @currentParam
+    
+                        if @params[0] == 0 and valid @params[1]
+                            if not process.env.HOME
+                                process.env.HOME = slash.path process.env.HOMEDRIVE + process.env.HOMEPATH
+                            @buffer.title = slash.tilde @params[1].replace '/c/', 'C:/'
+
+                        @params = []
+                        @currentParam = 0
+                        @buffer.state = 0
+                        
+                    else
+                        
+                        if empty @params
+                            
+                            if '0' <= ch <= '9'
+                                @currentParam = @currentParam * 10 + ch.charCodeAt(0) - 48
+                            else if ch == ';'
+                                @params.push @currentParam
+                                @currentParam = ''
+                            else 
+                                @currentParam += ch
+                        else
+                            @currentParam += ch
+                            
+        # log 'lines.write', str @buffer.lines
+
+    # 00000000  00000000    0000000    0000000  00000000  
+    # 000       000   000  000   000  000       000       
+    # 0000000   0000000    000000000  0000000   0000000   
+    # 000       000   000  000   000       000  000       
+    # 00000000  000   000  000   000  0000000   00000000  
+    
     eraseAttr: -> (defAttr & ~0x1ff) | (@buffer.attr & 0x1ff) 
     
     eraseLine: (y) -> @eraseRight 0, y
@@ -250,7 +280,8 @@ class Parse
         # log "erase in line #{y} from col #{x}"
         line = @buffer.lines[y]
         if line?
-            line = line.splice x, line.length
+            @buffer.changed.add y
+            line.splice x, line.length
 
     eraseLeft: (x, y) ->
         
@@ -258,6 +289,7 @@ class Parse
         line = @buffer.lines[y]
         ch = [@eraseAttr(), ' ']
         @buffer.x++ # ???
+        @buffer.changed.add y
         for i in [x..0]
             line[x] = ch
 
