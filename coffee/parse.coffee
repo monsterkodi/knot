@@ -54,11 +54,11 @@ class Parse
                                 # log "add line #{@buffer.y}"
                                 @buffer.lines.push []
                                 @buffer.y = Math.min @buffer.lines.length-1, @buffer.y
-                            else
-                                # log "clear line #{@buffer.y}"
-                                @buffer.lines[@buffer.y] = []
+                                @buffer.changed.add @buffer.y
+                            # else
+                                # # log "clear line #{@buffer.y}"
+                                # @buffer.lines[@buffer.y] = []
                                 
-                            @buffer.changed.add @buffer.y
                             @buffer.x = 0
                             
                         when '\r'

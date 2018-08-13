@@ -26,6 +26,10 @@ Editor
 
 View
     Clear                   alt+cmdctrl+k
+    -
+    Previous Tab            cmdctrl+[
+    Next Tab                cmdctrl+]
+    Close Other Tabs        cmdctrl+shift+w
     ---
     Font Size   
         Increase            cmdctrl+=

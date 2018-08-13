@@ -98,6 +98,7 @@ class MapScroll extends events
         top = parseInt @scroll / @lineHeight
         @offsetSmooth = @scroll - top * @lineHeight 
         
+        log top
         @setTop top
 
         offset = 0

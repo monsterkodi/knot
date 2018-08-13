@@ -120,11 +120,14 @@ setEditor = (editor) ->
 post.on 'menuAction', (action) ->
     
     switch action
-        when 'New Tab'  then window.tabs.addTab '~'
-        when 'Increase' then changeFontSize +1
-        when 'Decrease' then changeFontSize -1
-        when 'Reset'    then resetFontSize()
-        when 'Clear'    then term.clear()
+        when 'Close Other Tabs' then tabs.closeOtherTabs()
+        when 'Previous Tab'     then tabs.navigate 'left'
+        when 'Next Tab'         then tabs.navigate 'right'
+        when 'New Tab'          then term.addTab()
+        when 'Increase'         then changeFontSize +1
+        when 'Decrease'         then changeFontSize -1
+        when 'Reset'            then resetFontSize()
+        when 'Clear'            then term.clear()
             
         when 'Visual Studio', 'VS Code', 'Atom', 'ko'
             setEditor action

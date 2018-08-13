@@ -6,7 +6,7 @@
    000     000   000  0000000  
 ###
 
-{ elem } = require 'kxk'
+{ post, elem } = require 'kxk'
 
 class Tab
     
@@ -47,19 +47,14 @@ class Tab
     # 000   000   0000000     000     000      0      000   000     000     00000000  
     
     activate: ->
-        
-        # activeTab = @tabs.activeTab()
+        # log 'tab.activate'
+        post.emit 'tab', @
         @setActive()
 
-    #  0000000    0000000  000000000  000  000   000  00000000  
-    # 000   000  000          000     000  000   000  000       
-    # 000000000  000          000     000   000 000   0000000   
-    # 000   000  000          000     000     000     000       
-    # 000   000   0000000     000     000      0      00000000  
-    
     isActive: -> @div.classList.contains 'active'
     
     setActive: -> 
+        
         if not @isActive()
             @tabs.activeTab()?.clearActive()
             @div.classList.add 'active'

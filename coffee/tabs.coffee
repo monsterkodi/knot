@@ -6,7 +6,7 @@
    000     000   000  0000000    0000000 
 ###
 
-{ post, empty, elem, drag, $, _ } = require 'kxk'
+{ post, empty, elem, drag, log, $, _ } = require 'kxk'
 
 Tab = require './tab'
 
@@ -120,7 +120,6 @@ class Tabs
         tab.close()
         
         _.pull @tabs, tab
-        @stash()
         
         if empty @tabs # close the window when last tab was closed
             post.emit 'menuAction', 'Close' 
@@ -134,7 +133,6 @@ class Tabs
         while @numTabs()
             @tabs.pop().close()
         @tabs = keep
-        @stash()
     
     closeTabs: =>
         

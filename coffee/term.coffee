@@ -50,13 +50,48 @@ class Term
         @main.addEventListener 'click', @onClick
         
         post.on 'fontSize', @onFontSize
+        post.on 'tab',      @onTab
         @onFontSize prefs.get 'fontSize'
 
         document.addEventListener 'selectionchange', @onSelectionChange
         window.addEventListener 'resize', @onResize
         
         @spawnShell()
-                
+        
+    # 000000000   0000000   0000000    
+    #    000     000   000  000   000  
+    #    000     000000000  0000000    
+    #    000     000   000  000   000  
+    #    000     000   000  0000000    
+            
+    onTab: (tab) => 
+        
+        @storeTab()
+        
+        @shell        = tab.shell
+        @lines.buffer = tab.buffer
+        @lines.refresh()
+        @scroll.restore tab.scroll
+        @minimap.drawLines()
+        @updateCursor()
+    
+    addTab: ->
+        
+        tabs = window.tabs
+        
+        @storeTab()
+        
+        tab = tabs.addTab '~'
+        @scroll.reset()
+        @lines.reset()
+        @spawnShell()
+
+    storeTab: ->
+        
+        tabs.activeTab().shell  = @shell
+        tabs.activeTab().scroll = @scroll.data()
+        tabs.activeTab().buffer = @lines.buffer
+        
     #  0000000  000   000  00000000  000      000      
     # 000       000   000  000       000      000      
     # 0000000   000000000  0000000   000      000      
@@ -101,7 +136,7 @@ class Term
                 
     updateCursor: ->
 
-        @cursor.setPos @lines.buffer.x, @lines.buffer.y - @lines.top
+        @cursor.setPos @lines.buffer.x, @lines.buffer.y - @lines.buffer.top
         
     #  0000000  00000000  000      00000000   0000000  000000000  
     # 000       000       000      000       000          000     

@@ -39,6 +39,36 @@ class Scroll
         @offsetTop    =  0 # height of view above first visible line (pixels)
         @numLines     =  0 # total number of lines in buffer
         
+    data: ->
+        
+        lineHeight: @lineHeight 
+        viewHeight: @viewHeight 
+        fullHeight: @fullHeight 
+        scrollMax:  @scrollMax  
+        fullLines:  @fullLines  
+        viewLines:  @viewLines  
+        scroll:     @scroll     
+        offsetTop:  @offsetTop  
+        numLines:   @numLines   
+        top:        @top        
+        bot:        @bot        
+        
+    restore: (data) ->
+        
+        @lineHeight = data.lineHeight
+        @viewHeight = data.viewHeight
+        @fullHeight = data.fullHeight
+        @scrollMax  = data.scrollMax
+        @fullLines  = data.fullLines
+        @viewLines  = data.viewLines
+        @scroll     = data.scroll
+        @offsetTop  = data.offsetTop
+        @numLines   = data.numLines
+        @top        = data.top
+        @bot        = data.bot
+        post.emit 'scroll', @scroll, @
+        @view.style.transform = "translate3d(0,-#{@offsetTop}px, 0)"
+        
     # 00000000   00000000   0000000  00000000  000000000
     # 000   000  000       000       000          000   
     # 0000000    0000000   0000000   0000000      000   
@@ -81,7 +111,7 @@ class Scroll
         
         @by 0
         post.emit 'scroll', @scroll, @
-        
+                
     #  0000000   0000000   00     00  0000000     0000000   
     # 000       000   000  000   000  000   000  000   000  
     # 000       000   000  000000000  0000000    000   000  
@@ -163,7 +193,14 @@ class Scroll
         
         window.term?.lines.scrollTop @top
         @view.style.transform = "translate3d(0,-#{@offsetTop}px, 0)"
-                            
+
+    toBottom: ->
+        log "toBottom #{@scroll} #{@scrollMax}"
+        @to @scrollMax
+        @view.style.transform = "translate3d(0,-#{@offsetTop}px, 0)"
+        log "toBottom emit #{@scroll}"
+        post.emit 'scroll', @scroll, @
+        
     # 000   000  000   000  00     00  000      000  000   000  00000000   0000000
     # 0000  000  000   000  000   000  000      000  0000  000  000       000     
     # 000 0 000  000   000  000000000  000      000  000 0 000  0000000   0000000 

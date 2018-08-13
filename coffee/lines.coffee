@@ -30,9 +30,6 @@ class Lines
         
         parse data, @buffer
                 
-        log 'minimap drawLines', str @buffer.changed.values()
-        log 'minimap drawLines', str @buffer.changed
-        
         if @buffer.lines.length > @buffer.cache.length
             while @buffer.lines.length > @buffer.cache.length
                 @buffer.cache.push diss:@dissForLine @buffer.lines[@buffer.cache.length]
@@ -41,8 +38,8 @@ class Lines
             @buffer.cache[@buffer.lines.length-1] = diss:@dissForLine @buffer.lines[@buffer.lines.length-1]
             @buffer.changed.delete @buffer.lines.length-1
             
-        for lineIndex in @buffer.changed.values()
-            log 'minimap drawLines'
+        for lineIndex in Array.from @buffer.changed.values()
+            @buffer.cache[lineIndex] = diss:@dissForLine @buffer.lines[lineIndex]
             @term.minimap.drawLines lineIndex, lineIndex
         delete @buffer.changed
         
@@ -50,7 +47,7 @@ class Lines
             window.tabs.activeTab()?.update @buffer.title
             delete @buffer.title
         
-        @top = Math.max 0, @buffer.lines.length - @buffer.rows
+        @buffer.top = Math.max 0, @buffer.lines.length - @buffer.rows
         @refresh()
        
     # 0000000    000   0000000   0000000  
@@ -92,8 +89,9 @@ class Lines
     #      000  000       000   000  000   000  000      000      
     # 0000000    0000000  000   000   0000000   0000000  0000000  
     
-    scrollTop: (@top) ->
+    scrollTop: (top) ->
         
+        @buffer.top = top
         @refresh()
         
     # 00000000   00000000  00000000  00000000   00000000   0000000  000   000  
@@ -107,8 +105,9 @@ class Lines
         terminal =$ '#terminal'
         terminal.innerHTML = ''
         
-        bot = clamp 0, @buffer.lines.length-1, @top + @buffer.rows
-        for index in [@top..bot]
+        @buffer.top = clamp 0, Math.max(0, @buffer.lines.length-@buffer.rows), @buffer.top
+        bot = clamp 0, @buffer.lines.length-1, @buffer.top + @buffer.rows
+        for index in [@buffer.top..bot]
             html = Render.line @buffer.lines[index], @buffer
             terminal.appendChild elem class:'line', html:html
             
@@ -122,7 +121,6 @@ class Lines
     
     reset: ->
         
-        @top = 0
         @buffer = new Buffer @term
         
 module.exports = Lines
