@@ -81,7 +81,7 @@ class Term
         
         @storeTab()
         
-        tab = tabs.addTab '~'
+        tab = tabs.addTab ''
         @scroll.reset()
         @lines.reset()
         @spawnShell()
@@ -113,7 +113,9 @@ class Term
             cols: @cols
             rows: @rows
 
-        @shell.on 'data',  @onShellData
+        onShell = (shell) => (data) =>@onShellData shell, data
+            
+        @shell.on 'data',  onShell @shell
         @shell.on 'error', @onShellError
 
     restartShell: =>
@@ -123,13 +125,21 @@ class Term
         
     onShellError: (err) => log 'error'
         
-    onShellData: (data) =>
+    onShellData: (shell, data) =>
 
-        # log 'shell data', data
         data = data.replace '⏎', ''
-        @lines.write data
         
-        @minimap.drawLines @lines.buffer.lines.length-1, @lines.buffer.lines.length-1
+        if shell != @shell
+            for tab in tabs.tabs
+                if tab.shell == shell
+                    # log 'tabbed shell data!', data
+                    @lines.writeBufferData tab.buffer, data, tab
+            return
+            
+        # log 'shell data', data
+        @lines.writeData data
+        
+        @minimap.drawLine @lines.buffer.lines.length-1
         
         @scroll.setNumLines @lines.buffer.lines.length
         @scroll.by @size.lineHeight * @lines.buffer.lines.length

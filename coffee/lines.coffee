@@ -24,30 +24,36 @@ class Lines
     # 000   000  000   000  000     000     000       
     # 00     00  000   000  000     000     00000000  
     
-    write: (data) =>
+    writeBufferData: (buffer, data, tab, minimap) ->
         
-        start = @buffer.y
+        start = buffer.y
         
-        parse data, @buffer
+        parse data, buffer
                 
-        if @buffer.lines.length > @buffer.cache.length
-            while @buffer.lines.length > @buffer.cache.length
-                @buffer.cache.push diss:@dissForLine @buffer.lines[@buffer.cache.length]
-                @buffer.changed.delete @buffer.cache.length-1
+        if buffer.lines.length > buffer.cache.length
+            while buffer.lines.length > buffer.cache.length
+                buffer.cache.push diss:@dissForLine buffer.lines[buffer.cache.length]
+                buffer.changed.delete buffer.cache.length-1
         else
-            @buffer.cache[@buffer.lines.length-1] = diss:@dissForLine @buffer.lines[@buffer.lines.length-1]
-            @buffer.changed.delete @buffer.lines.length-1
+            buffer.cache[buffer.lines.length-1] = diss:@dissForLine buffer.lines[buffer.lines.length-1]
+            buffer.changed.delete buffer.lines.length-1
             
-        for lineIndex in Array.from @buffer.changed.values()
-            @buffer.cache[lineIndex] = diss:@dissForLine @buffer.lines[lineIndex]
-            @term.minimap.drawLines lineIndex, lineIndex
-        delete @buffer.changed
+        for lineIndex in Array.from buffer.changed.values()
+            buffer.cache[lineIndex] = diss:@dissForLine buffer.lines[lineIndex]
+            minimap?.drawLine lineIndex
+            
+        delete buffer.changed
         
-        if @buffer.title
-            window.tabs.activeTab()?.update @buffer.title
-            delete @buffer.title
+        if buffer.title
+            tab.update buffer.title
+            delete buffer.title
         
-        @buffer.top = Math.max 0, @buffer.lines.length - @buffer.rows
+        buffer.top = Math.max 0, buffer.lines.length - buffer.rows
+    
+    writeData: (data) =>
+        
+        @writeBufferData @buffer, data, window.tabs.activeTab(), @term.minimap
+        
         @refresh()
        
     # 0000000    000   0000000   0000000  

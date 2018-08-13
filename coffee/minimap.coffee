@@ -88,7 +88,8 @@ class Minimap
     # 000   000  000   000  000   000  000   000
     # 0000000    000   000  000   000  00     00
     
-    drawLines: (top=@scroll.exposeTop, bot=@scroll.exposeBot) =>
+    drawLine: (index) -> @drawLines index, index
+    drawLines: (top=@scroll.exposeTop, bot=@scroll.exposeBot) ->
 
         ctx = @lines.getContext '2d'
         y = parseInt((top-@scroll.exposeTop)*@scroll.lineHeight)

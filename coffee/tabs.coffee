@@ -6,7 +6,7 @@
    000     000   000  0000000    0000000 
 ###
 
-{ post, empty, elem, drag, log, $, _ } = require 'kxk'
+{ post, stopEvent, empty, popup, elem, drag, pos, $, _ } = require 'kxk'
 
 Tab = require './tab'
 
@@ -19,7 +19,8 @@ class Tabs
         
         titlebar.insertBefore @div, $ ".minimize"
         
-        @div.addEventListener 'click', @onClick
+        @div.addEventListener 'click',       @onClick
+        @div.addEventListener 'contextmenu', @onContextMenu
         
         @drag = new drag
             target: @div
@@ -50,9 +51,9 @@ class Tabs
     
     onDragStart: (d, e) => 
         
-        if e.button == 2
-            @closeTab @tab e.target
-            return 'skip'
+        # if e.button == 2
+            # @closeTab @tab e.target
+            # return 'skip'
             
         @dragTab = @tab e.target
         
@@ -183,4 +184,32 @@ class Tabs
             when 'left'  then @swap tab, tab.prev() 
             when 'right' then @swap tab, tab.next()
         
+    #  0000000   0000000   000   000  000000000  00000000  000   000  000000000  
+    # 000       000   000  0000  000     000     000        000 000      000     
+    # 000       000   000  000 0 000     000     0000000     00000       000     
+    # 000       000   000  000  0000     000     000        000 000      000     
+    #  0000000   0000000   000   000     000     00000000  000   000     000     
+    
+    onContextMenu: (event) => stopEvent event, @showContextMenu pos event
+              
+    showContextMenu: (absPos) =>
+        
+        if tab = @tab event.target
+            tab.activate()
+            
+        if not absPos?
+            absPos = pos @view.getBoundingClientRect().left, @view.getBoundingClientRect().top
+        
+        opt = items: [ 
+            text:   'Close Other Tabs'
+            combo:  'ctrl+shift+w' 
+        # ,
+            # text:   'New Window'
+            # combo:  'ctrl+shift+n' 
+        ]
+        
+        opt.x = absPos.x
+        opt.y = absPos.y
+        popup.menu opt        
+            
 module.exports = Tabs
