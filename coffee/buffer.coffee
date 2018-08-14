@@ -12,8 +12,8 @@ class Buffer
 
     constructor: (size) -> 
         
-        rows = Math.max 1,   size?.rows ? 1
-        cols = Math.max 100, size?.cols ? 100
+        rows = Math.max 1, size?.rows ? 1
+        cols = Math.max 1, size?.cols ? 1
 
         @reset()
         @resize cols, rows
@@ -30,9 +30,9 @@ class Buffer
         
     resize: (cols, rows) ->
         
-        @cols  = cols
-        @rows  = rows
-        @lines = @lines.slice 0, rows
-        @cache = @cache.slice 0, rows
+        @cols  = Math.max 1, cols
+        @rows  = Math.max 1, rows
+        @lines = @lines.slice 0, @rows
+        @cache = @cache.slice 0, @rows
 
 module.exports = Buffer

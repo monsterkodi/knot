@@ -140,7 +140,7 @@ class Term
         
     onShellData: (shell, data) =>
 
-        data = data.replace /⏎/g, ''
+        data = data.replace /⏎\x1b\[0m\x1b\[0K(\x1b\[\?25l)?\r\n/g, '' # hack around fish hack
         
         if shell != @shell
             for tab in tabs.tabs

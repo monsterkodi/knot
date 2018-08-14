@@ -26,7 +26,7 @@ class Parse
     parseData: (data) -> 
         
         return if empty data
-        
+
         @buffer.state   = 0
         @buffer.prefix  = ''
         @buffer.postfix = ''
