@@ -1,6 +1,6 @@
 name            knot
 productName     knot
-version         0.9.0
+version         0.10.0
 description     terminal
 main            js/main.js
 repository

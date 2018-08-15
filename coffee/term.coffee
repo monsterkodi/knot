@@ -105,6 +105,17 @@ class Term
         tabs.activeTab().scroll = @scroll.data()
         tabs.activeTab().buffer = @lines.buffer
         
+    tabForShell: (shell) ->
+        
+        for tab in tabs.tabs
+            if tab.shell == shell
+                return tab
+                
+        if shell = @shell
+            return tabs.activeTab()
+            
+        null
+        
     #  0000000  000   000  00000000  000      000      
     # 000       000   000  000       000      000      
     # 0000000   000000000  0000000   000      000      
@@ -137,15 +148,7 @@ class Term
 
         @shell.destroy()
         @spawnShell()
-        
-    tabForShell: (shell) ->
-        for tab in tabs.tabs
-            if tab.shell == shell
-                return tab
-        if shell = @shell
-            return tabs.activeTab()
-        null
-        
+                
     onShellError: (err) => log 'error'
         
     onShellExit: (shell) => tabs.closeTab @tabForShell shell

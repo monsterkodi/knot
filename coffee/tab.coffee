@@ -37,6 +37,7 @@ class Tab
     
     close: ->
         
+        @shell?.kill?()
         @div.remove()
         # post.emit 'tabClosed'
     
