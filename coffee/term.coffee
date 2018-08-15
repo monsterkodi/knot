@@ -126,27 +126,37 @@ class Term
             cols: @cols
             rows: @rows
 
-        onShell = (shell) => (data) =>@onShellData shell, data
+        onShell = (shell) => (data) => @onShellData shell, data
+        onExit  = (shell) => () => @onShellExit shell
             
         @shell.on 'data',  onShell @shell
+        @shell.on 'exit',  onExit  @shell
         @shell.on 'error', @onShellError
-
+        
     restartShell: =>
 
         @shell.destroy()
         @spawnShell()
         
+    tabForShell: (shell) ->
+        for tab in tabs.tabs
+            if tab.shell == shell
+                return tab
+        if shell = @shell
+            return tabs.activeTab()
+        null
+        
     onShellError: (err) => log 'error'
         
+    onShellExit: (shell) => tabs.closeTab @tabForShell shell
     onShellData: (shell, data) =>
 
         data = data.replace /⏎\x1b\[0m\x1b\[0K(\x1b\[\?25l)?\r\n/g, '' # hack around fish hack
         
         if shell != @shell
-            for tab in tabs.tabs
-                if tab.shell == shell
-                    # log 'tabbed shell data!', data
-                    @lines.writeBufferData tab.buffer, data, tab
+            if tab = @tabForShell shell
+                # log 'tabbed shell data!', data
+                @lines.writeBufferData tab.buffer, data, tab
             return
             
         @lines.writeData data
