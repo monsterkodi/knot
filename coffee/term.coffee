@@ -156,11 +156,8 @@ class Term
     onShellExit: (shell) => tabs.closeTab @tabForShell shell
     onShellData: (shell, data) =>
 
-        data = data.replace /⏎\x1b\[0m\x1b\[0K(\x1b\[\?25l)?\r\n/g, '' # hack around fish hack
-        
         if shell != @shell
             if tab = @tabForShell shell
-                # log 'tabbed shell data!', data
                 @lines.writeBufferData tab.buffer, data, tab
             return
             
@@ -220,6 +217,9 @@ class Term
         for tab in tabs.tabs
             if tab.shell != @shell
                 delete tab.scroll
+                tab.buffer?.reset()
+                tab.shell?.resize @cols, @rows
+                tab.buffer?.resize @cols, @rows
                 tab.shell?.write 'c\n\x08'
         
     #  0000000   0000000   000       0000000  

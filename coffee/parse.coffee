@@ -47,7 +47,14 @@ class Parse
                     
                     switch ch
                         
+                        when '⏎'
+                            @buffer.ignoreNextNewline = true
+                        
                         when '\n', '\x0b', '\x0c'
+                            
+                            if @buffer.ignoreNextNewline
+                                delete @buffer.ignoreNextNewline
+                                continue
                             
                             @buffer.y += 1
                             
@@ -75,7 +82,7 @@ class Parse
                               
                         when '\t'
                             @buffer.x = @nextStop()
-                                                        
+                                                                                    
                         else
                             
                             if not @buffer.lines[@buffer.y]
