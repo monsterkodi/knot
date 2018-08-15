@@ -39,7 +39,6 @@ class Tab
         
         @shell?.kill?()
         @div.remove()
-        # post.emit 'tabClosed'
     
     #  0000000    0000000  000000000  000  000   000   0000000   000000000  00000000  
     # 000   000  000          000     000  000   000  000   000     000     000       
@@ -48,7 +47,7 @@ class Tab
     # 000   000   0000000     000     000      0      000   000     000     00000000  
     
     activate: ->
-        # log 'tab.activate'
+        
         post.emit 'tab', @
         @setActive()
 

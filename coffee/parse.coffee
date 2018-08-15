@@ -177,7 +177,7 @@ class Parse
                                             @eraseLine j
                                     when 2
                                         log 'CLEAR SCREEN'
-                                        @buffer.lines = [[]]
+                                        @buffer.reset()
                                             
                             when 'K' # erase in line EL
                                 switch @params[0]

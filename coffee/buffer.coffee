@@ -32,7 +32,5 @@ class Buffer
         
         @cols  = Math.max 1, cols
         @rows  = Math.max 1, rows
-        @lines = @lines.slice 0, @rows
-        @cache = @cache.slice 0, @rows
 
 module.exports = Buffer

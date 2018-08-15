@@ -19,6 +19,8 @@ Lines        = require './lines'
 Cursor       = require './cursor'
 Buffer       = require './buffer'
 
+defAttr = (257 << 9) | 256
+
 class Term
 
     constructor: ->
@@ -198,24 +200,27 @@ class Term
     # 000   000  00000000  0000000   000  0000000  00000000  
     
     onResize: =>
-        
+                
         @scroll.setViewHeight @main.clientHeight
         
         availableHeight = @main.clientHeight
-        availableWidth  = @main.clientWidth - 130
+        availableWidth  = @main.clientWidth - 140
 
         @calcSize()
         @scroll.setViewHeight availableHeight
         
         @cols = Math.max 1, Math.floor availableWidth / @size.charWidth
-        @rows = Math.max 1, Math.floor availableHeight / @size.lineHeight
-        
         @rows = @scroll.fullLines
-        log "resize cols:#{@cols} rows:#{@rows} #{@scroll.fullLines}"
         
-        @lines.buffer?.resize @cols, @rows
-        @shell?.resize @cols, 1
+        @lines?.buffer?.reset()
         @shell?.resize @cols, @rows
+        @lines?.buffer?.resize @cols, @rows
+        
+        @shell?.write 'c\n\x08'
+        for tab in tabs.tabs
+            if tab.shell != @shell
+                delete tab.scroll
+                tab.shell?.write 'c\n\x08'
         
     #  0000000   0000000   000       0000000  
     # 000       000   000  000      000       
@@ -228,8 +233,7 @@ class Term
         terminal =$ '#terminal'
         
         return if not terminal
-        
-        defAttr = (257 << 9) | 256
+                
         html = Render.line [[256, 'x'], [0, 'y']], new Buffer @
         
         if empty terminal.children

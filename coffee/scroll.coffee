@@ -55,6 +55,11 @@ class Scroll
         
     restore: (data) ->
         
+        if not data
+            @resetSize()
+            @resetLines()
+            return
+            
         @lineHeight = data.lineHeight
         @viewHeight = data.viewHeight
         @fullHeight = data.fullHeight
