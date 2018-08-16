@@ -24,8 +24,8 @@ colors = [
     '#ff0000'
     '#00ff00'
     '#ffff44'
-    '#6666ff'
-    '#880088'
+    '#aaaaff'
+    '#ff00ff'
     '#00ffff'
     '#ffffff'
     ]
@@ -89,6 +89,9 @@ class Render
                     fg = attr & 0x1ff
                     if (flags & 1) and fg < 8 then fg += 8
 
+                if (flags & 16) # hidden
+                    out += 'visibility:hidden;'
+                    
                 if bg != 256
                     if not colors[bg]
                         log "bgcolor #{bg}"
