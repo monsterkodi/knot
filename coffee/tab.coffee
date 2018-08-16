@@ -22,11 +22,11 @@ class Tab
     # 000   000  000        000   000  000   000     000     000       
     #  0000000   000        0000000    000   000     000     00000000  
     
-    update: (text) ->
+    update: (@text) ->
             
         @div.innerHTML = ''
         @div.appendChild elem 'span', class:'dot', text:'●'
-        @div.appendChild elem 'span', class:'name', text:text
+        @div.appendChild elem 'span', class:'name', text:@text
         @
 
     text:  -> @info?.text ? '' 
@@ -36,8 +36,7 @@ class Tab
     nextOrPrev: -> @next() ? @prev()
     
     close: ->
-        
-        @shell?.kill?()
+        # @shell?.kill?()
         @div.remove()
     
     #  0000000    0000000  000000000  000  000   000   0000000   000000000  00000000  

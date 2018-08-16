@@ -6,7 +6,7 @@
    000     00000000  000   000  000   000  
 ###
 
-{ post, setStyle, prefs, empty, elem, log, $ } = require 'kxk'
+{ post, setStyle, prefs, slash, empty, elem, log, $ } = require 'kxk'
 
 { Terminal } = require 'term.js'
 pty          = require 'node-pty'
@@ -35,7 +35,7 @@ class Term
             charWidth:  12
             lineHeight: 20
         
-        window.tabs.addTab '~'
+        # window.tabs.addTab '~'
         
         @keyHandler = new KeyHandler @
         @cursor     = new Cursor @
@@ -53,14 +53,14 @@ class Term
         
         post.on 'fontSize', @onFontSize
         post.on 'tab',      @onTab
-        @onFontSize prefs.get 'fontSize'
+        @onFontSize window.stash.get 'fontSize'
 
         document.addEventListener 'selectionchange', @onSelectionChange
         window.addEventListener 'resize', @onResize
         
         document.defaultView.addEventListener 'paste', @onPaste
         
-        @spawnShell()
+        # @spawnShell()
         
     # 00000000    0000000    0000000  000000000  00000000  
     # 000   000  000   000  000          000     000       
@@ -90,22 +90,23 @@ class Term
         @minimap.drawLines()
         @updateCursor()
     
-    addTab: ->
+    addTab: (path) ->
         
         tabs = window.tabs
         
         @storeTab()
         
-        tab = tabs.addTab ''
+        tab = tabs.addTab path
         @scroll.reset()
         @lines.reset()
-        @spawnShell()
+        @spawnShell path
 
     storeTab: ->
         
-        tabs.activeTab().shell  = @shell
-        tabs.activeTab().scroll = @scroll.data()
-        tabs.activeTab().buffer = @lines.buffer
+        if tab = tabs.activeTab()
+            tab.shell  = @shell
+            tab.scroll = @scroll.data()
+            tab.buffer = @lines.buffer
         
     tabForShell: (shell) ->
         
@@ -124,17 +125,17 @@ class Term
     #      000  000   000  000       000      000      
     # 0000000   000   000  00000000  0000000  0000000  
     
-    spawnShell: =>
+    spawnShell: (path=process.env.HOME) =>
         
         process.env.TERM = 'xterm-color'
         process.env.LANG = 'en_US.UTF-8'
 
-        log 'spawnShell', process.env.TERM
+        log 'spawnShell', process.env.TERM, path
         
         # @shell = pty.spawn 'C:\\msys64\\usr\\bin\\bash.exe', ['-i'],
         @shell = pty.spawn 'C:\\msys64\\usr\\bin\\fish.exe', [],
             name: process.env.TERM
-            cwd:  process.env.HOME
+            cwd:  slash.resolve path
             env:  process.env
             cols: @cols
             rows: @rows

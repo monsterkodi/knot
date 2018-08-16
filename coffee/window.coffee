@@ -10,7 +10,6 @@
 
 Term = require './term'
 Tabs = require './tabs'
-# log  = console.log
 klog = require('kxk').log
 
 electron = require 'electron'
@@ -32,16 +31,12 @@ window.winID = window.win.id
 # 000        000   000  000       000            000
 # 000        000   000  00000000  000       0000000
 
-# state.init()
-# window.prefs = prefs
-# window.state = state
 log "create stash #{window.winID}"
 window.stash = new stash "win/#{window.winID}"
 
 saveStash = ->
 
     post.emit 'stash'
-    # editor.saveScrollCursorsAndSelections()
     window.stash.save()
     post.toMain 'stashSaved'
 
@@ -141,14 +136,14 @@ post.on 'saveStash', -> saveStash()
 
 defaultFontSize = 18
 
-getFontSize = -> prefs.get 'fontSize', defaultFontSize
+getFontSize = -> window.stash.get 'fontSize', defaultFontSize
 
 setFontSize = (s) ->
         
     s = getFontSize() if not _.isFinite s
     s = clamp 8, 88, s
 
-    prefs.set 'fontSize', s
+    window.stash.set 'fontSize', s
     post.emit 'fontSize', s
 
 window.setFontSize = setFontSize
@@ -165,7 +160,7 @@ changeFontSize = (d) ->
 
 resetFontSize = ->
     
-    prefs.set 'fontSize', defaultFontSize
+    window.stash.set 'fontSize', defaultFontSize
     setFontSize defaultFontSize
      
 # 000   000  000   000  00000000  00000000  000      
@@ -198,6 +193,7 @@ setEditor = (editor) ->
 post.on 'menuAction', (action) ->
     
     switch action
+        when 'Close Tab'        then tabs.closeTab()
         when 'Close Other Tabs' then tabs.closeOtherTabs()
         when 'Previous Tab'     then tabs.navigate 'left'
         when 'Next Tab'         then tabs.navigate 'right'
@@ -230,4 +226,4 @@ onContext = (items) ->
 # 000  000  0000  000     000       
 # 000  000   000  000     000       
 
-prefs.set 'editor',  prefs.get 'editor', 'ko'
+post.emit 'restore'

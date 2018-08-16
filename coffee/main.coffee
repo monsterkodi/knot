@@ -43,7 +43,7 @@ class Main extends app
         super
             dir:        __dirname
             pkg:        require '../package.json'
-            shortcut:   'Alt+K'
+            shortcut:   'Alt+F1'
             index:      'index.html'
             icon:       '../img/app.ico'
             tray:       '../img/menu.png'

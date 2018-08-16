@@ -6,7 +6,7 @@
    000     000   000  0000000    0000000 
 ###
 
-{ post, stopEvent, empty, popup, elem, drag, pos, $, _ } = require 'kxk'
+{ post, stopEvent, empty, valid, popup, elem, drag, pos, $, _ } = require 'kxk'
 
 Tab = require './tab'
 
@@ -22,12 +22,43 @@ class Tabs
         @div.addEventListener 'click',       @onClick
         @div.addEventListener 'contextmenu', @onContextMenu
         
+        post.on 'stash', @stash
+        post.on 'restore', @restore
+        
         @drag = new drag
             target: @div
             onStart: @onDragStart
             onMove:  @onDragMove
             onStop:  @onDragStop
 
+    # 00000000   00000000   0000000  000000000   0000000   00000000   00000000  
+    # 000   000  000       000          000     000   000  000   000  000       
+    # 0000000    0000000   0000000      000     000   000  0000000    0000000   
+    # 000   000  000            000     000     000   000  000   000  000       
+    # 000   000  00000000  0000000      000      0000000   000   000  00000000  
+
+    stash: => 
+
+        paths = ( tab.text for tab in @tabs )
+        
+        window.stash.set 'tabs', 
+            paths:  paths
+            active: Math.min @activeTab()?.index(), paths.length-1
+    
+    restore: =>
+        
+        active = window.stash.get 'tabs:active', 0
+        paths  = window.stash.get 'tabs:paths'
+        
+        if empty paths # happens when first window opens
+            window.term.addTab '~'
+            return
+        
+        while paths.length
+            window.term.addTab paths.shift()
+        
+        @tabs[active]?.activate()
+            
     #  0000000  000      000   0000000  000   000  
     # 000       000      000  000       000  000   
     # 000       000      000  000       0000000    
