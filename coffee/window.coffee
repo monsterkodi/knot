@@ -6,13 +6,15 @@
 00     00  000  000   000  0000000     0000000   00     00  
 ###
 
-{ post, stopEvent, keyinfo, childp, prefs, clamp, empty, slash, open, udp, win, error, log, $, _ } = require 'kxk'
+{ post, stopEvent, keyinfo, childp, slash, prefs, clamp, stash, empty, open, udp, win, error, log, $, _ } = require 'kxk'
 
 Term = require './term'
 Tabs = require './tabs'
-log  = console.log
+# log  = console.log
 klog = require('kxk').log
 
+electron = require 'electron'
+         
 w = new win
     dir:    __dirname
     pkg:    require '../package.json'
@@ -20,9 +22,84 @@ w = new win
     icon:   '../img/menu@2x.png'
     onLoad: -> window.term.onResize()
     context: (items) -> onContext items
+
+window.win = electron.remote.getCurrentWindow()
+window.winID = window.win.id
     
+# 00000000   00000000   00000000  00000000   0000000
+# 000   000  000   000  000       000       000
+# 00000000   0000000    0000000   000000    0000000
+# 000        000   000  000       000            000
+# 000        000   000  00000000  000       0000000
+
+# state.init()
+# window.prefs = prefs
+# window.state = state
+log "create stash #{window.winID}"
+window.stash = new stash "win/#{window.winID}"
+
+saveStash = ->
+
+    post.emit 'stash'
+    # editor.saveScrollCursorsAndSelections()
+    window.stash.save()
+    post.toMain 'stashSaved'
+
+if bounds = window.stash.get 'bounds'
+    window.win.setBounds bounds
+
+if window.stash.get 'devTools'
+    window.win.webContents.openDevTools()
+
 window.tabs = new Tabs $ "#titlebar"
 window.term = term = new Term
+
+#  0000000   000   000   0000000  000       0000000    0000000  00000000
+# 000   000  0000  000  000       000      000   000  000       000
+# 000   000  000 0 000  000       000      000   000  0000000   0000000
+# 000   000  000  0000  000       000      000   000       000  000
+#  0000000   000   000   0000000  0000000   0000000   0000000   00000000
+
+onMove  = -> window.stash.set 'bounds', window.win.getBounds()
+
+clearListeners = ->
+
+    window.win.removeListener 'close', onClose
+    window.win.removeListener 'move',  onMove
+    window.win.webContents.removeAllListeners 'devtools-opened'
+    window.win.webContents.removeAllListeners 'devtools-closed'
+
+onClose = ->
+    
+    if electron.remote.BrowserWindow.getAllWindows().length > 1
+        window.stash.clear()
+        
+    clearListeners()
+
+#  0000000   000   000  000       0000000    0000000   0000000
+# 000   000  0000  000  000      000   000  000   000  000   000
+# 000   000  000 0 000  000      000   000  000000000  000   000
+# 000   000  000  0000  000      000   000  000   000  000   000
+#  0000000   000   000  0000000   0000000   000   000  0000000
+
+window.onload = ->
+
+    window.win.on 'close', onClose
+    window.win.on 'move',  onMove
+    window.win.webContents.on 'devtools-opened', -> window.stash.set 'devTools', true
+    window.win.webContents.on 'devtools-closed', -> window.stash.set 'devTools'
+
+# 00000000   00000000  000       0000000    0000000   0000000
+# 000   000  000       000      000   000  000   000  000   000
+# 0000000    0000000   000      000   000  000000000  000   000
+# 000   000  000       000      000   000  000   000  000   000
+# 000   000  00000000  0000000   0000000   000   000  0000000
+
+reloadWin = ->
+
+    saveStash()
+    clearListeners()
+    window.win.webContents.reloadIgnoringCache()
 
 #  0000000   00000000   00000000  000   000  
 # 000   000  000   000  000       0000  000  
@@ -54,6 +131,7 @@ openFile = (f) ->
             koSend.send slash.resolve f
     
 post.on 'openFile', openFile
+post.on 'saveStash', -> saveStash()
 
 # 00000000   0000000   000   000  000000000      0000000  000  0000000  00000000
 # 000       000   000  0000  000     000        000       000     000   000
@@ -123,6 +201,7 @@ post.on 'menuAction', (action) ->
         when 'Close Other Tabs' then tabs.closeOtherTabs()
         when 'Previous Tab'     then tabs.navigate 'left'
         when 'Next Tab'         then tabs.navigate 'right'
+        when 'New Window'       then post.toMain 'newWindow'
         when 'New Tab'          then term.addTab()
         when 'Increase'         then changeFontSize +1
         when 'Decrease'         then changeFontSize -1
