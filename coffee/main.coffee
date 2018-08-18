@@ -6,7 +6,7 @@
 000   000  000   000  000  000   000
 ###
 
-{ post, fileList, slash, empty, args, app, win, fs } = require 'kxk'
+{ post, fileList, prefs, slash, empty, args, app, win, fs } = require 'kxk'
 
 { BrowserWindow } = require 'electron'
 

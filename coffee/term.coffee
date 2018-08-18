@@ -35,8 +35,6 @@ class Term
             charWidth:  12
             lineHeight: 20
         
-        # window.tabs.addTab '~'
-        
         @keyHandler = new KeyHandler @
         @cursor     = new Cursor @
         @lines      = new Lines @
@@ -59,8 +57,6 @@ class Term
         window.addEventListener 'resize', @onResize
         
         document.defaultView.addEventListener 'paste', @onPaste
-        
-        # @spawnShell()
         
     # 00000000    0000000    0000000  000000000  00000000  
     # 000   000  000   000  000          000     000       
@@ -132,8 +128,14 @@ class Term
 
         log 'spawnShell', process.env.TERM, path
         
-        # @shell = pty.spawn 'C:\\msys64\\usr\\bin\\bash.exe', ['-i'],
-        @shell = pty.spawn 'C:\\msys64\\usr\\bin\\fish.exe', [],
+        argl = []
+        if slash.win()
+            shell = 'C:\\msys64\\usr\\bin\\fish.exe'
+            # shell = 'C:\\msys64\\usr\\bin\\bash.exe'; argl = ['-i']
+        else
+            shell = '/usr/local/bin/fish'
+        
+        @shell = pty.spawn shell, argl,
             name: process.env.TERM
             cwd:  slash.resolve path
             env:  process.env

@@ -71,7 +71,7 @@ class Render
                     if fg == 257
                         fg = 15
                     else if fg < 8 
-                        log "bold #{fg}"
+                        # log "bold #{fg}"
                         fg += 8
                 
                 if (flags & 2) # underline
