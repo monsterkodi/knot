@@ -48,7 +48,8 @@ class Parse
                     switch ch
                         
                         when '⏎'
-                            @buffer.ignoreNextNewline = true
+                            if slash.win()
+                                @buffer.ignoreNextNewline = true
                         
                         when '\n', '\x0b', '\x0c'
                             
@@ -73,9 +74,9 @@ class Parse
                             @buffer.state = 1 # escaped
                             
                         when '\x08'
-                            log 'backspace?'
+                            #log 'backspace?'
                             if @buffer.x > 0 
-                              @buffer.x--
+                                @buffer.x--
 
                         when '\x07'
                             log 'bell!'
@@ -115,9 +116,12 @@ class Parse
                             @currentParam = 0
                             @buffer.state = 3
                         
+                        when 'c'
+                            @buffer.reset()
+                            
                         else
                             
-                            log "unhandled ESC '#{ch}'"
+                            log "unhandled ESC '#{ch}' "
 
                 #  0000000   0000000  000  
                 # 000       000       000  
@@ -149,6 +153,20 @@ class Parse
                             when 'C' then @buffer.x = clamp 0, @buffer.cols-1, @buffer.x + Math.max 1, @params[0]
                             when 'D' then @buffer.x = clamp 0, @buffer.cols-1, @buffer.x - Math.max 1, @params[0]
 
+                            when 'E' # cursor next line
+                                
+                                @buffer.y = @buffer.y = clamp 0, @buffer.rows-1, @buffer.y + Math.max 1, @params[0]
+                                @buffer.x = 0
+
+                            when 'F' # cursor prev line    
+                                
+                                @buffer.y = @buffer.y = clamp 0, @buffer.rows-1, @buffer.y - Math.max 1, @params[0]
+                                @buffer.x = 0
+                                
+                            when 'G' # cursor absolute column 
+                                
+                                @buffer.x = Math.max 0, @params[0] - 1
+            
                             when 'H' # cursor position
 
                                 row = @params[0] - 1
@@ -165,10 +183,6 @@ class Parse
                                 @buffer.y = row
                                 
                                 log "cursor position #{@buffer.x} #{@buffer.y}"
-
-                            when 'G' # cursor absolute column 
-                                
-                                @buffer.x = Math.max 0, @params[0] - 1
             
                             when 'J' # erase in display
                                 switch @params[0]
@@ -192,6 +206,8 @@ class Parse
                                     when 1 then @eraseLeft  @buffer.x, @buffer.y
                                     when 2 then @eraseLine  @buffer.y
                             
+                            when 'c' then @sendDeviceAttributes()
+                                    
                             when 'm' # character attributes SGR
                                 if empty @buffer.prefix
                                     @buffer.attr = Attr.set @params, @buffer.attr
@@ -207,10 +223,10 @@ class Parse
                                     switch @params[0]
                                         when 5 # status report
                                             log 'status'
-                                            window.term.shell.write '\x1b[0n'
+                                            @send '\x1b[0n'
                                         when 6 # cursor position
                                             log 'cursor'
-                                            window.term.shell.write  '\x1b[' + (@buffer.y + 1) + ';' + (@buffer.x + 1) + 'R'
+                                            @send  '\x1b[' + (@buffer.y + 1) + ';' + (@buffer.x + 1) + 'R'
                                         else
                                             log "unhandled CSI status report: '#{@params[0]}'"
                                 else
@@ -218,6 +234,14 @@ class Parse
                                 
                             when '@' # @ - blank character(s) ICH
                                 @insertChars @params
+                                
+                            when 'r'
+                                if empty this.prefix
+                                    @buffer.top = (@params[0] ? 1) - 1
+                                    @buffer.bot = (@params[1] ? @buffer.rows) - 1
+                                    log "scroll region #{@buffer.top} #{@buffer.bot}"
+                                    @buffer.x = 0
+                                    @buffer.y = 0
                                 
                             when ';' then # argument
                                 
@@ -269,7 +293,7 @@ class Parse
     # 000       000   000  000   000  000       000       
     # 0000000   0000000    000000000  0000000   0000000   
     # 000       000   000  000   000       000  000       
-    # 00000000  000   000  000   000  0000000   00000000  
+    # 00000000  000   000  000   000  0000000   00000000
     
     eraseAttr: -> (defAttr & ~0x1ff) | (@buffer.attr & 0x1ff) 
     
@@ -288,11 +312,64 @@ class Parse
         log "erase ---- left #{y} from col #{x}"
         line = @buffer.lines[y]
         ch = [@eraseAttr(), ' ']
-        @buffer.x++ # ???
+        @buffer.x++ # ???\
         @buffer.changed.add y
         for i in [x..0]
             line[x] = ch
 
+    nextStop: ->
+        while @buffer.x % 4 != 0
+            @buffer.x += 1
+        clamp 0, @buffer.cols - 1, @buffer.x
+           
+    # CSI Ps c  Send Device Attributes (Primary DA).
+    #     Ps = 0  or omitted -> request attributes from terminal.  The
+    #     response depends on the decTerminalID resource setting.
+    #     -> CSI ? 1 ; 2 c  (``VT100 with Advanced Video Option'')
+    #     -> CSI ? 1 ; 0 c  (``VT101 with No Options'')
+    #     -> CSI ? 6 c  (``VT102'')
+    #     -> CSI ? 6 0 ; 1 ; 2 ; 6 ; 8 ; 9 ; 1 5 ; c  (``VT220'')
+    #   The VT100-style response parameters do not mean anything by
+    #   themselves.  VT220 parameters do, telling the host what fea-
+    #   tures the terminal supports:
+    #     Ps = 1  -> 132-columns.
+    #     Ps = 2  -> Printer.
+    #     Ps = 6  -> Selective erase.
+    #     Ps = 8  -> User-defined keys.
+    #     Ps = 9  -> National replacement character sets.
+    #     Ps = 1 5  -> Technical characters.
+    #     Ps = 2 2  -> ANSI color, e.g., VT525.
+    #     Ps = 2 9  -> ANSI text locator (i.e., DEC Locator mode).
+    # CSI > Ps c
+    #   Send Device Attributes (Secondary DA).
+    #     Ps = 0  or omitted -> request the terminal's identification
+    #     code.  The response depends on the decTerminalID resource set-
+    #     ting.  It should apply only to VT220 and up, but xterm extends
+    #     this to VT100.
+    #     -> CSI  > Pp ; Pv ; Pc c
+    #   where Pp denotes the terminal type
+    #     Pp = 0  -> ``VT100''.
+    #     Pp = 1  -> ``VT220''.
+    #   and Pv is the firmware version (for xterm, this was originally
+    #   the XFree86 patch number, starting with 95).  In a DEC termi-
+    #   nal, Pc indicates the ROM cartridge registration number and is
+    #   always zero.
+    # More information:
+    #   xterm/charproc.c - line 2012, for more information.
+    #   vim responds with ^[[?0c or ^[[?1c after the terminal's response (?)
+    
+    send: (data) -> window.term.shell.write data
+    
+    sendDeviceAttributes: ->
+        
+        log "device attributes #{@params[0]}"
+        return if @params[0] > 0 
+        
+        if empty @buffer.prefix
+            @send '\x1b[?1;2c' # '\x1b[?6c'
+        else if @buffer.prefix == '>'
+            @send '\x1b[>0;276;0c' # params[0] + 'c'
+        
     dump: (msg) -> log '---------------', msg, @buffer, "\nprefix '#{@buffer.prefix}' postfix '#{@buffer.postfix}'", "\nparam #{@currentParam} params #{@params.length}", @params, '\n---------------'
         
 module.exports = Parse.parse

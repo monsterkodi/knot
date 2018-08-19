@@ -6,32 +6,10 @@
 000   000  00000000  000   000  0000000    00000000  000   000
 ###
 
-{ colors, empty, log } = require 'kxk'
+{ empty, log } = require 'kxk'
 
 log = console.log
-
-colors = [
-    '#222222'
-    '#aa0000'
-    '#00aa00'
-    '#cccc00'
-    '#0000ff'
-    '#aa00aa'
-    '#00aaaa'
-    '#aaaaaa'
-    # bright
-    '#666666'
-    '#ff0000'
-    '#00ff00'
-    '#ffff44'
-    '#aaaaff'
-    '#ff00ff'
-    '#00ffff'
-    '#ffffff'
-    ]
-
-colors[256] = '#000000' # background
-colors[257] = '#f0f0f0' # foreground
+colors = require './colors'
     
 class Render
 

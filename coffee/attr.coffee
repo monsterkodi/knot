@@ -8,7 +8,42 @@
 
 { log, _ } = require 'kxk'
         
+colors = require './colors'
 defAttr = (257 << 9) | 256
+
+matchColor = (r1, g1, b1) ->
+    
+    hash = (r1 << 16) | (g1 << 8) | b1
+    
+    if matchColor._cache[hash] != null
+        return matchColor._cache[hash]
+    
+    ldiff = Infinity
+    li = -1
+    
+    for i in [0...colors.rgb.length]
+        c  = colors.rgb[i]
+        r2 = c[0]
+        g2 = c[1]
+        b2 = c[2]
+        
+        diff = matchColor.distance r1, g1, b1, r2, g2, b2
+        
+        if (diff == 0) 
+            li = i
+            break
+        
+        if (diff < ldiff) 
+            ldiff = diff
+            li = i
+        
+    matchColor._cache[hash] = li
+    matchColor._cache[hash]
+
+matchColor._cache = {}
+
+matchColor.distance = (r1, g1, b1, r2, g2, b2) ->
+    Math.pow(30 * (r1 - r2), 2) + Math.pow(59 * (g1 - g2), 2) + Math.pow(11 * (b1 - b2), 2)
 
 class Attr
     
@@ -90,6 +125,8 @@ class Attr
                         # flags |= 2 if p == 96
                     else if p >= 100 and p <= 107
                         bg = p - 100 + 8
+                    else
+                        log "unhandled attr #{p}"
                         
             i += 1
     

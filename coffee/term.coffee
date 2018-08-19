@@ -6,7 +6,7 @@
    000     00000000  000   000  000   000  
 ###
 
-{ post, setStyle, prefs, slash, empty, elem, log, $ } = require 'kxk'
+{ post, setStyle, slash, empty, elem, os, log, $ } = require 'kxk'
 
 { Terminal } = require 'term.js'
 pty          = require 'node-pty'
@@ -133,7 +133,10 @@ class Term
             shell = 'C:\\msys64\\usr\\bin\\fish.exe'
             # shell = 'C:\\msys64\\usr\\bin\\bash.exe'; argl = ['-i']
         else
-            shell = '/usr/local/bin/fish'
+            if os.platform() == 'darwin'
+                shell = '/usr/local/bin/fish'
+            else
+                shell = '/usr/bin/fish'
         
         @shell = pty.spawn shell, argl,
             name: process.env.TERM

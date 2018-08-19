@@ -79,6 +79,8 @@ class Mode
                     log 'alt screen buffer cursor'
                 when 47  
                     log 'alt screen buffer'
+                when 2004
+                    log 'xterm bracketed paste mode'
                 else
                     log "unhandled mode ? #{params}"
                 # when 1047 # alt screen buffer

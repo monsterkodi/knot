@@ -134,7 +134,7 @@ post.on 'saveStash', -> saveStash()
 # 000       000   000  000  0000     000             000  000   000     000
 # 000        0000000   000   000     000        0000000   000  0000000  00000000
 
-defaultFontSize = 18
+defaultFontSize = 19
 
 getFontSize = -> window.stash.get 'fontSize', defaultFontSize
 
