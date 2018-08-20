@@ -6,7 +6,7 @@
 000   000  000   000  000  000   000
 ###
 
-{ post, fileList, prefs, slash, empty, args, app, win, fs } = require 'kxk'
+{ post, filelist, prefs, slash, empty, args, app, win, fs } = require 'kxk'
 
 { BrowserWindow } = require 'electron'
 
@@ -83,7 +83,7 @@ class Main extends app
     restoreWindows: ->
     
         fs.ensureDirSync @userData
-        stashFiles = fileList slash.join(@userData, 'old'), matchExt:'noon'
+        stashFiles = filelist slash.join(@userData, 'old'), matchExt:'noon'
         if not empty stashFiles
             for file in stashFiles
                 win = @createWindow()
