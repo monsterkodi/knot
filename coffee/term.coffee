@@ -215,18 +215,18 @@ class Term
         @cols = Math.max 1, Math.floor availableWidth / @size.charWidth
         @rows = @scroll.fullLines
         
-        @lines?.buffer?.reset()
+        # @lines?.buffer?.reset()
         @shell?.resize @cols, @rows
         @lines?.buffer?.resize @cols, @rows
-        
-        @shell?.write 'c\n\x08'
+         
+        # @shell?.write 'c\n\x08'
         for tab in tabs.tabs
             if tab.shell != @shell
                 delete tab.scroll
-                tab.buffer?.reset()
+                # tab.buffer?.reset()
                 tab.shell?.resize @cols, @rows
                 tab.buffer?.resize @cols, @rows
-                tab.shell?.write 'c\n\x08'
+                # tab.shell?.write 'c\n\x08'
         
     #  0000000   0000000   000       0000000  
     # 000       000   000  000      000       

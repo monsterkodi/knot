@@ -34,7 +34,7 @@ class Parse
 
         ch = null
         
-        log 'parse', JSON.stringify data.replace /\x1b/g, '🅴'
+        # log 'parse', JSON.stringify data.replace /\x1b/g, '🅴'
 
         for i in [0...data.length]
             
@@ -182,17 +182,17 @@ class Parse
                                 @buffer.x = col
                                 @buffer.y = row
                                 
-                                log "cursor position #{@buffer.x} #{@buffer.y}"
+                                # log "cursor position #{@buffer.x} #{@buffer.y}"
             
                             when 'J' # erase in display
                                 switch @params[0]
                                     when 0
-                                        log 'erase in display', @params[0]
+                                        # log 'erase in display', @params[0]
                                         @eraseRight @buffer.x, @buffer.y
                                         for j in [@buffer.y + 1...@buffer.rows]
                                             @eraseLine j
                                     when 1
-                                        log 'erase in display', @params[0]
+                                        # log 'erase in display', @params[0]
                                         @eraseLeft @buffer.x, @buffer.y
                                         for j in [@buffer.y-1..0]
                                             @eraseLine j
@@ -222,10 +222,10 @@ class Parse
                                 if not @buffer.prefix
                                     switch @params[0]
                                         when 5 # status report
-                                            log 'status'
+                                            # log 'status'
                                             @send '\x1b[0n'
                                         when 6 # cursor position
-                                            log 'cursor'
+                                            # log 'cursor'
                                             @send  '\x1b[' + (@buffer.y + 1) + ';' + (@buffer.x + 1) + 'R'
                                         else
                                             log "unhandled CSI status report: '#{@params[0]}'"

@@ -6,49 +6,48 @@
 000   000     000        000     000   000
 ###
 
-{ log, _ } = require 'kxk'
+{ valid, log } = require 'kxk'
         
 colors = require './colors'
 defAttr = (257 << 9) | 256
+cache = {}
+
+colorDistance = (r1, g1, b1, r2, g2, b2) ->
+    Math.pow(30 * (r1 - r2), 2) + Math.pow(59 * (g1 - g2), 2) + Math.pow(11 * (b1 - b2), 2)
 
 matchColor = (r1, g1, b1) ->
     
     hash = (r1 << 16) | (g1 << 8) | b1
     
-    if matchColor._cache[hash] != null
-        return matchColor._cache[hash]
+    if valid cache[hash]
+        return cache[hash]
     
     ldiff = Infinity
     li = -1
     
-    for i in [0...colors.rgb.length]
-        c  = colors.rgb[i]
+    for i in [0...colors[258].length]
+        c  = colors[258][i]
         r2 = c[0]
         g2 = c[1]
         b2 = c[2]
         
-        diff = matchColor.distance r1, g1, b1, r2, g2, b2
+        diff = colorDistance r1, g1, b1, r2, g2, b2
         
-        if (diff == 0) 
+        if diff == 0 
             li = i
             break
         
-        if (diff < ldiff) 
+        if diff < ldiff 
             ldiff = diff
             li = i
         
-    matchColor._cache[hash] = li
-    matchColor._cache[hash]
-
-matchColor._cache = {}
-
-matchColor.distance = (r1, g1, b1, r2, g2, b2) ->
-    Math.pow(30 * (r1 - r2), 2) + Math.pow(59 * (g1 - g2), 2) + Math.pow(11 * (b1 - b2), 2)
+    cache[hash] = li
+    cache[hash]
 
 class Attr
     
     @set: (params, curAttr) ->
-        
+
         if params.length == 1 and params[0] == 0
             return defAttr
     
@@ -96,20 +95,18 @@ class Attr
                         fg = matchColor(params[i] & 0xff, params[i + 1] & 0xff, params[i + 2] & 0xff)
                         if fg == -1 then fg = 0x1ff
                         i += 2
-                    if params[i + 1] == 5
+                    else if params[i + 1] == 5
+                        fg = params[i + 2] & 0xff
                         i += 2
-                        p = params[i] & 0xff
-                        fg = p
                 when 48 # bg color 256
                     if params[i + 1] == 2
                         i += 2
                         bg = matchColor(params[i] & 0xff, params[i + 1] & 0xff, params[i + 2] & 0xff)
                         if bg == -1 then bg = 0x1ff
                         i += 2
-                    if params[i + 1] == 5
+                    else if params[i + 1] == 5
+                        bg = params[i + 2] & 0xff
                         i += 2
-                        p = params[i] & 0xff
-                        bg = p
 
                 # when 100 # reset fg/bg
                     # fg = (defAttr >> 9) & 0x1ff
