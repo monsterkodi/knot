@@ -56,13 +56,12 @@ class KeyHandler
             
     onKeyCode: (keyCode, modifiers, info) ->
             
-    
         if info.mod == 'ctrl'
             if keyCode >= 65 and keyCode <= 90
                 log "Keyhandler.onKeyCode #{keyCode} '#{String.fromCharCode keyCode - 64}'"    
-                if keyCode != 67 or empty @selectionText() 
+                if keyCode != 86 and (keyCode != 67 or empty @selectionText()) 
                     @write String.fromCharCode keyCode - 64
-                switch keyCode 
+                switch keyCode
                     when 86, 67 then # ctrl+v, ctrl+c
                     else
                         stopEvent info.event

@@ -34,7 +34,7 @@ class Parse
 
         ch = null
         
-        # log 'parse', JSON.stringify data.replace /\x1b/g, '🅴'
+        log 'parse', JSON.stringify data.replace /\x1b/g, '🅴'
 
         for i in [0...data.length]
             

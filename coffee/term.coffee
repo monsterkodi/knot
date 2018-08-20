@@ -6,7 +6,7 @@
    000     00000000  000   000  000   000  
 ###
 
-{ post, setStyle, slash, empty, elem, os, log, $ } = require 'kxk'
+{ post, stopEvent, setStyle, slash, empty, elem, os, log, $ } = require 'kxk'
 
 { Terminal } = require 'term.js'
 pty          = require 'node-pty'
@@ -56,7 +56,8 @@ class Term
         document.addEventListener 'selectionchange', @onSelectionChange
         window.addEventListener 'resize', @onResize
         
-        document.defaultView.addEventListener 'paste', @onPaste
+        # document.defaultView.addEventListener 'paste', @onPaste
+        document.addEventListener 'paste', @onPaste
         
     # 00000000    0000000    0000000  000000000  00000000  
     # 000   000  000   000  000          000     000       
@@ -68,6 +69,8 @@ class Term
 
         if event.clipboardData
             @shell.write event.clipboardData.getData 'text/plain'
+            
+        stopEvent event
         
     # 000000000   0000000   0000000    
     #    000     000   000  000   000  
