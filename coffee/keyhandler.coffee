@@ -11,7 +11,6 @@
 ESC = '\x1b'
 electron = require 'electron'
 
-
 class KeyHandler
 
     constructor: (@term) -> 
@@ -28,20 +27,10 @@ class KeyHandler
 
     onCombo: (combo, info) =>
 
-        # log 'keyhandler.onCombo', info.mod, info.key, info.combo, info.char
+        log 'keyhandler.onCombo', info.mod, info.key, info.combo, info.char
         # return stopEvent(info.event) if 'unhandled' != window.keys.globalModKeyComboEvent info.mod, info.key, info.combo, info.event
         
         switch combo
-            # when 'ctrl+v'           then return @paste()
-            # when 'ctrl+c'    
-                # selection = @term.term._core.selectionManager?.selectionText
-                # if valid selection
-                    # electron.clipboard.writeText selection
-            # when 'ctrl+x'           
-                # selection = @term.term._core.selectionManager?.selectionText
-                # if valid selection
-                    # electron.clipboard.writeText selection
-                    
             when 'enter'
                 return @write '\x0d'
             
@@ -58,8 +47,8 @@ class KeyHandler
             
         if info.mod == 'ctrl'
             if keyCode >= 65 and keyCode <= 90
-                log "Keyhandler.onKeyCode #{keyCode} '#{String.fromCharCode keyCode - 64}'"    
                 if keyCode != 86 and (keyCode != 67 or empty @selectionText()) 
+                    log "Keyhandler.onKeyCode #{keyCode} '#{String.fromCharCode keyCode - 64}'"    
                     @write String.fromCharCode keyCode - 64
                 switch keyCode
                     when 86, 67 then # ctrl+v, ctrl+c
@@ -87,8 +76,8 @@ class KeyHandler
                     
             when 37  then stopEvent event, writeMod '1', 'D', 'D'  # left-arrow 
             when 39  then stopEvent event, writeMod '1', 'C', 'C'  # right-arrow
-            when 38  then stopEvent event, writeMod '1', 'A', 'A'  # up-arrow    ^[OA if @applicationCursor?
-            when 40  then stopEvent event, writeMod '1', 'B', 'B'  # down-arrow  ^[OB if @applicationCursor?
+            when 38  then stopEvent event, writeMod '1', 'A', 'A'  # up   ^[OA if @applicationCursor?
+            when 40  then stopEvent event, writeMod '1', 'B', 'B'  # down ^[OB if @applicationCursor?
             when 33  then stopEvent event, writeMod '5', '~', '5~' # page up
             when 34  then stopEvent event, writeMod '6', '~', '6~' # page down
             when 35  then stopEvent event, writeMod '1', 'F', 'F'  # end

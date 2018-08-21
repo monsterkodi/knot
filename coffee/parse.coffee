@@ -225,7 +225,7 @@ class Parse
                                             # log 'status'
                                             @send '\x1b[0n'
                                         when 6 # cursor position
-                                            # log 'cursor'
+                                            log 'cursor', (@buffer.y + 1), (@buffer.x + 1) 
                                             @send  '\x1b[' + (@buffer.y + 1) + ';' + (@buffer.x + 1) + 'R'
                                         else
                                             log "unhandled CSI status report: '#{@params[0]}'"
@@ -321,43 +321,7 @@ class Parse
         while @buffer.x % 4 != 0
             @buffer.x += 1
         clamp 0, @buffer.cols - 1, @buffer.x
-           
-    # CSI Ps c  Send Device Attributes (Primary DA).
-    #     Ps = 0  or omitted -> request attributes from terminal.  The
-    #     response depends on the decTerminalID resource setting.
-    #     -> CSI ? 1 ; 2 c  (``VT100 with Advanced Video Option'')
-    #     -> CSI ? 1 ; 0 c  (``VT101 with No Options'')
-    #     -> CSI ? 6 c  (``VT102'')
-    #     -> CSI ? 6 0 ; 1 ; 2 ; 6 ; 8 ; 9 ; 1 5 ; c  (``VT220'')
-    #   The VT100-style response parameters do not mean anything by
-    #   themselves.  VT220 parameters do, telling the host what fea-
-    #   tures the terminal supports:
-    #     Ps = 1  -> 132-columns.
-    #     Ps = 2  -> Printer.
-    #     Ps = 6  -> Selective erase.
-    #     Ps = 8  -> User-defined keys.
-    #     Ps = 9  -> National replacement character sets.
-    #     Ps = 1 5  -> Technical characters.
-    #     Ps = 2 2  -> ANSI color, e.g., VT525.
-    #     Ps = 2 9  -> ANSI text locator (i.e., DEC Locator mode).
-    # CSI > Ps c
-    #   Send Device Attributes (Secondary DA).
-    #     Ps = 0  or omitted -> request the terminal's identification
-    #     code.  The response depends on the decTerminalID resource set-
-    #     ting.  It should apply only to VT220 and up, but xterm extends
-    #     this to VT100.
-    #     -> CSI  > Pp ; Pv ; Pc c
-    #   where Pp denotes the terminal type
-    #     Pp = 0  -> ``VT100''.
-    #     Pp = 1  -> ``VT220''.
-    #   and Pv is the firmware version (for xterm, this was originally
-    #   the XFree86 patch number, starting with 95).  In a DEC termi-
-    #   nal, Pc indicates the ROM cartridge registration number and is
-    #   always zero.
-    # More information:
-    #   xterm/charproc.c - line 2012, for more information.
-    #   vim responds with ^[[?0c or ^[[?1c after the terminal's response (?)
-    
+               
     send: (data) -> window.term.shell.write data
     
     sendDeviceAttributes: ->
