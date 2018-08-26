@@ -203,7 +203,7 @@ post.on 'menuAction', (action) ->
         when 'Decrease'         then changeFontSize -1
         when 'Reset'            then resetFontSize()
         when 'Clear'            then term.clear()
-        when 'Cut'              then term.cut()
+        when 'Copy'             then term.copy()
         when 'Paste'            then term.paste()
             
         when 'Visual Studio', 'VS Code', 'Atom', 'ko'

@@ -15,7 +15,7 @@ knot
     Quit                    cmdctrl+q
 
 Edit
-    Cut                     cmdctrl+c
+    Copy                    cmdctrl+c
     Paste                   cmdctrl+v
     
 # Editor
