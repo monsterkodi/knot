@@ -14,11 +14,15 @@ knot
     ---
     Quit                    cmdctrl+q
 
-Editor
-    Visual Studio           alt+cmdctrl+1
-    VS Code                 alt+cmdctrl+2
-    Atom                    alt+cmdctrl+3
-    ko                      alt+cmdctrl+4
+Edit
+    Cut                     cmdctrl+c
+    Paste                   cmdctrl+v
+    
+# Editor
+    # Visual Studio           alt+cmdctrl+1
+    # VS Code                 alt+cmdctrl+2
+    # Atom                    alt+cmdctrl+3
+    # ko                      alt+cmdctrl+4
     
 # 000   000  000  00000000  000   000  
 # 000   000  000  000       000 0 000  
@@ -27,10 +31,12 @@ Editor
 #     0      000  00000000  00     00  
 
 View
-    Clear                   alt+cmdctrl+k
+    Clear                   
+        combo      command+k
+        accel      alt+cmdctrl+k
     -
-    Previous Tab            cmdctrl+[ alt+cmdctrl+shift+left cmdctrl+shift+tab
-    Next Tab                cmdctrl+] alt+cmdctrl+shift+right cmdctrl+tab
+    Previous Tab            cmdctrl+[ alt+cmdctrl+shift+left 
+    Next Tab                cmdctrl+] alt+cmdctrl+shift+right
     Close Other Tabs        cmdctrl+shift+w
     ---
     Font Size   

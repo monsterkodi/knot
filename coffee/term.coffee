@@ -56,7 +56,6 @@ class Term
         document.addEventListener 'selectionchange', @onSelectionChange
         window.addEventListener 'resize', @onResize
         
-        # document.defaultView.addEventListener 'paste', @onPaste
         document.addEventListener 'paste', @onPaste
         
     # 00000000    0000000    0000000  000000000  00000000  
@@ -65,8 +64,24 @@ class Term
     # 000        000   000       000     000     000       
     # 000        000   000  0000000      000     00000000  
     
+    currentSelection: ->
+        
+        selection = document.getSelection().toString()
+        if selection.length
+            return selection
+        ''
+    
+    copy: ->
+        if selection = @currentSelection()
+            require('electron').clipboard.writeText selection
+    
+    paste: ->
+        
+        @shell.write require('electron').clipboard.readText()
+    
     onPaste: (event) =>
 
+        log 'paste'
         if event.clipboardData
             @shell.write event.clipboardData.getData 'text/plain'
             

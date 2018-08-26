@@ -203,6 +203,8 @@ post.on 'menuAction', (action) ->
         when 'Decrease'         then changeFontSize -1
         when 'Reset'            then resetFontSize()
         when 'Clear'            then term.clear()
+        when 'Cut'              then term.cut()
+        when 'Paste'            then term.paste()
             
         when 'Visual Studio', 'VS Code', 'Atom', 'ko'
             setEditor action
@@ -215,7 +217,7 @@ post.on 'menuAction', (action) ->
     
 onContext = (items) ->
     [    
-         text:'Clear', accel:'alt+ctrl+k'
+         text:'Clear', combo:'command+k', accel:'alt+ctrl+k'
     ,
          text: ''
     ].concat items
