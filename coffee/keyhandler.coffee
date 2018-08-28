@@ -27,7 +27,7 @@ class KeyHandler
 
     onCombo: (combo, info) =>
 
-        log 'keyhandler.onCombo', info.mod, info.key, info.combo, info.char
+        # log 'keyhandler.onCombo', info.mod, info.key, info.combo, info.char
         # return stopEvent(info.event) if 'unhandled' != window.keys.globalModKeyComboEvent info.mod, info.key, info.combo, info.event
         
         switch combo
@@ -48,7 +48,7 @@ class KeyHandler
         if info.mod == 'ctrl'
             if keyCode >= 65 and keyCode <= 90
                 if keyCode != 86 and (keyCode != 67 or empty @selectionText()) 
-                    log "Keyhandler.onKeyCode #{keyCode} '#{String.fromCharCode keyCode - 64}'"    
+                    # log "Keyhandler.onKeyCode #{keyCode} '#{String.fromCharCode keyCode - 64}'"    
                     @write String.fromCharCode keyCode - 64
                 switch keyCode
                     when 86, 67 then # ctrl+v, ctrl+c

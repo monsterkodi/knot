@@ -49,9 +49,12 @@ class Render
                     if fg == 257
                         fg = 15
                     else if fg < 8 
-                        # log "bold #{fg}"
                         fg += 8
                 
+                if (flags & 32) # dim
+                    if fg < 8 
+                        fg += 259
+                        
                 if (flags & 2) # underline
                     out += 'text-decoration:underline;'
     

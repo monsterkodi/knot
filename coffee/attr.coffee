@@ -65,7 +65,11 @@ class Attr
                     fg = (defAttr >> 9) & 0x1ff
                     bg = defAttr & 0x1ff
                 when 1 # bold text
+                    flags &= ~32
                     flags |= 1
+                when 2 # dim
+                    flags &= ~1
+                    flags |= 32
                 when 4 # underlined text
                     flags |= 2
                 when 5 # blink
@@ -77,6 +81,7 @@ class Attr
                     flags |= 16
                 when 22 # not bold
                     flags &= ~1
+                    flags &= ~32
                 when 24 # not underlined
                     flags &= ~2
                 when 25 # not blink

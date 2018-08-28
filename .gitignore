@@ -7,4 +7,5 @@ bin/*.json
 inno
 css
 js
+term.js
 *.html

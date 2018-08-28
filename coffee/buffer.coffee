@@ -20,13 +20,15 @@ class Buffer
 
     reset: ->
         
-        @lines = [[]]
-        @cache = [[]]
-        @attr  = (257 << 9) | 256
-        @state = 0
-        @x     = 0
-        @y     = 0
-        @lch   = null
+        @lines   = [[]]
+        @cache   = [[]]
+        @attr    = (257 << 9) | 256
+        @state   = 0
+        @x       = 0
+        @y       = 0
+        @prefix  = ''
+        @postfix = ''
+        @lch     = null
         
     resize: (cols, rows) ->
         
