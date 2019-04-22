@@ -29,7 +29,7 @@ class Minimap
         @elem.appendChild @topbot
         @elem.appendChild @lines
 
-        @elem.addEventListener 'wheel', @term.scrollbar?.onWheel
+        # @elem.addEventListener 'wheel', @term.scrollbar?.onWheel
 
         main =$ '#main'
         main.appendChild  @elem
@@ -69,25 +69,31 @@ class Minimap
     drawLine: (index) -> @drawLines index, index
     drawLines: (top=@scroll.exposeTop, bot=@scroll.exposeBot) ->
 
+        # log "minimap.drawLines1 #{top}, #{bot}"
+        
         ctx = @lines.getContext '2d'
         y = parseInt((top-@scroll.exposeTop)*@scroll.lineHeight)
         ctx.clearRect 0, y, @width, ((bot-@scroll.exposeTop)-(top-@scroll.exposeTop)+1)*@scroll.lineHeight
         return if @scroll.exposeBot < 0
 
-        cache = @term.lines.buffer.cache
-        bot = Math.min bot, cache.length-1
+        # bot = Math.min bot, cache.length-1
         
         return if bot < top
-
+        
         for li in [top..bot]
+            
             y = parseInt((li-@scroll.exposeTop)*@scroll.lineHeight)
-            diss = cache[li].diss
-            if diss?.length
-                for r in diss
-                    break if 2*r.start >= @width
-                    ctx.fillStyle = colors[r.color]
-                    ctx.fillRect @offsetLeft+2*r.start, y, 2*r.length, @scroll.lineHeight
 
+            line = @term.bufferLines().get li
+            for i in [0...line.length]
+                break if 2*i >= @width
+                charData = line.get(i)
+                if charData[3] != 0 and charData[3] != 32
+                    attr = charData[0]
+                    fg   = (attr >> 9) & 0x1ff
+                    ctx.fillStyle = colors[fg]
+                    ctx.fillRect @offsetLeft+2*i, y, 2, @scroll.lineHeight
+            
     colorForClassnames: (clss) ->
 
         if not @colors[clss]?
@@ -184,7 +190,7 @@ class Minimap
 
     onStart: (drag,event) => 
     
-        window.term.scroll.wheel.accum = 0
+        # window.term.scroll.wheel.accum = 0
         @jumpToLine @lineIndexForEvent(event), event
 
     jumpToLine: (li, event) ->
@@ -231,7 +237,7 @@ class Minimap
         x = parseInt @width/4
         t = "translate3d(#{x}px, #{y}px, 0px) scale3d(0.5, 0.5, 1)"
 
-        @lines.style.transform   = t
+        @lines.style.transform = t
 
     #  0000000  000      00000000   0000000   00000000
     # 000       000      000       000   000  000   000
@@ -245,7 +251,9 @@ class Minimap
         ctx.clearRect 0, (top-@scroll.exposeTop)*@scroll.lineHeight, 2*@width, (bot-top)*@scroll.lineHeight
 
     clearAll: =>
-
+        log 'clearAll'
+        ctx = @lines.getContext '2d'
+        ctx.clearRect 0, 0, @lines.width, @lines.height
         @topbot.width  = @topbot.width
         @lines.width   = @lines.width
         @topbot.style.height = '0'

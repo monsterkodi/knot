@@ -15,12 +15,13 @@ class Scroll
 
     constructor: (@view) ->
 
-        post.on 'combo', @onCombo
+        post.on 'combo',    @onCombo
+        post.on 'scrollBy', @onScrollBy
                 
         @resetSize()
         @resetLines()
         
-        @wheel = new Wheel @
+        # @wheel = new Wheel @
         
     resetSize: ->
         
@@ -72,7 +73,7 @@ class Scroll
         @top        = data.top
         @bot        = data.bot
         post.emit 'scroll', @scroll, @
-        @view.style.transform = "translate3d(0,-#{@offsetTop}px, 0)"
+        # @view.style.transform = "translate3d(0,-#{@offsetTop}px, 0)"
         
     # 00000000   00000000   0000000  00000000  000000000
     # 000   000  000       000       000          000   
@@ -133,6 +134,10 @@ class Scroll
             when 'home'      then @to 0
             when 'end'       then @to @scrollMax
     
+    onScrollBy: (delta) => # emitted by wheel
+    
+        @by delta
+            
     # 0000000    000   000
     # 000   000   000 000 
     # 0000000      00000  
@@ -144,8 +149,8 @@ class Scroll
     by: (delta, x) =>
         
         return if @viewLines < 0
-        
-        @view.scrollLeft += x if x
+                
+        # @view.scrollLeft += x if x
         
         oldTop = @top
         oldBot = @bot
@@ -155,30 +160,30 @@ class Scroll
         
         @scroll = parseInt clamp 0, @scrollMax, @scroll+delta
         
-        top = parseInt @scroll / @lineHeight
+        top  = parseInt @scroll / @lineHeight
         
         @top = Math.max 0, top
         @bot = Math.min @top+@viewLines-1
         
-        if oldTop != @top or oldBot != @bot
-        
-            if (@top > oldBot) or (@bot < oldTop) or (oldBot < oldTop) 
-                # new range outside, start from scratch
-                num = @bot - @top + 1
-                
-                if num > 0 
-                    post.emit 'showLines', @top, @bot, num
-    
-            else   
-                
-                num = @top - oldTop
-                
-                if 0 < Math.abs num
-                    post.emit 'shiftLines', @top, @bot, num
-                    
-        if oldBot > -1 and oldTop > -1 and oldBot - oldTop != @bot - @top
-            # log 'changeLines'
-            post.emit 'changeLines', oldBot-oldTop, @bot-@top
+        # if oldTop != @top or oldBot != @bot
+#         
+            # if (@top > oldBot) or (@bot < oldTop) or (oldBot < oldTop) 
+                # # new range outside, start from scratch
+                # num = @bot - @top + 1
+#                 
+                # if num > 0 
+                    # post.emit 'showLines', @top, @bot, num
+#     
+            # else   
+#                 
+                # num = @top - oldTop
+#                 
+                # if 0 < Math.abs num
+                    # post.emit 'shiftLines', @top, @bot, num
+#                     
+        # if oldBot > -1 and oldTop > -1 and oldBot - oldTop != @bot - @top
+            # # log 'changeLines'
+            # post.emit 'changeLines', oldBot-oldTop, @bot-@top
 
         offset = @scroll - @top * @lineHeight
         
@@ -186,7 +191,7 @@ class Scroll
                         
             @offsetTop = offset
             @updateOffset()
-            post.emit 'scroll', @scroll, @                       
+            post.emit 'scroll', @scroll, @      
             
     #  0000000   00000000  00000000   0000000  00000000  000000000  
     # 000   000  000       000       000       000          000     
@@ -196,13 +201,13 @@ class Scroll
     
     updateOffset: ->
         
-        window.term?.lines.scrollTop @top
-        @view.style.transform = "translate3d(0,-#{@offsetTop}px, 0)"
+        # window.term?.lines.scrollTop @top
+        # @view.style.transform = "translate3d(0,-#{@offsetTop}px, 0)"
 
     toBottom: ->
         log "toBottom #{@scroll} #{@scrollMax}"
         @to @scrollMax
-        @view.style.transform = "translate3d(0,-#{@offsetTop}px, 0)"
+        # @view.style.transform = "translate3d(0,-#{@offsetTop}px, 0)"
         log "toBottom emit #{@scroll}"
         post.emit 'scroll', @scroll, @
         

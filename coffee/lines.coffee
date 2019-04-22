@@ -120,7 +120,7 @@ class Lines
             html = Render.line @buffer.lines[index], @buffer
             terminal.appendChild elem class:'line', html:html
             
-        @term.updateCursor()
+        # @term.updateCursor()
         
     # 00000000   00000000   0000000  00000000  000000000  
     # 000   000  000       000       000          000     

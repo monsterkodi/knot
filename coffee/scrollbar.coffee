@@ -34,7 +34,7 @@ class Scrollbar
             onMove:  @onDrag
             cursor:  'ns-resize'
 
-        @elem.addEventListener 'wheel', @onWheel
+        # @elem.addEventListener 'wheel', @onWheel
 
     #  0000000  000000000   0000000   00000000   000000000
     # 000          000     000   000  000   000     000

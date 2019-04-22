@@ -6,43 +6,59 @@
    000     00000000  000   000  000   000  
 ###
 
-{ post, stopEvent, setStyle, slash, empty, elem, os, log, $ } = require 'kxk'
+{ post, keyinfo, stopEvent, setStyle, slash, empty, elem, os, str, log, $ } = require 'kxk'
 
-{ Terminal } = require 'term.js'
+{ Terminal } = require 'xterm'
 pty          = require 'node-pty'
 Scroll       = require './scroll'
 ScrollBar    = require './scrollbar'
 Minimap      = require './minimap'
 KeyHandler   = require './keyhandler'
-Render       = require './render'
-Lines        = require './lines'
-Cursor       = require './cursor'
-Buffer       = require './buffer'
-
-defAttr = (257 << 9) | 256
 
 class Term
 
     constructor: ->
         
-        @num   = 0   
-        @main  =$ '#main' 
+        @term = new Terminal enableBold: true
+            
+        @term.attachCustomKeyEventHandler (event) => 
+
+            info = keyinfo.forEvent event
+            info.event = event
+            
+            if (event.getModifierState('Control') or event.getModifierState('Meta')) and event.key.toLowerCase() == 'v' 
+                event.preventDefault()
+                return false
+
+            if event.getModifierState('Meta') and event.key.startsWith('Arrow') 
+                return false
+
+            post.emit 'combo', info.combo, info
+            true
+            
+        @term.open $ '#terminal'
         
-        @rows = 200
-        @cols = 1000
+        @term.setOption 'fontFamily', '"Meslo LG S", "Bitstream Vera Sans Mono", "Menlo", "Cousine", "DejaVu Sans Mono", "Andale Mono", "monospace-fallback", monospace'
+        @term.setOption 'scrollback', 100000
+        @term.setOption 'cursorBlink', true
+        @term.setOption 'fontSize', 18
+
+        @term.on 'scroll', (top) => 
+            @scroll.to Math.round top*@size.lineHeight
+            
+        @term.on 'refresh', (info) => 
+            @minimap.drawLines info.start, info.end
         
+        @main =$ '#main' 
+        @num  = 0   
+        @rows = 0
+        @cols = 0
         @size =
-            charWidth:  12
-            lineHeight: 20
+            charWidth:  0
+            lineHeight: 0
         
         @keyHandler = new KeyHandler @
-        @cursor     = new Cursor @
-        @lines      = new Lines @
-                    
-        fromHex = (css) ->
-            css:  css
-            rgba: parseInt(css.slice(1), 16) << 8 | 0xFF
-        
+                            
         @scroll     = new Scroll    $ '#terminal'
         @scrollBar  = new ScrollBar @scroll
         @minimap    = new Minimap   @
@@ -50,12 +66,12 @@ class Term
         @main.addEventListener 'click', @onClick
         
         post.on 'fontSize', @onFontSize
+        post.on 'scroll',   @onScroll
         post.on 'tab',      @onTab
         @onFontSize window.stash.get 'fontSize'
 
-        document.addEventListener 'selectionchange', @onSelectionChange
+        # document.addEventListener 'selectionchange', @onSelectionChange
         window.addEventListener 'resize', @onResize
-        
         document.addEventListener 'paste', @onPaste
         
     # 00000000    0000000    0000000  000000000  00000000  
@@ -98,11 +114,8 @@ class Term
         @storeTab()
         
         @shell        = tab.shell
-        @lines.buffer = tab.buffer
-        @lines.refresh()
         @scroll.restore tab.scroll
         @minimap.drawLines()
-        @updateCursor()
     
     addTab: (path) ->
         
@@ -112,7 +125,6 @@ class Term
         
         tab = tabs.addTab path
         @scroll.reset()
-        @lines.reset()
         @spawnShell path
 
     storeTab: ->
@@ -120,7 +132,6 @@ class Term
         if tab = tabs.activeTab()
             tab.shell  = @shell
             tab.scroll = @scroll.data()
-            tab.buffer = @lines.buffer
         
     tabForShell: (shell) ->
         
@@ -141,10 +152,11 @@ class Term
     
     spawnShell: (path=process.env.HOME) =>
         
-        process.env.TERM = 'xterm-color'
+        process.env.TERM = 'xterm-256color'
         process.env.LANG = 'en_US.UTF-8'
+        process.env.TERM_PROGRAM = 'knot'
 
-        log 'spawnShell', process.env.TERM, path
+        log 'spawnShell', process.env, path
         
         argl = []
         if slash.win()
@@ -170,6 +182,10 @@ class Term
         @shell.on 'exit',  onExit  @shell
         @shell.on 'error', @onShellError
         
+        @onResize()
+        @clear()
+        @clear()
+        
     restartShell: =>
 
         @shell.destroy()
@@ -180,21 +196,20 @@ class Term
     onShellExit: (shell) => tabs.closeTab @tabForShell shell
     onShellData: (shell, data) =>
 
-        if shell != @shell
-            if tab = @tabForShell shell
-                @lines.writeBufferData tab.buffer, data, tab
-            return
-            
-        @lines.writeData data
-        
-        @minimap.drawLine @lines.buffer.lines.length-1
-        
-        @scroll.setNumLines @lines.buffer.lines.length
-        @scroll.by @size.lineHeight * @lines.buffer.lines.length
-                
-    updateCursor: ->
+        # if shell != @shell
+            # if tab = @tabForShell shell
+                # @lines.writeBufferData tab.buffer, data, tab
+            # return
 
-        @cursor.setPos @lines.buffer.x, @lines.buffer.y - @lines.buffer.top
+        @term.write data
+            
+        # @minimap.drawLine @lines.buffer.lines.length-1
+#         
+        @scroll.setNumLines @bufferLength()
+        # @scroll.by @size.lineHeight * @bufferLength()
+              
+    bufferLength: -> @term._core.buffer.lines.length
+    bufferLines: -> @term._core.buffer.lines
         
     #  0000000  00000000  000      00000000   0000000  000000000  
     # 000       000       000      000       000          000     
@@ -221,69 +236,28 @@ class Term
     # 000   000  00000000  0000000   000  0000000  00000000  
     
     onResize: =>
-                
-        @scroll.setViewHeight @main.clientHeight
-        
-        availableHeight = @main.clientHeight
-        availableWidth  = @main.clientWidth - 140
-
-        @calcSize()
-        @scroll.setViewHeight availableHeight
-        
-        @cols = Math.max 1, Math.floor availableWidth / @size.charWidth
-        @rows = @scroll.fullLines
-        
-        # @lines?.buffer?.reset()
-        @shell?.resize @cols, @rows
-        @lines?.buffer?.resize @cols, @rows
          
-        # @shell?.write 'c\n\x08'
-        for tab in tabs.tabs
-            if tab.shell != @shell
-                delete tab.scroll
-                # tab.buffer?.reset()
-                tab.shell?.resize @cols, @rows
-                tab.buffer?.resize @cols, @rows
-                # tab.shell?.write 'c\n\x08'
-        
-    #  0000000   0000000   000       0000000  
-    # 000       000   000  000      000       
-    # 000       000000000  000      000       
-    # 000       000   000  000      000       
-    #  0000000  000   000  0000000   0000000  
-    
-    calcSize: =>
-        
-        terminal =$ '#terminal'
-        
-        return if not terminal
+        cme = $ '.xterm-char-measure-element'
+        @size.lineHeight = cme.clientHeight
+        @size.charWidth  = cme.clientWidth
                 
-        html = Render.line [[256, 'x'], [0, 'y']], new Buffer @
+        height = @main.clientHeight
+        width  = @main.clientWidth - 140
         
-        if empty terminal.children
-            line = elem class:'line', html:html
-            terminal.appendChild line
-        else
-            line = terminal.firstChild
-            old = line.innerHTML
-            line.innerHTML = html
-        
-        if not line.children[0]
-            log 'line????', line.innerHTML, empty terminal.children
-            return
-            
-        tr = terminal.getBoundingClientRect()
-        br = line.children[0].getBoundingClientRect()
-        
-        if old
-            terminal.firstChild.innerHTML = old
-            
-        @size.lineHeight = br.height
-        @size.charWidth  = br.width
-        @size.offsetTop  = br.top - tr.top
-        @size.offsetLeft = br.left - tr.left
+        @cols = parseInt width/@size.charWidth
+        @rows = parseInt height/@size.lineHeight
         
         @scroll.setLineHeight @size.lineHeight
+        @scroll.setViewHeight height
+        log @scroll.fullLines, @rows
+        @term.resize @cols, @rows
+        @shell?.resize @cols, @rows
+
+        # for tab in tabs.tabs
+            # if tab.shell != @shell
+                # delete tab.scroll
+                # tab.shell?.resize @cols, @rows
+                # tab.buffer?.resize @cols, @rows
         
     #  0000000  000      00000000   0000000   00000000   
     # 000       000      000       000   000  000   000  
@@ -292,6 +266,9 @@ class Term
     #  0000000  0000000  00000000  000   000  000   000  
     
     clear: -> 
+        
+        @minimap.clearAll()
+        
         @shell.write 'c\n\x08'
             
     # 00000000   0000000   000   000  000000000       0000000  000  0000000  00000000  
@@ -302,15 +279,30 @@ class Term
 
     onFontSize: (size) =>
         
-        return if not @main?
-        return if size <= 0
-        
-        setStyle "#terminal", 'fontSize', "#{size}px"
-        @onResize()
-        setStyle "#cursor", 'width', "#{@size.charWidth-1}px"
-        setStyle "#cursor", 'height', "#{@size.lineHeight-1}px"
-        @updateCursor()
+        # return if not @main?
+        # return if size <= 0
+#         
+        # setStyle "#terminal", 'fontSize', "#{size}px"
+        # @onResize()
+        # setStyle "#cursor", 'width', "#{@size.charWidth-1}px"
+        # setStyle "#cursor", 'height', "#{@size.lineHeight-1}px"
+        # @updateCursor()
 
+    #  0000000   0000000  00000000    0000000   000      000      
+    # 000       000       000   000  000   000  000      000      
+    # 0000000   000       0000000    000   000  000      000      
+    #      000  000       000   000  000   000  000      000      
+    # 0000000    0000000  000   000   0000000   0000000  0000000  
+    
+    onScroll: (scroll) =>
+        
+        top = Math.round(scroll / @size.lineHeight)
+        
+        scrollAmount = top - @term._core.buffer.ydisp
+        # log "onScroll #{top} #{scrollAmount}"
+        if scrollAmount != 0
+            @term.scrollLines scrollAmount, true
+        
     #  0000000  000      000   0000000  000   000  
     # 000       000      000  000       000  000   
     # 000       000      000  000       0000000    

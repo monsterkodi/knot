@@ -6,7 +6,7 @@
 00     00  000   000  00000000  00000000  0000000
 ###
 
-{ stopEvent, keyinfo, clamp, log } = require 'kxk'
+{ stopEvent, keyinfo, post, clamp } = require 'kxk'
 
 log = console.log
 
@@ -34,7 +34,8 @@ class Wheel
         delta = event.deltaY * scrollFactor()
         
         if event.target.className != 'minimap'
-            window.term.scroll.by 1 * window.term.scroll.lineHeight * delta/100
+            # window.term.scroll.by 1 * window.term.scroll.lineHeight * delta/100
+            post.emit 'scrollBy', delta/100
             @accum = 0
         else
             if (@accum < 0 and delta > 0) or (@accum > 0 and delta < 0)
@@ -50,7 +51,8 @@ class Wheel
         
         @accum = clamp -10000, 10000, @accum * 0.999
             
-        window.term.scroll.by @accum/100        
+        # window.term.scroll.by @accum/100  
+        post.emit 'scrollBy', @accum/100  
 
         if Math.abs(@accum) < 2
             @accum = 0

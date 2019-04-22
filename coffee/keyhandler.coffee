@@ -17,7 +17,9 @@ class KeyHandler
     
         post.on 'combo', @onCombo
         
-    write: (data) => @term.shell.write data
+    write: (data) => 
+    
+        @term.shell.write data
         
     #  0000000   0000000   00     00  0000000     0000000   
     # 000       000   000  000   000  000   000  000   000  

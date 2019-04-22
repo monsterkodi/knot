@@ -144,7 +144,7 @@ show = () ->
             log s + reset
     log " "
 		
-show()
+# show()
 
 #  0000000   0000000   000       0000000   00000000    0000000  
 # 000       000   000  000      000   000  000   000  000       
@@ -185,8 +185,9 @@ for i in [0...24] # 232-255
     r = hex 8 + i * 10
     colors[i+232] = '#' + r + r + r
     
-colors[256] = '#000000' # background
-colors[257] = '#f0f0f0' # foreground
+# colors[256] = '#000000' # background
+colors[256] = '#ffffff' # background
+colors[257] = '#fafafa' # foreground
 
 colors[258] = colors.map (c) ->
     col16 = parseInt c.substring(1), 16

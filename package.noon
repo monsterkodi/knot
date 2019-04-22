@@ -1,6 +1,6 @@
 name            knot
 productName     knot
-version         0.15.0
+version         0.17.0
 description     terminal
 main            js/main.js
 repository
@@ -20,13 +20,12 @@ dependencies
                 ansi-256-colors  ^1.1.0
                 kork            ../kork
                 kxk             ../kxk
-                node-pty        ^0.7.6
-                term.js         0.0.7
-                xterm           ^3.5.1
+                node-pty        ^0.8.1
+                xterm           ^3.12.2
 devDependencies
-                electron        ^2.0.4
-                electron-packager  ^12.1.0
-                electron-rebuild  ^1.8.1
-                mocha           ^5.2.0
+                electron        ^4.1.4
+                electron-packager  ^13.1.1
+                electron-rebuild  ^1.8.4
                 assert          ^1.4.1
-                chai            ^4.1.2
+                chai            ^4.2.0
+                mocha           ^5.2.0
