@@ -69,19 +69,17 @@ class Minimap
     drawLine: (index) -> @drawLines index, index
     drawLines: (top=@scroll.exposeTop, bot=@scroll.exposeBot) ->
 
-        
         ctx = @lines.getContext '2d'
-        y = parseInt((top-@scroll.exposeTop)*@scroll.lineHeight)
+        y = parseInt (top-@scroll.exposeTop)*@scroll.lineHeight
         ctx.clearRect 0, y, @width, ((bot-@scroll.exposeTop)-(top-@scroll.exposeTop)+1)*@scroll.lineHeight
         return if @scroll.exposeBot < 0
 
         return if bot < top
         
-        log "minimap.drawLines #{top} #{bot}"
+        # log "minimap.drawLines #{top} #{bot}"
         for li in [top..bot]
             
-            y = parseInt((li-@scroll.exposeTop)*@scroll.lineHeight)
-
+            y = parseInt (li-@scroll.exposeTop)*@scroll.lineHeight
             line = @term.bufferLines().get li
             for i in [0...line.length]
                 break if 2*i >= @width
@@ -92,33 +90,6 @@ class Minimap
                     ctx.fillStyle = colors[fg]
                     ctx.fillRect @offsetLeft+2*i, y, 2, @scroll.lineHeight
             
-    colorForClassnames: (clss) ->
-
-        if not @colors[clss]?
-
-            div = elem class: clss
-            document.body.appendChild div
-            computedStyle = window.getComputedStyle(div)
-            color = computedStyle.color
-            opacity = computedStyle.opacity
-            if opacity != '1'
-                color = 'rgba(' + color.slice(4, color.length-2) + ', ' + opacity + ')' 
-            @colors[clss] = color
-            div.remove()
-
-        return @colors[clss]
-              
-    colorForStyle: (styl) ->
-
-        if not @colors[styl]?
-            div = elem 'div'
-            div.style = styl
-            document.body.appendChild div
-            @colors[styl] = window.getComputedStyle(div).color
-            div.remove()
-
-        return @colors[styl]
-        
     drawTopBot: =>
 
         return if @scroll.exposeBot < 0

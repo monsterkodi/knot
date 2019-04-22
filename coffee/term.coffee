@@ -21,22 +21,7 @@ class Term
         
         @term = new Terminal enableBold: true
             
-        @term.attachCustomKeyEventHandler (event) => 
-
-            return false
-            
-            info = keyinfo.forEvent event
-            info.event = event
-            
-            if (event.getModifierState('Control') or event.getModifierState('Meta')) and event.key.toLowerCase() == 'v' 
-                event.preventDefault()
-                return false
-
-            if event.getModifierState('Meta') and event.key.startsWith('Arrow') 
-                return false
-
-            post.emit 'combo', info.combo, info
-            true
+        @term.attachCustomKeyEventHandler (event) => false
             
         @term.open $ '#terminal'
         
@@ -45,16 +30,11 @@ class Term
         @term.setOption 'cursorBlink', true
         @term.setOption 'fontSize', 18
 
-        @term.on 'scroll', (top) =>
-            # log "term.scroll #{top}"
-            @scroll.to Math.round top*@size.lineHeight
-            
-        @term.on 'refresh', (info) => 
-            log 'top', @bufferTop()
-            log 'info', info
-            @minimap.drawLines info.start+@bufferTop(), info.end+@bufferTop()
+        @term.on 'scroll',  (top)  => @scroll.to Math.round top*@size.lineHeight
+        @term.on 'refresh', (info) => @minimap.drawLines info.start+@bufferTop(), info.end+@bufferTop()
             
         @term.on 'selection', @onSelectionChange
+        @term.on 'data', (d) -> log 'data', d
 
         @main =$ '#main' 
         @num  = 0   
@@ -78,7 +58,6 @@ class Term
         @onFontSize window.stash.get 'fontSize'
 
         window.addEventListener 'resize', @onResize
-        document.addEventListener 'paste', @onPaste
         
     # 00000000    0000000    0000000  000000000  00000000  
     # 000   000  000   000  000          000     000       
@@ -86,29 +65,9 @@ class Term
     # 000        000   000       000     000     000       
     # 000        000   000  0000000      000     00000000  
     
-    currentSelection: ->
-        
-        selection = document.getSelection().toString()
-        if selection.length
-            return selection
-        ''
+    copy:  ->
+    paste: -> @shell.write require('electron').clipboard.readText()
     
-    copy: ->
-        if selection = @currentSelection()
-            require('electron').clipboard.writeText selection
-    
-    paste: ->
-        
-        @shell.write require('electron').clipboard.readText()
-    
-    onPaste: (event) =>
-
-        log 'paste'
-        if event.clipboardData
-            @shell.write event.clipboardData.getData 'text/plain'
-            
-        stopEvent event
-        
     # 000000000   0000000   0000000    
     #    000     000   000  000   000  
     #    000     000000000  0000000    
@@ -226,15 +185,6 @@ class Term
 
         @selectionText = @term._core.selectionManager.selectionText
         require('electron').clipboard.writeText @selectionText
-        # sel = window.getSelection()
-        # @selectionText = ''
-        # if sel.rangeCount > 0
-            # texts = []
-            # range = sel.getRangeAt 0
-            # contents = range.cloneContents()
-            # for node in contents.children
-                # texts.push node.innerText
-            # @selectionText = texts.join '\n'
             
     # 00000000   00000000   0000000  000  0000000  00000000  
     # 000   000  000       000       000     000   000       
@@ -273,10 +223,7 @@ class Term
     
     clear: -> 
         
-        log 'term.clear'
-        
         @minimap.clearAll()
-        
         @shell.write 'c\n\x08'
             
     # 00000000   0000000   000   000  000000000       0000000  000  0000000  00000000  
@@ -287,9 +234,9 @@ class Term
 
     onFontSize: (size) =>
         
-        return if not @main?
-        @term.setOption 'fontSize', size
-        @onResize()
+        if @main?
+            @term.setOption 'fontSize', size
+            @onResize()
 
     #  0000000   0000000  00000000    0000000   000      000      
     # 000       000       000   000  000   000  000      000      
@@ -302,16 +249,7 @@ class Term
         top = Math.ceil scroll / @size.lineHeight
         
         scrollAmount = top - @term._core.buffer.ydisp
-        # log "onScroll #{top} #{scrollAmount}"
         if scrollAmount != 0
             @term.scrollLines scrollAmount, true
-        
-    #  0000000  000      000   0000000  000   000  
-    # 000       000      000  000       000  000   
-    # 000       000      000  000       0000000    
-    # 000       000      000  000       000  000   
-    #  0000000  0000000  000   0000000  000   000  
-    
-    onClick: (event) ->
         
 module.exports = Term

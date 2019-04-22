@@ -17,9 +17,7 @@ class KeyHandler
     
         post.on 'combo', @onCombo
         
-    write: (data) => 
-    
-        @term.shell.write data
+    write: (data) => @term.shell.write data
         
     #  0000000   0000000   00     00  0000000     0000000   
     # 000       000   000  000   000  000   000  000   000  
@@ -30,7 +28,6 @@ class KeyHandler
     onCombo: (combo, info) =>
 
         # log 'keyhandler.onCombo', info.mod, info.key, info.combo, info.char
-        # return stopEvent(info.event) if 'unhandled' != window.keys.globalModKeyComboEvent info.mod, info.key, info.combo, info.event
         
         switch combo
             when 'enter'
@@ -43,13 +40,17 @@ class KeyHandler
             modifiers = (event.shiftKey and 1 or 0) | (event.altKey and 2 or 0) | (event.ctrlKey and 4 or 0) | (event.metaKey and 8 or 0)
             @onKeyCode event.keyCode, modifiers, info
         
-    selectionText: -> window.getSelection().toString()
-            
+    # 000   000  00000000  000   000   0000000   0000000   0000000    00000000  
+    # 000  000   000        000 000   000       000   000  000   000  000       
+    # 0000000    0000000     00000    000       000   000  000   000  0000000   
+    # 000  000   000          000     000       000   000  000   000  000       
+    # 000   000  00000000     000      0000000   0000000   0000000    00000000  
+    
     onKeyCode: (keyCode, modifiers, info) ->
             
         if info.mod == 'ctrl'
             if keyCode >= 65 and keyCode <= 90
-                if keyCode != 86 and (keyCode != 67 or empty @selectionText()) 
+                if keyCode != 86
                     @write String.fromCharCode keyCode - 64
                 switch keyCode
                     when 86, 67 then # ctrl+v, ctrl+c
