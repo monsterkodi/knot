@@ -23,6 +23,8 @@ class Term
             
         @term.attachCustomKeyEventHandler (event) => 
 
+            return false
+            
             info = keyinfo.forEvent event
             info.event = event
             
@@ -43,12 +45,17 @@ class Term
         @term.setOption 'cursorBlink', true
         @term.setOption 'fontSize', 18
 
-        @term.on 'scroll', (top) => 
+        @term.on 'scroll', (top) =>
+            # log "term.scroll #{top}"
             @scroll.to Math.round top*@size.lineHeight
             
         @term.on 'refresh', (info) => 
-            @minimap.drawLines info.start, info.end
-        
+            log 'top', @bufferTop()
+            log 'info', info
+            @minimap.drawLines info.start+@bufferTop(), info.end+@bufferTop()
+            
+        @term.on 'selection', @onSelectionChange
+
         @main =$ '#main' 
         @num  = 0   
         @rows = 0
@@ -70,7 +77,6 @@ class Term
         post.on 'tab',      @onTab
         @onFontSize window.stash.get 'fontSize'
 
-        # document.addEventListener 'selectionchange', @onSelectionChange
         window.addEventListener 'resize', @onResize
         document.addEventListener 'paste', @onPaste
         
@@ -156,7 +162,7 @@ class Term
         process.env.LANG = 'en_US.UTF-8'
         process.env.TERM_PROGRAM = 'knot'
 
-        log 'spawnShell', process.env, path
+        # log 'spawnShell', process.env, path
         
         argl = []
         if slash.win()
@@ -203,13 +209,12 @@ class Term
 
         @term.write data
             
-        # @minimap.drawLine @lines.buffer.lines.length-1
-#         
         @scroll.setNumLines @bufferLength()
-        # @scroll.by @size.lineHeight * @bufferLength()
+        @scroll.by @size.lineHeight * @bufferLength()
               
+    bufferTop:    -> @term._core.buffer.ydisp
     bufferLength: -> @term._core.buffer.lines.length
-    bufferLines: -> @term._core.buffer.lines
+    bufferLines:  -> @term._core.buffer.lines
         
     #  0000000  00000000  000      00000000   0000000  000000000  
     # 000       000       000      000       000          000     
@@ -219,15 +224,17 @@ class Term
     
     onSelectionChange: =>
 
-        sel = window.getSelection()
-        @selectionText = ''
-        if sel.rangeCount > 0
-            texts = []
-            range = sel.getRangeAt 0
-            contents = range.cloneContents()
-            for node in contents.children
-                texts.push node.innerText
-            @selectionText = texts.join '\n'
+        @selectionText = @term._core.selectionManager.selectionText
+        require('electron').clipboard.writeText @selectionText
+        # sel = window.getSelection()
+        # @selectionText = ''
+        # if sel.rangeCount > 0
+            # texts = []
+            # range = sel.getRangeAt 0
+            # contents = range.cloneContents()
+            # for node in contents.children
+                # texts.push node.innerText
+            # @selectionText = texts.join '\n'
             
     # 00000000   00000000   0000000  000  0000000  00000000  
     # 000   000  000       000       000     000   000       
@@ -249,8 +256,7 @@ class Term
         
         @scroll.setLineHeight @size.lineHeight
         @scroll.setViewHeight height
-        log @scroll.fullLines, @rows
-        @term.resize @cols, @rows
+        @term.resize   @cols, @rows
         @shell?.resize @cols, @rows
 
         # for tab in tabs.tabs
@@ -267,6 +273,8 @@ class Term
     
     clear: -> 
         
+        log 'term.clear'
+        
         @minimap.clearAll()
         
         @shell.write 'c\n\x08'
@@ -279,14 +287,9 @@ class Term
 
     onFontSize: (size) =>
         
-        # return if not @main?
-        # return if size <= 0
-#         
-        # setStyle "#terminal", 'fontSize', "#{size}px"
-        # @onResize()
-        # setStyle "#cursor", 'width', "#{@size.charWidth-1}px"
-        # setStyle "#cursor", 'height', "#{@size.lineHeight-1}px"
-        # @updateCursor()
+        return if not @main?
+        @term.setOption 'fontSize', size
+        @onResize()
 
     #  0000000   0000000  00000000    0000000   000      000      
     # 000       000       000   000  000   000  000      000      
@@ -296,7 +299,7 @@ class Term
     
     onScroll: (scroll) =>
         
-        top = Math.round(scroll / @size.lineHeight)
+        top = Math.ceil scroll / @size.lineHeight
         
         scrollAmount = top - @term._core.buffer.ydisp
         # log "onScroll #{top} #{scrollAmount}"

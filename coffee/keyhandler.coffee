@@ -50,7 +50,6 @@ class KeyHandler
         if info.mod == 'ctrl'
             if keyCode >= 65 and keyCode <= 90
                 if keyCode != 86 and (keyCode != 67 or empty @selectionText()) 
-                    # log "Keyhandler.onKeyCode #{keyCode} '#{String.fromCharCode keyCode - 64}'"    
                     @write String.fromCharCode keyCode - 64
                 switch keyCode
                     when 86, 67 then # ctrl+v, ctrl+c
@@ -66,7 +65,7 @@ class KeyHandler
                     @write ESC + '[' + pure
                 else
                     @write ESC + pure
-                
+               
         switch keyCode
             when 27  then @write ESC
             when 9  # tab
@@ -74,7 +73,7 @@ class KeyHandler
                     @write ESC + '[Z'
                 else
                     stopEvent info.event
-                    @write '\t' # '\x09'
+                    @write '\t'
                     
             when 37  then stopEvent event, writeMod '1', 'D', 'D'  # left-arrow 
             when 39  then stopEvent event, writeMod '1', 'C', 'C'  # right-arrow
@@ -84,24 +83,6 @@ class KeyHandler
             when 34  then stopEvent event, writeMod '6', '~', '6~' # page down
             when 35  then stopEvent event, writeMod '1', 'F', 'F'  # end
             when 36  then stopEvent event, writeMod '1', 'H', 'H'  # home
-            when 46  then writeMod '3', '~', '3~' # delete
-            when 112 then writeMod '1', 'P', 'OP', false # F1
-            when 113 then writeMod '1', 'Q', 'OQ', false # F2
-            when 114 then writeMod '1', 'R', 'OR', false # F3
-            when 115 then writeMod '1', 'S', 'OS', false # F4
-            when 115 then writeMod '1', 'S', 'OS', false # F5
-            when 116 then writeMod '16', '~', '16~' # F6
-            when 117 then writeMod '17', '~', '17~' # F7
-            when 118 then writeMod '18', '~', '18~' # F8
-            when 119 then writeMod '19', '~', '19~' # F9
-            when 120 then writeMod '20', '~', '20~' # F10
-            when 121 then writeMod '21', '~', '21~' # F11 +1?
-            when 122 then writeMod '22', '~', '22~' # F12 +1?
-            when 56  then @write String.fromCharCode 127 # another delete?
-            when 219 then @write String.fromCharCode 27  # control sequence introducer?
-            when 220 then @write String.fromCharCode 28  # string terminator?
-            when 221 then @write String.fromCharCode 29  # operating system command?
-            when 17, 16, 18, 92 then # ctrl, shift, alt, win
             else
                 log "keyhandler.keyCode #{keyCode}"
                 

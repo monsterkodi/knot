@@ -6,7 +6,7 @@
 00     00  000  000   000  0000000     0000000   00     00  
 ###
 
-{ post, stopEvent, keyinfo, childp, slash, prefs, clamp, stash, empty, open, udp, win, error, log, $, _ } = require 'kxk'
+{ post, stopEvent, keyinfo, childp, slash, prefs, clamp, stash, empty, open, udp, win, os, error, log, $, _ } = require 'kxk'
 
 Term = require './term'
 Tabs = require './tabs'
@@ -141,23 +141,13 @@ getFontSize = -> window.stash.get 'fontSize', defaultFontSize
 setFontSize = (s) ->
         
     s = getFontSize() if not _.isFinite s
-    s = clamp 8, 88, s
+    s = parseInt clamp 8, 88, s
 
     window.stash.set 'fontSize', s
     post.emit 'fontSize', s
 
 window.setFontSize = setFontSize
     
-changeFontSize = (d) ->
-    
-    s = getFontSize()
-    if      s >= 30 then f = 4
-    else if s >= 50 then f = 10
-    else if s >= 20 then f = 2
-    else                 f = 1
-        
-    setFontSize s + f*d
-
 resetFontSize = ->
     
     window.stash.set 'fontSize', defaultFontSize
@@ -173,9 +163,15 @@ onWheel = (event) ->
     
     { mod, key, combo } = keyinfo.forEvent event
 
-    if mod == 'ctrl'
-        changeFontSize -event.deltaY/100
-        stopEvent event
+    if mod == (os.platform() == 'darwin' and 'command' or 'ctrl')
+        
+        s = getFontSize()
+        if event.deltaY < 0
+            setFontSize s+2
+        else
+            setFontSize s-2
+        
+    stopEvent event
     
 window.document.addEventListener 'wheel', onWheel    
     
@@ -199,8 +195,8 @@ post.on 'menuAction', (action) ->
         when 'Next Tab'         then tabs.navigate 'right'
         when 'New Window'       then post.toMain 'newWindow'
         when 'New Tab'          then term.addTab()
-        when 'Increase'         then changeFontSize +1
-        when 'Decrease'         then changeFontSize -1
+        when 'Increase'         then setFontSize getFontSize()+2
+        when 'Decrease'         then setFontSize getFontSize()-2
         when 'Reset'            then resetFontSize()
         when 'Clear'            then term.clear()
         when 'Copy'             then term.copy()

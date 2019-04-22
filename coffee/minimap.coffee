@@ -69,17 +69,15 @@ class Minimap
     drawLine: (index) -> @drawLines index, index
     drawLines: (top=@scroll.exposeTop, bot=@scroll.exposeBot) ->
 
-        # log "minimap.drawLines1 #{top}, #{bot}"
         
         ctx = @lines.getContext '2d'
         y = parseInt((top-@scroll.exposeTop)*@scroll.lineHeight)
         ctx.clearRect 0, y, @width, ((bot-@scroll.exposeTop)-(top-@scroll.exposeTop)+1)*@scroll.lineHeight
         return if @scroll.exposeBot < 0
 
-        # bot = Math.min bot, cache.length-1
-        
         return if bot < top
         
+        log "minimap.drawLines #{top} #{bot}"
         for li in [top..bot]
             
             y = parseInt((li-@scroll.exposeTop)*@scroll.lineHeight)
@@ -251,7 +249,7 @@ class Minimap
         ctx.clearRect 0, (top-@scroll.exposeTop)*@scroll.lineHeight, 2*@width, (bot-top)*@scroll.lineHeight
 
     clearAll: =>
-        log 'clearAll'
+
         ctx = @lines.getContext '2d'
         ctx.clearRect 0, 0, @lines.width, @lines.height
         @topbot.width  = @topbot.width

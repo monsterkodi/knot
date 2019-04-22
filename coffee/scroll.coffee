@@ -73,7 +73,6 @@ class Scroll
         @top        = data.top
         @bot        = data.bot
         post.emit 'scroll', @scroll, @
-        # @view.style.transform = "translate3d(0,-#{@offsetTop}px, 0)"
         
     # 00000000   00000000   0000000  00000000  000000000
     # 000   000  000       000       000          000   
@@ -150,8 +149,6 @@ class Scroll
         
         return if @viewLines < 0
                 
-        # @view.scrollLeft += x if x
-        
         oldTop = @top
         oldBot = @bot
         
@@ -165,32 +162,13 @@ class Scroll
         @top = Math.max 0, top
         @bot = Math.min @top+@viewLines-1
         
-        # if oldTop != @top or oldBot != @bot
-#         
-            # if (@top > oldBot) or (@bot < oldTop) or (oldBot < oldTop) 
-                # # new range outside, start from scratch
-                # num = @bot - @top + 1
-#                 
-                # if num > 0 
-                    # post.emit 'showLines', @top, @bot, num
-#     
-            # else   
-#                 
-                # num = @top - oldTop
-#                 
-                # if 0 < Math.abs num
-                    # post.emit 'shiftLines', @top, @bot, num
-#                     
-        # if oldBot > -1 and oldTop > -1 and oldBot - oldTop != @bot - @top
-            # # log 'changeLines'
-            # post.emit 'changeLines', oldBot-oldTop, @bot-@top
-
         offset = @scroll - @top * @lineHeight
         
         if offset != @offsetTop or scroll != @scroll
                         
             @offsetTop = offset
             @updateOffset()
+            log "emit scroll #{@scroll}"
             post.emit 'scroll', @scroll, @      
             
     #  0000000   00000000  00000000   0000000  00000000  000000000  
@@ -201,13 +179,9 @@ class Scroll
     
     updateOffset: ->
         
-        # window.term?.lines.scrollTop @top
-        # @view.style.transform = "translate3d(0,-#{@offsetTop}px, 0)"
-
     toBottom: ->
         log "toBottom #{@scroll} #{@scrollMax}"
         @to @scrollMax
-        # @view.style.transform = "translate3d(0,-#{@offsetTop}px, 0)"
         log "toBottom emit #{@scroll}"
         post.emit 'scroll', @scroll, @
         

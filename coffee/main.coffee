@@ -105,10 +105,7 @@ class Main extends app
             post.on 'stashSaved', =>
                 toSave -= 1
                 if toSave == 0
-                    # state.save()
                     @exitApp()
             'delay'
-        # else
-            # state.save()
                 
 main = new Main()
