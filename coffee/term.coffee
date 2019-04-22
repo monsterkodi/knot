@@ -27,14 +27,12 @@ class Term
         
         @term.setOption 'fontFamily', '"Meslo LG S", "Bitstream Vera Sans Mono", "Menlo", "Cousine", "DejaVu Sans Mono", "Andale Mono", "monospace-fallback", monospace'
         @term.setOption 'scrollback', 100000
-        @term.setOption 'cursorBlink', true
+        @term.setOption 'cursorBlink', false
         @term.setOption 'fontSize', 18
 
         @term.on 'scroll',  (top)  => @scroll.to Math.round top*@size.lineHeight
         @term.on 'refresh', (info) => @minimap.drawLines info.start+@bufferTop(), info.end+@bufferTop()
-            
         @term.on 'selection', @onSelectionChange
-        @term.on 'data', (d) -> log 'data', d
 
         @main =$ '#main' 
         @num  = 0   
@@ -78,7 +76,7 @@ class Term
         
         @storeTab()
         
-        @shell        = tab.shell
+        @shell = tab.shell
         @scroll.restore tab.scroll
         @minimap.drawLines()
     
@@ -161,10 +159,10 @@ class Term
     onShellExit: (shell) => tabs.closeTab @tabForShell shell
     onShellData: (shell, data) =>
 
-        # if shell != @shell
+        if shell != @shell
             # if tab = @tabForShell shell
                 # @lines.writeBufferData tab.buffer, data, tab
-            # return
+            return
 
         @term.write data
             

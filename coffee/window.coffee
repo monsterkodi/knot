@@ -31,7 +31,7 @@ window.winID = window.win.id
 # 000        000   000  000       000            000
 # 000        000   000  00000000  000       0000000
 
-log "create stash #{window.winID}"
+# log "create stash #{window.winID}"
 window.stash = new stash "win/#{window.winID}"
 
 saveStash = ->
