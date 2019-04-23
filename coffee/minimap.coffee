@@ -29,8 +29,6 @@ class Minimap
         @elem.appendChild @topbot
         @elem.appendChild @lines
 
-        # @elem.addEventListener 'wheel', @term.scrollbar?.onWheel
-
         main =$ '#main'
         main.appendChild  @elem
         

@@ -171,9 +171,12 @@ onWheel = (event) ->
         else
             setFontSize s-2
         
+    else
+        window.term.scroll.wheel.onWheel event
+        
     stopEvent event
     
-window.document.addEventListener 'wheel', onWheel    
+window.document.addEventListener 'wheel', onWheel, true 
     
 # 00     00  00000000  000   000  000   000   0000000    0000000  000000000  000   0000000   000   000  
 # 000   000  000       0000  000  000   000  000   000  000          000     000  000   000  0000  000  

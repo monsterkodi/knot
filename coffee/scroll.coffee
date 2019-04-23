@@ -21,7 +21,7 @@ class Scroll
         @resetSize()
         @resetLines()
         
-        # @wheel = new Wheel @
+        @wheel = new Wheel @
         
     resetSize: ->
         
@@ -168,7 +168,7 @@ class Scroll
                         
             @offsetTop = offset
             @updateOffset()
-            log "emit scroll #{@scroll}"
+            # log "emit scroll #{@scroll}"
             post.emit 'scroll', @scroll, @      
             
     #  0000000   00000000  00000000   0000000  00000000  000000000  

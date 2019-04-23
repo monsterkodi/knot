@@ -6,7 +6,7 @@
 00     00  000   000  00000000  00000000  0000000
 ###
 
-{ stopEvent, keyinfo, post, clamp } = require 'kxk'
+{ keyinfo, post, absMax, clamp } = require 'kxk'
 
 log = console.log
 
@@ -14,17 +14,14 @@ class Wheel
 
     constructor: (@scroll) ->
         
-        @last  = 0
         @accum = 0
-        document.addEventListener 'wheel', @onWheel
+        
+        document.addEventListener 'mousedown', @onMouseDown, true
         
     onWheel: (event) =>
         
         { mod, key, combo } = keyinfo.forEvent event
     
-        if mod == 'ctrl'
-            return
-
         scrollFactor = ->
             f  = 1
             f *= 1 + 1 * event.shiftKey
@@ -33,26 +30,27 @@ class Wheel
         
         delta = event.deltaY * scrollFactor()
         
-        if event.target.className != 'minimap'
-            post.emit 'scrollBy', delta/100
+        if (@accum < 0 and delta > 0) or (@accum > 0 and delta < 0)
             @accum = 0
         else
-            if (@accum < 0 and delta > 0) or (@accum > 0 and delta < 0)
-                @accum = 0
-                return
-                
+            post.emit 'scrollBy', Math.sign(delta) * @scroll.lineHeight
+            if @accum == 0
+                window.requestAnimationFrame @onAnimation
             @accum += delta
-            window.requestAnimationFrame @onAnimation
-            
-        stopEvent event
+      
+    onMouseDown: (event) =>
         
+        @accum = 0
+            
     onAnimation: (now) =>
         
-        @accum = clamp -10000, 10000, @accum * 0.999
+        
+        @accum = clamp -100000, 100000, @accum * 0.991
             
-        post.emit 'scrollBy', @accum/100  
+        delta = @accum/100
+        post.emit 'scrollBy', delta 
 
-        if Math.abs(@accum) < 2
+        if Math.abs(@accum) < 10 or not (0 < @scroll.scroll < @scroll.scrollMax)
             @accum = 0
         else
             window.requestAnimationFrame @onAnimation
