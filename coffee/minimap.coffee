@@ -6,7 +6,7 @@
 000   000  000  000   000  000  000   000  000   000  000
 ###
 
-{ post, getStyle, empty, clamp, elem, drag, str, log, $ } = require 'kxk'
+{ post, getStyle, empty, clamp, elem, drag, kstr, klog, $ } = require 'kxk'
 
 MapScroll = require './mapscroll'
 colors    = require './colors'
@@ -74,7 +74,7 @@ class Minimap
 
         return if bot < top
         
-        # log "minimap.drawLines #{top} #{bot}"
+        # klog "minimap.drawLines #{top} #{bot}"
         for li in [top..bot]
             
             y = parseInt (li-@scroll.exposeTop)*@scroll.lineHeight
@@ -82,9 +82,11 @@ class Minimap
             for i in [0...line.length]
                 break if 2*i >= @width
                 charData = line.get(i)
+                fgColor = line.getFg i
                 if charData[3] != 0 and charData[3] != 32
                     attr = charData[0]
-                    fg   = (attr >> 9) & 0x1ff
+                    # fg   = (attr >> 9) & 0x1ff
+                    fg   = fgColor & 0x1ff
                     ctx.fillStyle = colors[fg]
                     ctx.fillRect @offsetLeft+2*i, y, 2, @scroll.lineHeight
             

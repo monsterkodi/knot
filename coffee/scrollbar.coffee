@@ -8,8 +8,6 @@
 
 { post, stopEvent, elem, clamp, drag } = require 'kxk'
 
-log = console.log
-
 class Scrollbar
 
     constructor: (@scroll) ->

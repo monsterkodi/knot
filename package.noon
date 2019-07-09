@@ -1,6 +1,6 @@
 name            knot
 productName     knot
-version         0.19.0
+version         0.21.0
 description     terminal
 main            js/main.js
 repository
@@ -18,14 +18,15 @@ bugs
                 url  https://github.com/monsterkodi/knot/issues
 dependencies
                 ansi-256-colors  ^1.1.0
-                kork            ../kork
-                kxk             ../kxk
-                node-pty        ^0.8.1
-                xterm           ^3.12.2
+                klor            ^1.2.0
+                kxk             ^0.323.0
+                node-pty        ../node-pty
+                xterm           ^3.14.4
 devDependencies
-                electron        ^4.1.4
-                electron-packager  ^13.1.1
-                electron-rebuild  ^1.8.4
-                assert          ^1.4.1
+                assert          ^2.0.0
                 chai            ^4.2.0
-                mocha           ^5.2.0
+                electron        ^5.0.6
+                electron-packager  ^14.0.1
+                electron-rebuild  ^1.8.5
+                konrad          ^0.133.0
+                mocha           ^6.1.4

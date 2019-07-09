@@ -10,7 +10,7 @@ knot
     New Tab                 cmdctrl+t
     Close Tab               cmdctrl+w
     --
-    About  
+    About                   cmdctrl+alt+/
     ---
     Quit                    cmdctrl+q
 
@@ -51,6 +51,7 @@ Window
     --
     Minimize                alt+cmdctrl+shift+m
     Maximize                alt+cmdctrl+m
+    Hide                    cmdctrl+h
     ---
     Screenshot              alt+f3
     Reload                  alt+cmdctrl+l

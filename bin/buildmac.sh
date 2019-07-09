@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 cd `dirname $0`/..
 
-konrad --run
+if rm -rf knot-darwin-x64; then
 
-IGNORE="/(.*\.dmg$|Icon$|watch$|icons$|.*md$|pug$|styl$|.*\.lock$|img/banner\.png)"
+    if ./node_modules/.bin/konrad; then
 
-node_modules/electron-packager/cli.js . --overwrite --icon=img/app.icns --ignore=$IGNORE
+        IGNORE="/(.*\.dmg$|Icon$|watch$|icons$|.*md$|pug$|styl$|.*\.lock$|img/banner\.png)"
+        
+        node_modules/.bin/electron-packager . --overwrite --icon=img/app.icns --ignore=$IGNORE
+    fi
+fi

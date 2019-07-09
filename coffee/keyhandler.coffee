@@ -6,7 +6,7 @@
 000   000  00000000     000     000   000  000   000  000   000  0000000    0000000  00000000  000   000
 ###
 
-{ post, stopEvent, empty, log, $ } = require 'kxk'
+{ post, stopEvent, empty, klog, $ } = require 'kxk'
 
 ESC = '\x1b'
 electron = require 'electron'

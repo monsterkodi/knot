@@ -6,7 +6,7 @@
    000     000   000  0000000    0000000 
 ###
 
-{ post, stopEvent, empty, valid, popup, elem, drag, pos, $, _ } = require 'kxk'
+{ post, stopEvent, empty, valid, popup, elem, drag, kpos, $, _ } = require 'kxk'
 
 Tab = require './tab'
 
@@ -229,7 +229,7 @@ class Tabs
             tab.activate()
             
         if not absPos?
-            absPos = pos @view.getBoundingClientRect().left, @view.getBoundingClientRect().top
+            absPos = kpos @view.getBoundingClientRect().left, @view.getBoundingClientRect().top
         
         opt = items: [ 
             text:   'Close Other Tabs'

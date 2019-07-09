@@ -6,11 +6,10 @@
 00     00  000  000   000  0000000     0000000   00     00  
 ###
 
-{ post, stopEvent, keyinfo, childp, slash, prefs, clamp, stash, empty, open, udp, win, os, error, log, $, _ } = require 'kxk'
+{ post, stopEvent, keyinfo, childp, slash, prefs, clamp, stash, empty, open, udp, win, os, kerror, klog, $, _ } = require 'kxk'
 
 Term = require './term'
 Tabs = require './tabs'
-klog = require('kxk').log
 
 electron = require 'electron'
          
@@ -115,12 +114,12 @@ openFile = (f) ->
             file = slash.unslash slash.resolve file
             bat = slash.unslash slash.resolve slash.join __dirname, '../bin/openFile/openVS.bat'
             childp.exec "\"#{bat}\" \"#{file}\" #{line} 0", { cwd:slash.dir(bat) }, (err) -> 
-                error 'vb', err if not empty err
+                kerror 'vb', err if not empty err
         when 'Atom'
             file = slash.unslash slash.resolve file
             atom = slash.unslash slash.untilde '~/AppData/Local/atom/bin/atom'
             childp.exec "\"#{atom}\" \"#{file}:#{line}\"", { cwd:slash.dir(file) }, (err) -> 
-                error 'atom', err if not empty err
+                kerror 'atom', err if not empty err
         else
             if not koSend then koSend = new udp port:9779
             koSend.send slash.resolve f

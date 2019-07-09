@@ -6,7 +6,7 @@
    000     00000000  000   000  000   000  
 ###
 
-{ post, keyinfo, stopEvent, setStyle, slash, empty, elem, os, str, log, $ } = require 'kxk'
+{ post, keyinfo, stopEvent, setStyle, slash, empty, elem, os, $ } = require 'kxk'
 
 { Terminal } = require 'xterm'
 pty          = require 'node-pty'
