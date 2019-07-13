@@ -20,7 +20,7 @@ dependencies
                 ansi-256-colors  ^1.1.0
                 klor            ^1.2.0
                 kxk             ^0.323.0
-                node-pty        ../node-pty
+                node-pty        https://github.com/microsoft/node-pty.git
                 xterm           ^3.14.4
 devDependencies
                 assert          ^2.0.0

@@ -1,12 +1,23 @@
 #!/usr/bin/env bash
-cd `dirname $0`/..
+
+DIR=`dirname $0`
+BIN=$DIR/../node_modules/.bin
+cd $DIR/..
 
 if rm -rf knot-darwin-x64; then
 
-    if ./node_modules/.bin/konrad; then
-
+    if $BIN/konrad; then
+    
+        $BIN/electron-rebuild
+    
         IGNORE="/(.*\.dmg$|Icon$|watch$|icons$|.*md$|pug$|styl$|.*\.lock$|img/banner\.png)"
         
-        node_modules/.bin/electron-packager . --overwrite --icon=img/app.icns --ignore=$IGNORE
+        if $BIN/electron-packager . --overwrite --icon=img/app.icns --darwinDarkModeSupport --ignore=$IGNORE; then
+        
+            rm -rf /Applications/knot.app
+            cp -R knot-darwin-x64/knot.app /Applications
+            
+            open /Applications/knot.app 
+        fi
     fi
 fi
