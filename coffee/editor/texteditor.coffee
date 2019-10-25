@@ -82,6 +82,16 @@ class TextEditor extends Editor
 
         super()
 
+    isInputCursor: -> @mainCursor()[1] >= @numLines()-1
+        
+    restoreInputCursor: ->
+        
+        if @isInputCursor()
+            @state.cursors()
+        else
+            col = @inputCursor ? @do.line(@numLines()-1).length
+            [[col,@numLines()-1]]
+        
     # 00000000   0000000    0000000  000   000   0000000
     # 000       000   000  000       000   000  000
     # 000000    000   000  000       000   000  0000000
@@ -613,8 +623,6 @@ class TextEditor extends Editor
                 if event.button == 2
                     return 'skip'
                 else if event.button == 1
-                    if not @jumpToFileAtPos eventPos
-                        @jumpToWordAtPos eventPos
                     stopEvent event
                     return 'skip'
                 
@@ -686,8 +694,6 @@ class TextEditor extends Editor
 
         if event.altKey
             @toggleCursorAtPos p
-        else if event.metaKey or event.ctrlKey
-            @jumpToWordAtPos p
         else
             @singleCursorAtPos p, extend:event.shiftKey
 
@@ -721,8 +727,6 @@ class TextEditor extends Editor
                 if @numSelections()     then return @selectNone()
                 return
             
-            when 'command+enter' 'ctrl+enter' 'f12' then @jumpToWord()
-
         for action in Editor.actions
             
             if action.combo == combo or action.accel == combo

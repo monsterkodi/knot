@@ -12,10 +12,9 @@ module.exports =
     insertCharacter: (ch) ->
         
         return @newline() if ch == '\n'
-        return if @salterMode and @insertSalterCharacter ch
         
         @do.start()
-        @clampCursorOrFillVirtualSpaces()
+        # @clampCursorOrFillVirtualSpaces()
         
         if ch in @surroundCharacters
             if @insertSurroundCharacter ch
@@ -24,7 +23,7 @@ module.exports =
     
         @deleteSelection()
 
-        newCursors = @do.cursors()
+        newCursors = @restoreInputCursor()
         
         for cc in newCursors
             cline = @do.line(cc[1])

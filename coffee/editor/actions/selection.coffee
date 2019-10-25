@@ -146,8 +146,6 @@ module.exports =
     
             @do.select newSelection
             
-        @checkSalterMode()      
-
     #  0000000   0000000    0000000    
     # 000   000  000   000  000   000  
     # 000000000  000   000  000   000  

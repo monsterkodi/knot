@@ -5,7 +5,7 @@
 # 000        000   000       000     000     000
 # 000        000   000  0000000      000     00000000
 
-{ empty, _ } = require 'kxk'
+{ empty, klog, _ } = require 'kxk'
 
 electron  = require 'electron'
 clipboard = electron.clipboard
@@ -15,7 +15,7 @@ module.exports =
     actions:
 
         cutCopyPaste:
-            combos: ['command+x', 'ctrl+x', 'command+c', 'ctrl+c', 'command+v', 'ctrl+v']
+            combos: ['command+x' 'ctrl+x' 'command+c' 'ctrl+c' 'command+v' 'ctrl+v']
 
     cutCopyPaste: (key, info) ->
         switch key
@@ -68,7 +68,9 @@ module.exports =
 
         lines = text.split '\n'
 
-        if lines.length == @numSelections()
+        isInputCursorAndSelection = @isInputCursor() and @selectedLineIndices().length == 1 and @selectedLineIndices()[0] == @numLines()-1
+
+        if isInputCursorAndSelection and lines.length == @numSelections()
             @replaceSelectedText lines
             @select []
             return
@@ -76,12 +78,14 @@ module.exports =
         if (@numLines() == 1 and @text() == '' and lines.length > 1) or areSameRanges @rangesForAllLines(), @selections()
             removeLastLine = true # prevents trailing empty line
 
-        @deleteSelection()
+        if isInputCursorAndSelection
+            @deleteSelection()
+        else
+            @select []
 
         @do.start()
-        @clampCursorOrFillVirtualSpaces()
 
-        newCursors = @do.cursors()
+        newCursors = @restoreInputCursor()
 
         if newCursors.length > 1 and lines.length == 1
             # replicate single lines for insertion at multiple cursors

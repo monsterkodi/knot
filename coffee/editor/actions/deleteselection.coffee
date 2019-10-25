@@ -67,7 +67,7 @@ module.exports =
             @do.select []
             @do.setCursors newCursors
             
-            @endSelection() # this does checkSalterMode
+            @endSelection()
         
         @do.end()
 
