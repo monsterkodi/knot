@@ -6,7 +6,7 @@
 000   000  00000000  00     00  0000000  000  000   000  00000000
 ###
 
-{ _ } = require 'kxk'    
+{ post, klog, _ } = require 'kxk'    
 
 module.exports = 
     
@@ -29,14 +29,18 @@ module.exports =
 
     newline: (key, info) ->
         
+        if @isInputCursor()
+            post.emit 'execute'
+        else
+            @do.start()
+            @do.setCursors @restoreInputCursor()
+            @do.select []
+            @do.end()
+            
+    newlineAtCursors: -> # incactive!
+            
         if not info? and _.isObject key
             info = key
-
-        if @salterMode 
-            @endSalter()
-            @singleCursorAtPos _.last @cursors()
-            @newlineAtEnd()
-            return
         
         doIndent = info?.indent ? not @isCursorInIndent()
         
@@ -44,11 +48,7 @@ module.exports =
         @deleteSelection()
         @do.start()
         
-        if @salterMode
-            newCursors = [rangeEndPos @rangeForLineAtIndex @mainCursor()[1]]
-            @setSalterMode false
-        else
-            newCursors = @do.cursors()
+        newCursors = @do.cursors()
         
         for c in @do.cursors().reverse()
         

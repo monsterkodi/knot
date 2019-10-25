@@ -14,28 +14,28 @@ module.exports =
         @surroundStack = []
 
         @surroundPairs = 
-            '#': ['#{', '}'] # <- this has to come
-            '{': ['{', '}']  # <- before that
-            '}': ['{', '}']
-            '[': ['[', ']']
-            ']': ['[', ']']
-            '(': ['(', ')']
-            ')': ['(', ')']
-            '<': ['<', '>']
-            '>': ['<', '>']
-            "'": ["'", "'"]
-            '"': ['"', '"']
-            '*': ['*', '*']                    
+            '#': ['#{' '}'] # <- this has to come
+            '{': ['{' '}']  # <- before that
+            '}': ['{' '}']
+            '[': ['[' ']']
+            ']': ['[' ']']
+            '(': ['(' ')']
+            ')': ['(' ')']
+            '<': ['<' '>']
+            '>': ['<' '>']
+            "'": ["'" "'"]
+            '"': ['"' '"']
+            '*': ['*' '*']                    
         
         @surroundCharacters = "{}[]()\"'".split ''
         
         switch @fileType
-            when 'html'   then @surroundCharacters = @surroundCharacters.concat ['<','>']
-            when 'coffee', 'koffee' then @surroundCharacters.push '#'
+            when 'html'   then @surroundCharacters = @surroundCharacters.concat ['<''>']
+            when 'coffee' 'koffee' then @surroundCharacters.push '#'
             when 'md'     
-                @surroundCharacters = @surroundCharacters.concat ['*','<', '`']
-                @surroundPairs['<'] = ['<!--', '-->']
-                @surroundPairs['`'] = ['`', '`']
+                @surroundCharacters = @surroundCharacters.concat ['*''<' '`']
+                @surroundPairs['<'] = ['<!--' '-->']
+                @surroundPairs['`'] = ['`' '`']
                 
     isUnbalancedSurroundCharacter: (ch) ->
         

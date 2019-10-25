@@ -8,9 +8,10 @@
 
 { post, keyinfo, stopEvent, setStyle, slash, empty, elem, klog, os, $ } = require 'kxk'
 
-KeyHandler = require './keyhandler'
 BaseEditor = require './editor/editor'
 TextEditor = require './editor/texteditor'
+Wheel      = require './tools/wheel'
+Shell      = require './shell'
 
 class Term
 
@@ -25,7 +26,6 @@ class Term
             charWidth:  0
             lineHeight: 0
         
-        @keyHandler = new KeyHandler @
         @editor = new TextEditor $(".editor"),
             features: [
                 'Scrollbar'
@@ -39,11 +39,14 @@ class Term
             ],
             fontSize: 19
                 
-        @editor.setText 'Hello\nWorld'
+        @wheel = new Wheel @editor.scroll
+        @shell = new Shell @
             
-        # @div.addEventListener 'click' @onClick
-        
+        @editor.setText 'Hello\nWorld'
+        @editor.focus()
+            
         post.on 'fontSize' @onFontSize
+        post.on 'scrollBy' @onScrollBy
         post.on 'tab'      @onTab
 
         @onFontSize window.stash.get 'fontSize'
@@ -60,34 +63,25 @@ class Term
     
     addTab: (path) ->
         
-        klog 'addTab'
-        
         tabs = window.tabs
         
         @storeTab()
         
         tab = tabs.addTab path
 
-    storeTab: -> klog 'storeTab'
-                
+    storeTab: -> #klog 'storeTab'
+            
+    onScrollBy: (delta) =>
+        
+        @editor.scroll.by delta
+    
     # 00000000   00000000   0000000  000  0000000  00000000  
     # 000   000  000       000       000     000   000       
     # 0000000    0000000   0000000   000    000    0000000   
     # 000   000  000            000  000   000     000       
     # 000   000  00000000  0000000   000  0000000  00000000  
     
-    resized: =>
-                
-        klog 'resized'
-        @editor.resized()
-        
-        # height = @div.clientHeight
-        # width  = @div.clientWidth - 140
-#         
-        # @cols = parseInt width/@size.charWidth
-        # @rows = parseInt height/@size.lineHeight
-#         
-        # @term.resize @cols, @rows
+    resized: => @editor.resized()
         
     #  0000000  000      00000000   0000000   00000000   
     # 000       000      000       000   000  000   000  
@@ -95,7 +89,7 @@ class Term
     # 000       000      000       000   000  000   000  
     #  0000000  0000000  00000000  000   000  000   000  
     
-    clear: -> klog 'clear'
+    clear: -> @editor.setText ''
            
     # 00000000   0000000   000   000  000000000       0000000  000  0000000  00000000  
     # 000       000   000  0000  000     000         000       000     000   000       

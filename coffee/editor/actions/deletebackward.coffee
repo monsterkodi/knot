@@ -34,8 +34,6 @@ module.exports =
         @do.start()
         if @do.numSelections()
             @deleteSelection()
-        else if @salterMode
-            @deleteSalterCharacter()
         else if not @deleteEmptySurrounds()
             @deleteCharacterBackward opt
         @do.end()

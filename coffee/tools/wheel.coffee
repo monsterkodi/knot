@@ -6,17 +6,15 @@
 00     00  000   000  00000000  00000000  0000000
 ###
 
-{ keyinfo, post, absMax, clamp } = require 'kxk'
-
-log = console.log
+{ keyinfo, klog, post, absMax, clamp } = require 'kxk'
 
 class Wheel
 
-    constructor: (@scroll) ->
+    @: (@scroll) ->
         
         @accum = 0
         
-        document.addEventListener 'mousedown', @onMouseDown, true
+        document.addEventListener 'mousedown' @onMouseDown, true
         
     onWheel: (event) =>
         
@@ -33,7 +31,7 @@ class Wheel
         if (@accum < 0 and delta > 0) or (@accum > 0 and delta < 0)
             @accum = 0
         else
-            post.emit 'scrollBy', Math.sign(delta) * @scroll.lineHeight
+            post.emit 'scrollBy' Math.sign(delta) * @scroll.lineHeight
             if @accum == 0
                 window.requestAnimationFrame @onAnimation
             @accum += delta
@@ -48,7 +46,7 @@ class Wheel
         @accum = clamp -100000, 100000, @accum * 0.991
             
         delta = @accum/100
-        post.emit 'scrollBy', delta 
+        post.emit 'scrollBy' delta 
 
         if Math.abs(@accum) < 10 or not (0 < @scroll.scroll < @scroll.scrollMax)
             @accum = 0

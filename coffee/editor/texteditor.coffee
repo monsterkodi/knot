@@ -19,7 +19,7 @@ class TextEditor extends Editor
 
         super 'editor' config
 
-        @clickCount = 0
+        @clickCount  = 0
 
         @layers      = elem class: 'layers'
         @layerScroll = elem class: 'layerScroll' child:@layers
@@ -82,6 +82,12 @@ class TextEditor extends Editor
 
         super()
 
+    # 000  000   000  00000000   000   000  000000000  
+    # 000  0000  000  000   000  000   000     000     
+    # 000  000 0 000  00000000   000   000     000     
+    # 000  000  0000  000        000   000     000     
+    # 000  000   000  000         0000000      000     
+    
     isInputCursor: -> @mainCursor()[1] >= @numLines()-1
         
     restoreInputCursor: ->
@@ -539,14 +545,13 @@ class TextEditor extends Editor
         vh = @view.parentNode.clientHeight
 
         return if vh and vh == @scroll.viewHeight
-        klog vh, @scroll.viewHeight
 
-        # @numbers?.elem.style.height = "#{@scroll.exposeNum * @scroll.lineHeight}px"
+        @numbers?.elem.style.height = "#{@scroll.exposeNum * @scroll.lineHeight}px"
         @layersWidth = @layerScroll.offsetWidth
 
         @scroll.setViewHeight vh
 
-        @emit 'viewHeight', vh
+        @emit 'viewHeight' vh
 
     screenSize: -> electron.remote.screen.getPrimaryDisplay().workAreaSize
 
@@ -720,7 +725,6 @@ class TextEditor extends Editor
             when 'ctrl+shift+s'         then return @saveAs()
             when 'ctrl+r'               then return @revert()
             when 'esc'
-                if @salterMode          then return @setSalterMode false
                 if @numHighlights()     then return @clearHighlights()
                 if @numCursors() > 1    then return @clearCursors()
                 if @stickySelection     then return @endStickySelection()

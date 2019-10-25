@@ -9,7 +9,7 @@
 { getStyle, clamp, elem, drag, klog } = require 'kxk' 
 
 MapScroll = require './mapscroll'
-colors    = require '../colors'
+colors    = require '../tools/colors'
 
 class Minimap
 

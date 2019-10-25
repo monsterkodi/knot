@@ -8,8 +8,8 @@
 
 { post, stopEvent, keyinfo, childp, slash, prefs, clamp, stash, empty, open, udp, win, os, kerror, klog, $, _ } = require 'kxk'
 
-Term = require './term'
-Tabs = require './tabs'
+Term  = require './term'
+Tabs  = require './tabs'
 
 electron = require 'electron'
          
@@ -173,11 +173,11 @@ onWheel = (event) ->
             setFontSize s-2
         
     else
-        window.term.scroll.wheel.onWheel event
+        window.term.wheel.onWheel event
         
     stopEvent event
     
-window.document.addEventListener 'wheel', onWheel, true 
+window.document.addEventListener 'wheel' onWheel, true 
     
 # 00     00  00000000  000   000  000   000   0000000    0000000  000000000  000   0000000   000   000  
 # 000   000  000       0000  000  000   000  000   000  000          000     000  000   000  0000  000  

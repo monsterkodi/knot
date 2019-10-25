@@ -82,6 +82,10 @@ module.exports =
     #      000  000          000
     # 0000000   00000000     000
 
+    singleCursorAtEnd: ->
+        
+        @singleCursorAtPos [@line(@numLines()-1).length,@numLines()-1]
+    
     singleCursorAtPos: (p, opt = extend:false) ->
 
         if @numLines() == 0

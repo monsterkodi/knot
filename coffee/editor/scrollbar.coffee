@@ -33,13 +33,13 @@ class Scrollbar
             onMove:  @onDrag
             cursor:  'ns-resize'
 
-        @elem       .addEventListener 'wheel', @onWheel
-        @editor.view.addEventListener 'wheel', @onWheel
+        @elem       .addEventListener 'wheel' @onWheel
+        @editor.view.addEventListener 'wheel' @onWheel
 
     del: ->
         
-        @elem       .removeEventListener 'wheel', @onWheel
-        @editor.view.removeEventListener 'wheel', @onWheel
+        @elem       .removeEventListener 'wheel' @onWheel
+        @editor.view.removeEventListener 'wheel' @onWheel
 
     #  0000000  000000000   0000000   00000000   000000000
     # 000          000     000   000  000   000     000
