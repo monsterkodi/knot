@@ -8,12 +8,11 @@
 
 { clamp } = require 'kxk'
 
-log    = console.log 
 events = require 'events'
 
 class MapScroll extends events
 
-    constructor: (cfg) ->
+    @: (cfg) ->
 
         super()
         @lineHeight = cfg.lineHeight ? 0
@@ -91,7 +90,7 @@ class MapScroll extends events
     # 0000000       000   
         
     by: (delta) =>
-
+        
         scroll = @scroll
         delta = 0 if Number.isNaN delta
         @scroll = parseInt clamp 0, @scrollMax, @scroll+delta
@@ -114,16 +113,6 @@ class MapScroll extends events
     #      000  000          000        000     000   000  000      
     # 0000000   00000000     000        000      0000000   000      
             
-    resetTop: ->
-        
-        @emit 'clearLines'
-        @exposeTop = @top
-        @exposeBot = @bot
-        num = @bot - @top + 1
-        if num > 0
-            @emit 'exposeLines', top:@top, bot:@bot, num: num
-            @emit 'scroll', @scroll, @offsetTop
-    
     setTop: (top) =>
         
         return if @exposeBot < 0 and @numLines < 1
@@ -133,9 +122,15 @@ class MapScroll extends events
         @top = top
         @bot = Math.min @top+@viewLines, @numLines-1
         return if oldTop == @top and oldBot == @bot and @exposeBot >= @bot
-                                   
+                            
         if (@top >= @exposeBot) or (@bot <= @exposeTop) # new range outside, start from scratch
-            @resetTop()
+            @emit 'clearLines'
+            @exposeTop = @top
+            @exposeBot = @bot
+            num = @bot - @top + 1
+            if num > 0
+                @emit 'exposeLines', top:@top, bot:@bot, num: num
+                @emit 'scroll', @scroll, @offsetTop
             return
         
         if @top < @exposeTop
@@ -152,7 +147,9 @@ class MapScroll extends events
         if @exposeBot-@exposeTop+1 > @exposeNum 
             num  = @exposeBot-@exposeTop+1 - @exposeNum
             if @top>oldTop
-                @resetTop()
+                n = clamp 0, @top-@exposeTop, num
+                @exposeTop += n
+                @emit 'vanishLines', top: n
             else
                 n = clamp 0, @exposeBot-@bot, num
                 @exposeBot -= n
@@ -197,8 +194,6 @@ class MapScroll extends events
     #     0      000  00000000  00     00  000   000  00000000  000   0000000   000   000     000   
 
     setViewHeight: (h) =>
-
-        return if Number.isNaN h
         if @viewHeight != h
             @viewHeight = h
             @calc()
@@ -212,7 +207,6 @@ class MapScroll extends events
         
     setNumLines: (n) =>
 
-        return if Number.isNaN n
         if @numLines != n
             @numLines = n
             @fullHeight = @numLines * @lineHeight            
@@ -230,8 +224,7 @@ class MapScroll extends events
     # 0000000  000  000   000  00000000  000   000  00000000  000   0000000   000   000     000   
 
     setLineHeight: (h) =>
-
-        return if Number.isNaN h
+            
         if @lineHeight != h
             @lineHeight = h
             @fullHeight = @numLines * @lineHeight

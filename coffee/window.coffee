@@ -18,7 +18,7 @@ w = new win
     pkg:    require '../package.json'
     menu:   '../coffee/menu.noon'
     icon:   '../img/menu@2x.png'
-    onLoad: -> window.term.onResize()
+    # onLoad: -> window.term.onResize()
     context: (items) -> onContext items
 
 window.win = electron.remote.getCurrentWindow()
@@ -54,7 +54,7 @@ window.term = term = new Term
 # 000   000  000  0000  000       000      000   000       000  000
 #  0000000   000   000   0000000  0000000   0000000   0000000   00000000
 
-onMove  = -> window.stash.set 'bounds', window.win.getBounds()
+onMove  = -> window.stash.set 'bounds' window.win.getBounds()
 
 clearListeners = ->
 
@@ -69,6 +69,8 @@ onClose = ->
         window.stash.clear()
         
     clearListeners()
+
+window.win.on 'resize' -> term.resized()
 
 #  0000000   000   000  000       0000000    0000000   0000000
 # 000   000  0000  000  000      000   000  000   000  000   000

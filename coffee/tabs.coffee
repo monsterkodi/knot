@@ -12,21 +12,21 @@ Tab = require './tab'
 
 class Tabs
     
-    constructor: (titlebar) ->
+    @: (titlebar) ->
         
         @tabs = []
         @div = elem class: 'tabs'
         
         titlebar.insertBefore @div, $ ".minimize"
         
-        @div.addEventListener 'click',       @onClick
-        @div.addEventListener 'contextmenu', @onContextMenu
+        @div.addEventListener 'click'       @onClick
+        @div.addEventListener 'contextmenu' @onContextMenu
         
-        post.on 'stash', @stash
-        post.on 'restore', @restore
+        post.on 'stash' @stash
+        post.on 'restore' @restore
         
         @drag = new drag
-            target: @div
+            target:  @div
             onStart: @onDragStart
             onMove:  @onDragMove
             onStop:  @onDragStop
@@ -47,7 +47,7 @@ class Tabs
     
     restore: =>
         
-        active = window.stash.get 'tabs:active', 0
+        active = window.stash.get 'tabs:active' 0
         paths  = window.stash.get 'tabs:paths'
         
         if empty paths # happens when first window opens
@@ -89,6 +89,7 @@ class Tabs
         @dragTab = @tab e.target
         
         return 'skip' if not @dragTab
+        return 'skip' if event.button != 1
         
         @dragDiv = @dragTab.div.cloneNode true
         @dragTab.div.style.opacity = '0'
