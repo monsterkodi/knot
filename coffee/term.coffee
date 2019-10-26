@@ -82,7 +82,7 @@ class Term
         
         @storeTab()
         
-        tab = tabs.addTab path
+        tab = tabs.addTab path ? slash.tilde process.cwd()
 
     storeTab: -> #klog 'storeTab'
             

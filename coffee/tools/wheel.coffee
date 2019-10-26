@@ -45,7 +45,8 @@ class Wheel
         
         @accum = clamp -100000, 100000, @accum * 0.991
             
-        delta = @accum/100
+        # delta = @accum/100
+        delta = @accum/5
         post.emit 'scrollBy' delta 
 
         if Math.abs(@accum) < 10 or not (0 < @scroll.scroll < @scroll.scrollMax)

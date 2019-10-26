@@ -6,14 +6,15 @@
    000     000   000  0000000  
 ###
 
-{ post, elem } = require 'kxk'
+{ slash, post, klog, elem } = require 'kxk'
 
 class Tab
     
-    constructor: (@tabs) ->
+    @: (@tabs) ->
         
         @info = text: null
-        @div  = elem class: 'tab', text: '???'
+        @div  = elem class:'tab' 
+        @update slash.tilde process.cwd()
         @tabs.div.appendChild @div
 
     # 000   000  00000000   0000000     0000000   000000000  00000000  
@@ -24,9 +25,10 @@ class Tab
     
     update: (@text) ->
             
+        klog 'update' @text
         @div.innerHTML = ''
-        @div.appendChild elem 'span', class:'dot', text:'●'
-        @div.appendChild elem 'span', class:'name', text:@text
+        @div.appendChild elem 'span' class:'dot'  text:'●'
+        @div.appendChild elem 'span' class:'name' text:@text
         @
 
     text:  -> @info?.text ? '' 
@@ -35,9 +37,7 @@ class Tab
     next:  -> @tabs.tab @index()+1 if @index() < @tabs.numTabs()-1
     nextOrPrev: -> @next() ? @prev()
     
-    close: ->
-        # @shell?.kill?()
-        @div.remove()
+    close: -> @div.remove()
     
     #  0000000    0000000  000000000  000  000   000   0000000   000000000  00000000  
     # 000   000  000          000     000  000   000  000   000     000     000       
@@ -47,7 +47,7 @@ class Tab
     
     activate: ->
         
-        post.emit 'tab', @
+        post.emit 'tab' @
         @setActive()
 
     isActive: -> @div.classList.contains 'active'

@@ -107,13 +107,13 @@ class TextEditor extends Editor
     onFocus: =>
 
         @startBlink()
-        @emit 'focus', @
-        post.emit 'editorFocus', @
+        @emit 'focus' @
+        post.emit 'editorFocus' @
 
     onBlur: =>
 
         @stopBlink()
-        @emit 'blur', @
+        @emit 'blur' @
 
     onSchemeChanged: =>
 

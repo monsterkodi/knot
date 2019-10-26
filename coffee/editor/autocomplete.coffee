@@ -335,8 +335,19 @@ class Autocomplete extends event
         
         return 'unhandled' if not @span?
         
+        # klog 'combo' combo, @list?, @selected
+
         switch combo
-            when 'enter' then return @onEnter()               
+            when 'right'
+                @onEnter()
+                return
+            when 'enter'
+                if @list? and @selected >= 0
+                    @onEnter()
+                    return
+                else
+                    @close()
+                    return 'unhandled'
             
         if @list? 
             switch combo

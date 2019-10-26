@@ -8,22 +8,22 @@
 
 { post, klog } = require 'kxk'
 
-class Alias
+Cmmd = require './cmmd'
 
-    @: (@shell) ->
-        
+class Alias extends Cmmd
+
     onCommand: (cmd) ->
         
         switch cmd
             when 'c' 'cls' 'clear' then return post.emit 'menuAction' 'Clear'
-            when 'alias' then return @alias cmd
+            when 'blink' then return @newLine @editor.toggleBlink()
+            when 'alias' then return @newLine @alias cmd
 
         # klog 'cmd' cmd
         
     alias: (cmd) ->    
         
         if cmd == 'alias'
-            @shell.term.editor.appendText ['c''cls''clear'''].join '\n'
-            return true
+            @editor.appendText ['c''cls''clear'].join '\n'
     
 module.exports = Alias

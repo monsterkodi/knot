@@ -6,7 +6,7 @@
    000     000   000  0000000    0000000 
 ###
 
-{ post, stopEvent, empty, valid, popup, elem, drag, kpos, $, _ } = require 'kxk'
+{ post, stopEvent, empty, valid, slash, popup, elem, drag, kpos, $, _ } = require 'kxk'
 
 Tab = require './tab'
 
@@ -15,14 +15,14 @@ class Tabs
     @: (titlebar) ->
         
         @tabs = []
-        @div = elem class: 'tabs'
+        @div = elem class:'tabs'
         
-        titlebar.insertBefore @div, $ ".minimize"
+        titlebar.insertBefore @div, $ '.minimize'
         
         @div.addEventListener 'click'       @onClick
         @div.addEventListener 'contextmenu' @onContextMenu
         
-        post.on 'stash' @stash
+        post.on 'stash'   @stash
         post.on 'restore' @restore
         
         @drag = new drag
@@ -51,7 +51,8 @@ class Tabs
         paths  = window.stash.get 'tabs:paths'
         
         if empty paths # happens when first window opens
-            window.term.addTab '~'
+            # window.term.addTab '~'
+            window.term.addTab slash.tilde process.cwd()
             return
         
         while paths.length
@@ -181,7 +182,8 @@ class Tabs
     addTab: (text) ->
         
         tab = new Tab @
-        tab.update text
+        if text
+            tab.update text
         @tabs.push tab
         tab.setActive()
         tab
