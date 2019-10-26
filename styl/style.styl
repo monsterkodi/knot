@@ -13,8 +13,13 @@ titlebarHeight      = 30px
 scrollbarWidth      = 10px
 scrollhandleWidth   = 8px
 thinBorder          = 1px solid
-fontMono            = "MesloLGS Nerd Font Mono", "Liberation Mono", "Meslo LG S", "Bitstream Vera Sans Mono", "Menlo", "Cousine", "DejaVu Sans Mono", "Andale Mono", monospace
 titlebarFont        = Bahnschrift Light, Helvetica Neue, Ebrima, Varela Round, Helvetica, Arial
+
+@font-face 
+    font-family     fontMono
+    font-weight     normal
+    font-style      normal
+    src             url("../../pug/Meslo.woff")
 
 selectionRadius       = 0.3em
 selectionRadiusCursor = 0.15em
@@ -282,10 +287,12 @@ body
         display         inline-block
         width           (numbersWidth - 8px)
         text-align      right
-        padding-top     2px
+        vertical-align  top
 
-        &.gitInfoLine
-            font-size   16px
+    &.main
+        font-size       1.4em
+        margin-top      -0.2em
+        margin-bottom   0.2em
         
 // 00     00  00000000  000000000   0000000
 // 000   000  000          000     000   000

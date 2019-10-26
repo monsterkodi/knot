@@ -58,8 +58,8 @@ onMove  = -> window.stash.set 'bounds' window.win.getBounds()
 
 clearListeners = ->
 
-    window.win.removeListener 'close', onClose
-    window.win.removeListener 'move',  onMove
+    window.win.removeListener 'close' onClose
+    window.win.removeListener 'move'  onMove
     window.win.webContents.removeAllListeners 'devtools-opened'
     window.win.webContents.removeAllListeners 'devtools-closed'
 
@@ -80,10 +80,10 @@ window.win.on 'resize' -> term.resized()
 
 window.onload = ->
 
-    window.win.on 'close', onClose
-    window.win.on 'move',  onMove
-    window.win.webContents.on 'devtools-opened', -> window.stash.set 'devTools', true
-    window.win.webContents.on 'devtools-closed', -> window.stash.set 'devTools'
+    window.win.on 'close' onClose
+    window.win.on 'move'  onMove
+    window.win.webContents.on 'devtools-opened' -> window.stash.set 'devTools' true
+    window.win.webContents.on 'devtools-closed' -> window.stash.set 'devTools'
 
 # 00000000   00000000  000       0000000    0000000   0000000
 # 000   000  000       000      000   000  000   000  000   000
@@ -109,25 +109,25 @@ openFile = (f) ->
   
     [file, line] = slash.splitFileLine f
     
-    switch prefs.get 'editor', 'Visual Studio'
+    switch prefs.get 'editor' 'Visual Studio'
         when 'VS Code'
             open "vscode://file/" + slash.resolve f
         when 'Visual Studio'
             file = slash.unslash slash.resolve file
             bat = slash.unslash slash.resolve slash.join __dirname, '../bin/openFile/openVS.bat'
-            childp.exec "\"#{bat}\" \"#{file}\" #{line} 0", { cwd:slash.dir(bat) }, (err) -> 
-                kerror 'vb', err if not empty err
+            childp.exec "\"#{bat}\" \"#{file}\" #{line} 0" { cwd:slash.dir(bat) }, (err) -> 
+                kerror 'vb' err if not empty err
         when 'Atom'
             file = slash.unslash slash.resolve file
             atom = slash.unslash slash.untilde '~/AppData/Local/atom/bin/atom'
-            childp.exec "\"#{atom}\" \"#{file}:#{line}\"", { cwd:slash.dir(file) }, (err) -> 
-                kerror 'atom', err if not empty err
+            childp.exec "\"#{atom}\" \"#{file}:#{line}\"" { cwd:slash.dir(file) }, (err) -> 
+                kerror 'atom' err if not empty err
         else
             if not koSend then koSend = new udp port:9779
             koSend.send slash.resolve f
     
-post.on 'openFile', openFile
-post.on 'saveStash', -> saveStash()
+post.on 'openFile' openFile
+post.on 'saveStash' -> saveStash()
 
 # 00000000   0000000   000   000  000000000      0000000  000  0000000  00000000
 # 000       000   000  0000  000     000        000       000     000   000
@@ -135,23 +135,24 @@ post.on 'saveStash', -> saveStash()
 # 000       000   000  000  0000     000             000  000   000     000
 # 000        0000000   000   000     000        0000000   000  0000000  00000000
 
-defaultFontSize = 19
+defaultFontSize = 18
 
-getFontSize = -> window.stash.get 'fontSize', defaultFontSize
+getFontSize = -> window.stash.get 'fontSize' defaultFontSize
 
 setFontSize = (s) ->
-        
+                
+                
     s = getFontSize() if not _.isFinite s
     s = parseInt clamp 8, 88, s
 
-    window.stash.set 'fontSize', s
-    post.emit 'fontSize', s
+    window.stash.set 'fontSize' s
+    post.emit 'fontSize' s
 
 window.setFontSize = setFontSize
     
 resetFontSize = ->
     
-    window.stash.set 'fontSize', defaultFontSize
+    window.stash.set 'fontSize' defaultFontSize
     setFontSize defaultFontSize
      
 # 000   000  000   000  00000000  00000000  000      
@@ -167,6 +168,7 @@ onWheel = (event) ->
     if mod == (os.platform() == 'darwin' and 'command' or 'ctrl')
         
         s = getFontSize()
+                
         if event.deltaY < 0
             setFontSize s+2
         else
@@ -190,7 +192,7 @@ setEditor = (editor) ->
     prefs.set 'editor', editor
     klog "editor: #{prefs.get 'editor'}"
 
-post.on 'menuAction', (action) ->
+post.on 'menuAction' (action) ->
     
     switch action
         when 'Close Tab'        then tabs.closeTab()
@@ -206,7 +208,7 @@ post.on 'menuAction', (action) ->
         when 'Copy'             then term.copy()
         when 'Paste'            then term.paste()
             
-        when 'Visual Studio', 'VS Code', 'Atom', 'ko'
+        when 'Visual Studio' 'VS Code' 'Atom' 'ko'
             setEditor action
 
 #  0000000   0000000   000   000  000000000  00000000  000   000  000000000  
@@ -217,7 +219,7 @@ post.on 'menuAction', (action) ->
     
 onContext = (items) ->
     [    
-         text:'Clear', combo:'command+k', accel:'alt+ctrl+k'
+         text:'Clear' combo:'command+k' accel:'alt+ctrl+k'
     ,
          text: ''
     ].concat items

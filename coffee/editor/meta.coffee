@@ -18,22 +18,22 @@ class Meta
         @metas     = [] # [ [lineIndex, [start, end], {href: ...}], ... ]
         @lineMetas = {} # { lineIndex: [ lineMeta, ... ], ... }
 
-        @elem =$ ".meta", @editor.view
+        @elem =$ ".meta" @editor.view
 
-        @editor.on 'changed',          @onChanged
-        @editor.on 'lineAppended',     @onLineAppended
-        @editor.on 'clearLines',       @onClearLines
-        @editor.on 'lineInserted',     @onLineInserted
-        @editor.on 'lineDeleted',      @onLineDeleted
+        @editor.on 'changed'          @onChanged
+        @editor.on 'lineAppended'     @onLineAppended
+        @editor.on 'clearLines'       @onClearLines
+        @editor.on 'lineInserted'     @onLineInserted
+        @editor.on 'lineDeleted'      @onLineDeleted
 
-        @editor.on 'linesShown',       @onLinesShown
-        @editor.on 'linesShifted',     @onLinesShifted
+        @editor.on 'linesShown'       @onLinesShown
+        @editor.on 'linesShifted'     @onLinesShifted
 
         if @editor.numbers?
-            @editor.numbers.on 'numberAdded',   @onNumber
-            @editor.numbers.on 'numberChanged', @onNumber
+            @editor.numbers.on 'numberAdded'   @onNumber
+            @editor.numbers.on 'numberChanged' @onNumber
 
-        @elem.addEventListener 'mousedown', @onMouseDown
+        @elem.addEventListener 'mousedown' @onMouseDown
 
     #  0000000  000   000   0000000   000   000   0000000   00000000  0000000
     # 000       000   000  000   000  0000  000  000        000       000   000
@@ -134,8 +134,9 @@ class Meta
             meta[2].span = e.numberSpan
             e.numberSpan.className = ''
             e.numberSpan.parentNode.className = 'linenumber'
+            klog 'meta' meta
             switch meta[2].clss
-                when 'searchResult', 'termCommand', 'termResult', 'coffeeCommand', 'coffeeResult', 'commandlistItem', 'gitInfoFile'
+                when 'searchResult' 'termCommand' 'termResult' 
                     num = meta[2].state == 'unsaved' and @saveButton(meta[0])
                     num = meta[2].line? and meta[2].line if not num
                     num = slash.splitFileLine(meta[2].href)[1] if not num
@@ -239,6 +240,7 @@ class Meta
     addNumberMeta: (meta) ->
 
         meta.no_x = true
+        meta.clss = 'termCommand'
         lineMeta = @addLineMeta [meta.line, [0, 0], meta]
 
         if @editor.scroll.top <= meta.line <= @editor.scroll.bot
@@ -269,7 +271,7 @@ class Meta
 
     addLineMeta: (lineMeta) ->
         
-        return kerror 'invalid line meta?', lineMeta if not lineMeta?[2]?
+        return kerror 'invalid line meta?' lineMeta if not lineMeta?[2]?
         
         @lineMetas[lineMeta[0]] ?= []
         @lineMetas[lineMeta[0]].push lineMeta
@@ -278,7 +280,7 @@ class Meta
 
     moveLineMeta: (lineMeta, d) ->
 
-        return kerror 'invalid move?', lineMeta, d if not lineMeta? or d == 0
+        return kerror 'invalid move?' lineMeta, d if not lineMeta? or d == 0
         
         _.pull @lineMetas[lineMeta[0]], lineMeta
         delete @lineMetas[lineMeta[0]] if empty @lineMetas[lineMeta[0]]

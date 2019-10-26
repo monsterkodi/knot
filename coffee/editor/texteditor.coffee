@@ -217,6 +217,8 @@ class TextEditor extends Editor
 
     setFontSize: (fontSize) =>
         
+        klog 'texteditor setFontSize' fontSize
+        
         @layers.style.fontSize = "#{fontSize}px"
         @size.numbersWidth = 'Numbers' in @config.features and 36 or 0
         @size.fontSize     = fontSize
@@ -225,6 +227,7 @@ class TextEditor extends Editor
         @size.offsetX      = Math.floor @size.charWidth/2 + @size.numbersWidth
 
         @scroll?.setLineHeight @size.lineHeight
+        @setText @text() if @text()
 
         @emit 'fontSizeChanged'
 

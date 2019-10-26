@@ -76,6 +76,8 @@ class Term
         
         @storeTab()
         @editor.setText tab.buffer ? ''
+        @editor.singleCursorAtEnd()
+        @editor.focus()
         process.chdir slash.untilde tab.text
     
     addTab: (path) ->
@@ -116,7 +118,9 @@ class Term
 
     onFontSize: (size) =>
         
-        if @main?
-            @resized()
+        klog 'onFontSize' size
+        
+        @editor.setFontSize size
+        # @resized()
         
 module.exports = Term

@@ -6,7 +6,7 @@
 000   000   0000000   000   000  0000000    00000000  000   000  0000000
 ###
 
-{ setStyle, elem, $, _ } = require 'kxk'
+{ setStyle, elem, klog, $, _ } = require 'kxk'
 
 event = require 'events'
 
@@ -17,17 +17,17 @@ class Numbers extends event
         super()
         @lineDivs = {}
 
-        @elem =$ ".numbers", @editor.view
+        @elem =$ ".numbers" @editor.view
 
-        @editor.on 'clearLines',       @onClearLines
+        @editor.on 'clearLines'       @onClearLines
 
-        @editor.on 'linesShown',       @onLinesShown
-        @editor.on 'linesShifted',     @onLinesShifted
+        @editor.on 'linesShown'       @onLinesShown
+        @editor.on 'linesShifted'     @onLinesShifted
 
-        @editor.on 'fontSizeChanged',  @onFontSizeChange
-        @editor.on 'highlight',        @updateColors
-        @editor.on 'changed',          @updateColors
-        @editor.on 'linesSet',         @updateColors
+        @editor.on 'fontSizeChanged'  @onFontSizeChange
+        @editor.on 'highlight'        @updateColors
+        @editor.on 'changed'          @updateColors
+        @editor.on 'linesSet'         @updateColors
 
         @onFontSizeChange()
 
@@ -75,13 +75,13 @@ class Numbers extends event
             numberDiv = @lineDivs[li] = @lineDivs[lo]
             delete @lineDivs[lo]
 
-            numberSpan = numberDiv.firstChild
-            numberSpan.textContent = li+1
+            # numberSpan = numberDiv.firstChild
+            # numberSpan.textContent = '▶' # li+1
             @updateColor li
-            @emit 'numberChanged',
-                numberDiv:  numberDiv
-                numberSpan: numberSpan
-                lineIndex:  li
+            # @emit 'numberChanged',
+                # numberDiv:  numberDiv
+                # numberSpan: numberSpan
+                # lineIndex:  li
 
         if num > 0
             while oldBot < bot
@@ -111,7 +111,8 @@ class Numbers extends event
 
     addLine: (li) ->
 
-        div = elem class: "linenumber", child: elem "span", text: "#{li+1}"
+        # div = elem class:"linenumber" child: elem "span" text:"#{li+1}"
+        div = elem class:'linenumber' child: elem 'span' text:'▶'
         div.style.height = "#{@editor.size.lineHeight}px"
         @lineDivs[li] = div
         @elem.appendChild div
@@ -138,7 +139,7 @@ class Numbers extends event
 
         fs = Math.min 22, @editor.size.fontSize-4
         @elem.style.fontSize = "#{fs}px"
-        setStyle '.linenumber', 'padding-top', "#{parseInt @editor.size.fontSize/10}px"
+        setStyle '.linenumber' 'padding-top' "#{parseInt @editor.size.fontSize/10}px"
 
     #  0000000   0000000   000       0000000   00000000    0000000
     # 000       000   000  000      000   000  000   000  000
@@ -155,8 +156,6 @@ class Numbers extends event
     updateColor: (li) =>
 
         return if not @lineDivs[li]? # ok: e.g. commandlist
-        if @lineDivs[li].firstChild? and @lineDivs[li].firstChild.classList.contains 'gitInfoLine'
-            return
 
         si = (s[0] for s in rangesFromTopToBotInRanges li, li, @editor.selections())
         hi = (s[0] for s in rangesFromTopToBotInRanges li, li, @editor.highlights())

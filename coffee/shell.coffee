@@ -36,9 +36,13 @@ class Shell
             @term.editor.singleCursorAtEnd()
             return
             
-        klog 'shell.execute' cmd
+        @executeCommand cmd
+            
+    executeCommand: (cmd) =>
+            
+        klog 'shell.executeCommand' cmd
         
-        @child = childp.exec @term.editor.lastLine()
+        @child = childp.exec cmd
         
         @child.stdout.on 'data' @onStdOut
         @child.stderr.on 'data' @onStdErr
