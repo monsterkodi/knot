@@ -51,20 +51,6 @@ class Term
         post.on 'tab'      @onTab
 
         @onFontSize window.stash.get 'fontSize'
-
-    appendAnsi: (text) ->
-        
-        if text != kstr.stripAnsi text
-            li = @editor.numLines()
-            for line in text.split '\n'
-                ansi = new kstr.ansi
-                diss = ansi.dissect(line)[1]
-                lineSpan = render.lineSpan diss, @editor.size
-                @editor.spanCache[li] = lineSpan
-                li += 1
-            @editor.appendText kstr.stripAnsi text
-        else
-            @editor.appendText text
         
     # 000000000   0000000   0000000    
     #    000     000   000  000   000  

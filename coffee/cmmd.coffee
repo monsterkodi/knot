@@ -19,4 +19,9 @@ class Cmmd
         @editor.appendText ''
         true
         
+    clearLine: ->
+        
+        @editor.deleteToEndOfLineOrWholeLine()
+        true
+        
 module.exports = Cmmd

@@ -6,11 +6,9 @@
 0000000      000     000   000     000     000   000  000   000
 ###
 
-{ kerror, kstr, valid, klog, elem, empty, fs, noon, slash, _ } = require 'kxk'
+{ kerror, kstr, valid, klor, klog, elem, empty, fs, noon, slash, _ } = require 'kxk'
 
-matchr   = require '../tools/matchr'
-Balancer = require './balancer'
-klor     = require 'klor'
+matchr = require '../tools/matchr'
 
 class Syntax
     
@@ -18,7 +16,6 @@ class Syntax
 
         @diss     = []
         @colors   = {}
-        @balancer = new Balancer @, @getLine
 
     # 0000000    000   0000000   0000000
     # 000   000  000  000       000
@@ -28,7 +25,22 @@ class Syntax
 
     newDiss: (li) ->
 
-        diss = @balancer.dissForLine li
+        text = @getLine li
+
+        if not text?
+            return kerror "dissForLine -- no line at index #{li}?"
+            
+        return [start:0 length:0 match:''] if empty text
+
+        if text != kstr.stripAnsi text
+            ansi = new kstr.ansi
+            diss = ansi.dissect(text)[1]
+            # klog "ansi #{li} >#{text}<" diss
+        else
+            diss = klor.dissect([text])[0]
+            # klog klor.parse [text], 'txt'
+            # klog "klor #{li} >#{text}<" diss.length
+            
         diss
 
     getDiss: (li) ->
@@ -36,6 +48,8 @@ class Syntax
         if not @diss[li]?
             @diss[li] = @newDiss li
 
+        # klog "#{li}" @diss[li]
+            
         @diss[li]
 
     setDiss: (li, dss) ->
@@ -56,8 +70,6 @@ class Syntax
     
     setLines: (lines) ->
         
-        @balancer.setLines lines
-            
     #  0000000  000   000   0000000   000   000   0000000   00000000  0000000
     # 000       000   000  000   000  0000  000  000        000       000   000
     # 000       000000000  000000000  000 0 000  000  0000  0000000   000   000
@@ -66,9 +78,6 @@ class Syntax
 
     changed: (changeInfo) ->
 
-        if valid changeInfo.changes
-            @balancer.blocks = null
-        
         for change in changeInfo.changes
 
             [di,li,ch] = [change.doIndex, change.newIndex, change.change]
@@ -81,12 +90,10 @@ class Syntax
 
                 when 'deleted'
 
-                    @balancer.deleteLine di
                     @diss.splice di, 1
 
                 when 'inserted'
 
-                    @balancer.insertLine di
                     @diss.splice di, 0, @newDiss di
 
     # 00000000  000  000      00000000  000000000  000   000  00000000   00000000
@@ -95,13 +102,8 @@ class Syntax
     # 000       000  000      000          000        000     000        000
     # 000       000  0000000  00000000     000        000     000        00000000
 
-    setFileType: (fileType) ->
+    setFileType: (@name) ->
 
-        # klog 'Syntax.setFileType', fileType
-        
-        @name = fileType
-        @balancer.setFileType fileType
-        
     #  0000000  000      00000000   0000000   00000000
     # 000       000      000       000   000  000   000
     # 000       000      0000000   000000000  0000000
@@ -111,7 +113,6 @@ class Syntax
     clear: ->
 
         @diss = []
-        @balancer.clear()
 
     #  0000000   0000000   000       0000000   00000000
     # 000       000   000  000      000   000  000   000
@@ -192,25 +193,6 @@ class Syntax
             l = _.padEnd l, d.start
             l += d.match
         l
-
-    #  0000000  000   000  00000000  0000000     0000000   000   000   0000000
-    # 000       000   000  000       000   000  000   000  0000  000  000
-    # 0000000   000000000  0000000   0000000    000000000  000 0 000  000  0000
-    #      000  000   000  000       000   000  000   000  000  0000  000   000
-    # 0000000   000   000  00000000  0000000    000   000  000   000   0000000
-
-    @shebang: (line) ->
-
-        if line.startsWith "#!"
-            lastWord = _.last line.split /[\s\/]/
-            switch lastWord
-                when 'python' then return 'py'
-                when 'node'   then return 'js'
-                when 'bash'   then return 'sh'
-                else
-                    if lastWord in @syntaxNames
-                        return lastWord
-        'txt'
 
     # 000  000   000  000  000000000
     # 000  0000  000  000     000

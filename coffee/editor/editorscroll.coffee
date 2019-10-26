@@ -119,14 +119,14 @@ class EditorScroll extends events
             num = @bot - @top + 1
             
             if num > 0
-                @emit 'showLines', @top, @bot, num
+                @emit 'showLines' @top, @bot, num
 
         else   
             
             num = @top - oldTop
             
             if 0 < Math.abs num
-                @emit 'shiftLines', @top, @bot, num
+                @emit 'shiftLines' @top, @bot, num
                 
     lineIndexIsInView: (li) -> @top <= li <= @bot
     

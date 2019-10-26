@@ -72,12 +72,10 @@ class Editor extends Buffer
     #    000        000     000        000
     #    000        000     000        00000000
 
-    shebangFileType: -> @config?.syntaxName ? 'txt'
-
     setupFileType: ->
 
         oldType = @fileType
-        newType = @shebangFileType()
+        newType = @config?.syntaxName ? 'txt'
 
         @syntax?.setFileType newType
         @setFileType newType
@@ -114,7 +112,7 @@ class Editor extends Buffer
             @bracketCharacters.close[v] = k
 
         @bracketCharacters.regexp = []
-        for key in ['open', 'close']
+        for key in ['open' 'close']
             cstr = _.keys(@bracketCharacters[key]).join ''
             reg = new RegExp "[#{_.escapeRegExp cstr}]"
             @bracketCharacters.regexps.push [reg, key]
@@ -130,15 +128,15 @@ class Editor extends Buffer
         @insertIndentedEmptyLineBetween = '{}'
 
         switch @fileType
-            when 'coffee', 'koffee'
+            when 'coffee' 'koffee'
                 @indentNewLineMore =
                     lineEndsWith: ['->', '=>', ':', '=']
                     lineRegExp:   /^(\s+when|\s*if|\s*else\s+if\s+)(?!.*\sthen\s)|(^|\s)(else\s*$|switch\s|for\s|while\s|class\s)/
 
         # _______________________________________________________________ comment
 
-        @lineComment = @syntax.balancer.regions.lineComment?.open
-        @multiComment = @syntax.balancer.regions.multiComment
+        # @lineComment = @syntax.balancer.regions.lineComment?.open
+        # @multiComment = @syntax.balancer.regions.multiComment
 
     #  0000000  00000000  000000000         000      000  000   000  00000000   0000000
     # 000       000          000            000      000  0000  000  000       000
@@ -147,9 +145,6 @@ class Editor extends Buffer
     # 0000000   00000000     000            0000000  000  000   000  00000000  0000000
 
     setText: (text="") ->
-
-        if @syntax.name == 'txt'
-            @syntax.name = Syntax.shebang text.slice 0, text.search /\r?\n/
 
         lines = text.split /\n/
 

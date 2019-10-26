@@ -15,6 +15,7 @@ class Shell
 
     @: (@term) ->
         
+        @editor = @term.editor
         @alias = new Alias @
         @chdir = new Chdir @
         
@@ -25,15 +26,15 @@ class Shell
         cmd = @term.editor.lastLine().trim()
         
         if empty(cmd) 
-            @term.editor.appendText ''
+            @editor.appendText ''
             return
         
         if @alias.onCommand cmd
-            @term.editor.singleCursorAtEnd()
+            @editor.singleCursorAtEnd()
             return
 
         if @chdir.onCommand cmd
-            @term.editor.singleCursorAtEnd()
+            @editor.singleCursorAtEnd()
             return
             
         @executeCommand cmd
@@ -49,12 +50,12 @@ class Shell
         
     onStdOut: (data) =>
         
-        @term.appendAnsi data
-        @term.editor.singleCursorAtEnd()
+        @editor.appendText data
+        @editor.singleCursorAtEnd()
 
     onStdErr: (data) =>
         
-        @term.appendAnsi 'error: ' + data
-        @term.editor.singleCursorAtEnd()
+        @editor.appendText 'error: ' + data
+        @editor.singleCursorAtEnd()
         
 module.exports = Shell

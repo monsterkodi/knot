@@ -16,7 +16,7 @@ class Alias extends Cmmd
         
         switch cmd
             when 'c' 'cls' 'clear' then return post.emit 'menuAction' 'Clear'
-            when 'pwd'   then return @newLine @pwd()
+            when 'pwd'   then return @pwd() #@clearLine(); @pwd(); return @newLine()
             when 'blink' then return @newLine @editor.toggleBlink()
             when 'alias' then return @newLine @alias cmd
             when 'k'  then return @shell.executeCommand 'konrad'
@@ -30,13 +30,13 @@ class Alias extends Cmmd
         
     pwd: ->
             
-        # printf " ▶ "
-        b = '[48;5;235m'
-        '[38;5;238m'
-        '[38;5;147m'
-        a = '[38;5;235m[49m\ue0b0'
+        bckgr = '[48;5;235m'
+        # '[38;5;238m'
+        # '[38;5;147m'
+        arrow = '[38;5;235m[49m\ue0b0'
             
-        @shell.term.appendAnsi b+slash.tilde(process.cwd())+a
+        @editor.appendText bckgr + slash.tilde(process.cwd()) + arrow
+        @newLine()
         
     alias: (cmd) ->    
         
