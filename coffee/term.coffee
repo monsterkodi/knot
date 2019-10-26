@@ -75,16 +75,18 @@ class Term
     onTab: (tab) => 
         
         @storeTab()
+        @editor.setText tab.buffer ? ''
+        process.chdir slash.untilde tab.text
     
     addTab: (path) ->
         
-        tabs = window.tabs
-        
-        @storeTab()
-        
-        tab = tabs.addTab path ? slash.tilde process.cwd()
+        window.tabs.addTab path ? slash.tilde process.cwd()
 
-    storeTab: -> #klog 'storeTab'
+    storeTab: -> 
+    
+        tabs = window.tabs
+        if tab = tabs.activeTab()
+            tab.buffer = @editor.text()
             
     onScrollBy: (delta) =>
         

@@ -20,7 +20,9 @@ class Chdir extends Cmmd
             cmd = 'cd ..'
         else if cmd == 'cd.'
             cmd = 'cd .'
-        
+        else if cmd == '..'
+            cmd = 'cd ..'
+            
         if cmd.startsWith 'cd '
             dir = slash.resolve cmd.slice(3).trim()
             try 

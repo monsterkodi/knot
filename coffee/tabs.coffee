@@ -185,7 +185,8 @@ class Tabs
         if text
             tab.update text
         @tabs.push tab
-        tab.setActive()
+        # tab.setActive()
+        tab.activate()
         tab
 
     # 000   000   0000000   000   000  000   0000000    0000000   000000000  00000000  

@@ -25,7 +25,6 @@ class Tab
     
     update: (@text) ->
             
-        klog 'update' @text
         @div.innerHTML = ''
         @div.appendChild elem 'span' class:'dot'  text:'●'
         @div.appendChild elem 'span' class:'name' text:@text

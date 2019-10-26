@@ -50,7 +50,7 @@ class Shell
 
     onStdErr: (data) =>
         
-        @term.appendAnsi 'err:' + data
+        @term.appendAnsi 'error: ' + data
         @term.editor.singleCursorAtEnd()
         
 module.exports = Shell
