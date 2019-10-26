@@ -6,7 +6,7 @@
    000     00000000  000   000     000           00000000  0000000    000     000      0000000   000   000
 ###
 
-{ keyinfo, stopEvent, setStyle, slash, prefs, drag, empty, elem, post, clamp, kpos, str, sw, os, kerror, klog, $, _ } = require 'kxk' 
+{ keyinfo, stopEvent, setStyle, slash, prefs, drag, empty, elem, post, clamp, kpos, kstr, sw, os, kerror, klog, $, _ } = require 'kxk' 
   
 render       = require './render'
 EditorScroll = require './editorscroll'
@@ -40,9 +40,9 @@ class TextEditor extends Editor
         @spanCache = [] # cache for rendered line spans
         @lineDivs  = {} # maps line numbers to displayed divs
 
-        @config.lineHeight ?= 1.2
+        @config.lineHeight ?= 1.15
 
-        @setFontSize prefs.get "#{@name}FontSize" @config.fontSize ? 19
+        @setFontSize prefs.get "#{@name}FontSize" @config.fontSize ? 20
         @scroll = new EditorScroll @
         @scroll.on 'shiftLines' @shiftLines
         @scroll.on 'showLines'  @showLines
@@ -202,13 +202,13 @@ class TextEditor extends Editor
         @scroll.setNumLines @numLines(), showLines:showLines
 
         for li in appended
-            @emit 'lineAppended',
+            @emit 'lineAppended', # meta
                 lineIndex: li
                 text: @line li
 
-        @emit 'linesAppended' ls
-        @emit 'numLines' @numLines()
-
+        @emit 'linesAppended' ls # autocomplete
+        @emit 'numLines' @numLines() # minimap
+        
     # 00000000   0000000   000   000  000000000
     # 000       000   000  0000  000     000
     # 000000    000   000  000 0 000     000
@@ -322,7 +322,7 @@ class TextEditor extends Editor
 
     appendLine: (li) ->
 
-        @lineDivs[li] = elem class: 'line'
+        @lineDivs[li] = elem class:'line'
         @lineDivs[li].appendChild @cachedSpan li
         @elem.appendChild @lineDivs[li]
 
@@ -432,7 +432,7 @@ class TextEditor extends Editor
                 return if mc[1] < 0
 
                 if mc[1] > @numLines()-1
-                    return kerror "#{@name}.renderCursors mainCursor DAFUK?" @numLines(), str @mainCursor()
+                    return kerror "#{@name}.renderCursors mainCursor DAFUK?" @numLines(), kstr @mainCursor()
 
                 ri = mc[1]-@scroll.top
                 cursorLine = @state.line(mc[1])

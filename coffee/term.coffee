@@ -6,10 +6,11 @@
    000     00000000  000   000  000   000  
 ###
 
-{ post, keyinfo, stopEvent, setStyle, slash, empty, elem, klog, os, $ } = require 'kxk'
+{ post, keyinfo, stopEvent, setStyle, slash, empty, elem, kstr, klog, os, $ } = require 'kxk'
 
 BaseEditor = require './editor/editor'
 TextEditor = require './editor/texteditor'
+render     = require './editor/render'
 Wheel      = require './tools/wheel'
 Shell      = require './shell'
 
@@ -42,7 +43,7 @@ class Term
         @wheel = new Wheel @editor.scroll
         @shell = new Shell @
             
-        @editor.setText 'Hello\nWorld'
+        @editor.setText ''
         @editor.focus()
             
         post.on 'fontSize' @onFontSize
@@ -51,6 +52,20 @@ class Term
 
         @onFontSize window.stash.get 'fontSize'
 
+    appendAnsi: (text) ->
+        
+        if text != kstr.stripAnsi text
+            li = @editor.numLines()
+            for line in text.split '\n'
+                ansi = new kstr.ansi
+                diss = ansi.dissect(line)[1]
+                lineSpan = render.lineSpan diss, @editor.size
+                @editor.spanCache[li] = lineSpan
+                li += 1
+            @editor.appendText kstr.stripAnsi text
+        else
+            @editor.appendText text
+        
     # 000000000   0000000   0000000    
     #    000     000   000  000   000  
     #    000     000000000  0000000    

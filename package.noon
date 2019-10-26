@@ -17,12 +17,12 @@ dependencies
                 ansi-256-colors  ^1.1.0
                 fuzzy           ^0.1.3
                 klor            ^1.4.0
-                kxk             ^0.343.0
+                kxk             ^0.344.0
                 seamless-immutable  ^7.1.4
 devDependencies
                 assert          ^2.0.0
                 chai            ^4.2.0
-                electron        ^6.1.1
+                electron        ^6.1.2
                 electron-packager  ^14.0.6
                 electron-rebuild  ^1.8.6
                 konrad          ^0.159.0

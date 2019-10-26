@@ -6,9 +6,9 @@
 000   000   0000000      000      0000000    0000000   0000000   000   000  000        0000000  00000000     000     00000000
 ###
 
-{ kerror, stopEvent, clamp, post, empty, elem, $, _ } = require 'kxk'
+{ elem, klog, kerror, stopEvent, post, clamp, empty, $, _ } = require 'kxk'
 
-event   = require 'events'
+event = require 'events'
 
 class Autocomplete extends event
 
@@ -16,7 +16,9 @@ class Autocomplete extends event
         
         super()
         
-        @wordinfo  = {}
+        @wordinfo  = 
+            clear:count:666
+            alias:count:666
         @matchList = []
         @clones    = []
         @cloned    = []
@@ -31,16 +33,14 @@ class Autocomplete extends event
         @specialWordRegExp = new RegExp "(\\s+|[\\w#{@especial}]+|[^\\s])", 'g'
         @splitRegExp       = new RegExp "[^\\w\\d#{@especial}]+", 'g'        
     
-        @editor.on 'edit',           @onEdit
-        @editor.on 'linesSet',       @onLinesSet
-        @editor.on 'lineInserted',   @onLineInserted
-        @editor.on 'willDeleteLine', @onWillDeleteLine
-        @editor.on 'lineChanged',    @onLineChanged
-        @editor.on 'linesAppended',  @onLinesAppended
-        @editor.on 'cursor',         @close
-        @editor.on 'blur',           @close
-        
-        # post.on 'funcsCount',        @onFuncsCount
+        @editor.on 'edit'           @onEdit
+        @editor.on 'linesSet'       @onLinesSet
+        @editor.on 'lineInserted'   @onLineInserted
+        @editor.on 'willDeleteLine' @onWillDeleteLine
+        @editor.on 'lineChanged'    @onLineChanged
+        @editor.on 'linesAppended'  @onLinesAppended
+        @editor.on 'cursor'         @close
+        @editor.on 'blur'           @close
         
     #  0000000   000   000  00000000  0000000    000  000000000
     # 000   000  0000  000  000       000   000  000     000   
@@ -122,8 +122,8 @@ class Autocomplete extends event
         ws = @word.slice @word.search /\w/
         wi = ws.length
         
-        @clones[0].innerHTML = inner.slice 0, spanInfo.offsetChar + 1 
-        @clones[1].innerHTML = inner.slice    spanInfo.offsetChar + 1
+        @clones[0].innerHTML = inner.slice 0 spanInfo.offsetChar + 1 
+        @clones[1].innerHTML = inner.slice   spanInfo.offsetChar + 1
                     
         sibling = sp
         while sibling = sibling.nextSibling
@@ -267,9 +267,11 @@ class Autocomplete extends event
         return if not lines?
         
         cursorWord = @cursorWord()
+        
         for l in lines
-            if not l?.split?
-                return kerror "Autocomplete.parseLines -- line has no split? action: #{opt.action} line: #{l}", lines
+            
+            if not l?.split? then return kerror "Autocomplete.parseLines -- line has no split? action: #{opt.action} line: #{l}", lines
+                
             words = l.split @splitRegExp
             words = words.filter (w) => 
                 # return false if not Indexer.testWord w
@@ -292,7 +294,9 @@ class Autocomplete extends event
                 info.temp = true if opt.action is 'change'
                 @wordinfo[w] = info
                 
-        post.emit 'autocompleteCount', _.size @wordinfo
+        # klog 'words' @wordinfo
+                
+        post.emit 'autocompleteCount' _.size @wordinfo
                             
     #  0000000  000   000  00000000    0000000   0000000   00000000   000   000   0000000   00000000   0000000  
     # 000       000   000  000   000  000       000   000  000   000  000 0 000  000   000  000   000  000   000
@@ -308,7 +312,6 @@ class Autocomplete extends event
         [@editor.textsInRanges(befor), @editor.textInRange(cursr), @editor.textsInRanges(after)]
         
     cursorWord: -> @cursorWords()[1]
-                
     
     #  0000000   000   000
     # 000   000  0000  000
@@ -316,11 +319,11 @@ class Autocomplete extends event
     # 000   000  000  0000
     #  0000000   000   000
     
-    onLinesAppended:  (lines)    => @parseLines lines, action: 'append'
-    onLineInserted:   (li)       => @parseLines [@editor.line(li)], action: 'insert'
-    onLineChanged:    (li)       => @parseLines [@editor.line(li)], action: 'change' count:0
-    onWillDeleteLine: (line)     => @parseLines [line], action: 'delete' count:-1
-    onLinesSet:       (lines)    => @parseLines lines, action: 'set' if lines.length
+    onLinesAppended:  (lines) => @parseLines lines, action: 'append'
+    onLineInserted:   (li)    => @parseLines [@editor.line(li)], action: 'insert'
+    onLineChanged:    (li)    => @parseLines [@editor.line(li)], action: 'change' count:0
+    onWillDeleteLine: (line)  => @parseLines [line], action: 'delete' count:-1
+    onLinesSet:       (lines) => @parseLines lines, action: 'set' if lines.length
 
     # 000   000  00000000  000   000
     # 000  000   000        000 000 
