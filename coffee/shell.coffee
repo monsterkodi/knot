@@ -6,7 +6,7 @@
 0000000   000   000  00000000  0000000  0000000
 ###
 
-{ empty, childp, post, klog } = require 'kxk'
+{ empty, slash, childp, post, klog } = require 'kxk'
 
 Alias = require './alias'
 Chdir = require './chdir'
@@ -19,7 +19,13 @@ class Shell
         @alias = new Alias @
         @chdir = new Chdir @
         
+        post.on 'cd'      @onCD
         post.on 'execute' @onExecute
+        
+    onCD: (dir) =>
+        
+        if not slash.samePath dir, process.cwd()
+            @onExecute 'cd ' + dir
         
     onExecute: (@cmd) => 
     

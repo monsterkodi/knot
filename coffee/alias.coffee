@@ -21,6 +21,7 @@ class Alias extends Cmmd
             k:      'konrad'
             ks:     'k -s'
             kd:     'k -d'
+            kc:     'k -c'
             kb:     'k -b'
             kf:     'k -f'
             ki:     'k -i'

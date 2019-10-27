@@ -31,7 +31,7 @@ class Chdir extends Cmmd
                 @shell.term.pwd()
                 return @newLine()
             catch err
-                kerror err
+                kerror "#{err}"
                 
     onFallback: (cmd) ->
         

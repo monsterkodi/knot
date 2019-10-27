@@ -185,7 +185,6 @@ class Tabs
         if text
             tab.update text
         @tabs.push tab
-        # tab.setActive()
         tab.activate()
         tab
 

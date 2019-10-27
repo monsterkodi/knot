@@ -98,6 +98,7 @@ class Term
         
         @editor.clear()
         @editor.meta.clear()
+        @editor.numbers.onClearLines()
         @pwd()
     
         @editor.appendText ''
@@ -114,11 +115,22 @@ class Term
         @editor.setFontSize size
         @editor.singleCursorAtEnd()
         
+    # 00000000   000   000  0000000    
+    # 000   000  000 0 000  000   000  
+    # 00000000   000000000  000   000  
+    # 000        000   000  000   000  
+    # 000        00     00  0000000    
+    
     pwd: ->
             
         dir = slash.tilde process.cwd()
-        @editor.appendText dir
                 
+        @editor.appendText dir
+        
+        # klog @editor.numLines()-1, @editor.scroll.bot
+                
+        # @editor.numbers.lineDivs[@editor.scroll.bot]?.innerHTML = ''
+
         @editor.meta.add
             line: @editor.numLines()-1
             clss: 'pwd'
@@ -128,16 +140,11 @@ class Term
                 if pos.x < 40
                     index = @editor.meta.metas.indexOf meta
                     if index < @editor.meta.metas.length-1
-                        # @editor.do.start()
-                        # @editor.do.setCursors ([0,i] for i in [meta[0]...@editor.meta.metas[index+1][0]]), main:'closest'
-                        # @editor.deleteSelectionOrCursorLines()
-                        # @editor.singleCursorAtEnd()
-                        # @editor.do.end()
                         @editor.singleCursorAtPos [0,meta[0]]
                         for i in [meta[0]...@editor.meta.metas[index+1][0]]
                             @editor.deleteSelectionOrCursorLines()
                         @editor.singleCursorAtEnd()
                 else
-                    post.emit 'execute' 'cd ' + @editor.line meta[0]
-        
+                    post.emit 'cd' @editor.line meta[0]
+                            
 module.exports = Term

@@ -39,6 +39,7 @@ class Numbers extends event
 
     onLinesShown: (top, bot, num) =>
 
+        # klog 'onLinesShown' top, bot, num
         @elem.innerHTML = ''
         @lineDivs = {}
 
@@ -105,8 +106,10 @@ class Numbers extends event
 
     addLine: (li) ->
 
-        # div = elem class:"linenumber" child: elem "span" text:"#{li+1}"
-        div = elem class:'linenumber' child: elem 'span' text:'▶'
+        text = '▶'
+        # text = @editor.meta.lineMetas[li] and ' ' or '▶'
+        # klog 'addLine' li, text, @editor.meta.lineMetas[li]
+        div = elem class:'linenumber' child: elem 'span' text:text
         div.style.height = "#{@editor.size.lineHeight}px"
         @lineDivs[li] = div
         @elem.appendChild div
@@ -165,6 +168,8 @@ class Numbers extends event
         if li in hi
             cls += ' highligd'
 
+        @lineDivs[li].firstChild.innerHTML = @editor.meta.lineMetas[li] and ' ' or '▶'
+            
         @lineDivs[li].className = 'linenumber' + cls
 
 module.exports = Numbers
