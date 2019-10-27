@@ -6,7 +6,7 @@
    000     00000000  000   000  000   000  
 ###
 
-{ post, keyinfo, stopEvent, setStyle, slash, empty, elem, kstr, kpos, klog, os, $ } = require 'kxk'
+{ post, prefs, slash, klor, keyinfo, stopEvent, setStyle, elem, empty, kstr, kpos, klog, os, $ } = require 'kxk'
 
 BaseEditor = require './editor/editor'
 TextEditor = require './editor/texteditor'
@@ -64,7 +64,9 @@ class Term
         @editor.setText tab.buffer ? ''
         @editor.singleCursorAtEnd()
         @editor.focus()
-        process.chdir slash.untilde tab.text
+        dir = slash.untilde tab.text
+        process.chdir dir
+        prefs.set 'cwd' dir
     
     addTab: (path) ->
         
@@ -101,8 +103,9 @@ class Term
         @editor.numbers.onClearLines()
         @pwd()
     
-        @editor.appendText ''
-        @editor.singleCursorAtEnd()
+        if empty @shell.queue
+            @editor.appendText ''
+            @editor.singleCursorAtEnd()
                    
     # 00000000   0000000   000   000  000000000       0000000  000  0000000  00000000  
     # 000       000   000  0000  000     000         000       000     000   000       
@@ -127,10 +130,6 @@ class Term
                 
         @editor.appendText dir
         
-        # klog @editor.numLines()-1, @editor.scroll.bot
-                
-        # @editor.numbers.lineDivs[@editor.scroll.bot]?.innerHTML = ''
-
         @editor.meta.add
             line: @editor.numLines()-1
             clss: 'pwd'

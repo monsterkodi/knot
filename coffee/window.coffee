@@ -229,5 +229,5 @@ onContext = (items) ->
 # 000  000  0000  000     000       
 # 000  000   000  000     000       
 
-process.chdir slash.untilde '~'
+process.chdir slash.untilde prefs.get 'cwd' '~'
 post.emit 'restore'

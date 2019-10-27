@@ -32,14 +32,11 @@ class Syntax
             
         return [start:0 length:0 match:''] if empty text
 
-        if text != kstr.stripAnsi text
-            ansi = new kstr.ansi
-            diss = ansi.dissect(text)[1]
-            # klog "ansi #{li} >#{text}<" diss
-        else
-            diss = klor.dissect([text], 'txt')[0]
-            # klog klor.parse [text], 'txt'
-            # klog "klor #{li} >#{text}<" diss.length
+        # if text != kstr.stripAnsi text
+            # ansi = new kstr.ansi
+            # diss = ansi.dissect(text)[1]
+        # else
+        diss = klor.dissect([text], 'sh')[0]
             
         diss
 

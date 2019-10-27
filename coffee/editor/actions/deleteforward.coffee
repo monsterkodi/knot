@@ -46,7 +46,7 @@ module.exports =
         
         @do.start()
         @selectMoreLines()
-        @deleteSelection deleteLines:true      
+        @deleteSelection deleteLines:not @isInputCursor()      
         @do.end()
 
     deleteForward: ->

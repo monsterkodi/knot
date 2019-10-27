@@ -6,7 +6,7 @@
  0000000  000   000  0000000    000  000   000  
 ###
 
-{ slash, post, kerror, klog } = require 'kxk'
+{ slash, post, prefs, kerror, klog } = require 'kxk'
 
 Cmmd = require './cmmd'
 
@@ -26,6 +26,7 @@ class Chdir extends Cmmd
         if cmd.startsWith 'cd '
             dir = slash.resolve cmd.slice(3).trim()
             try 
+                prefs.set 'cwd' dir
                 process.chdir dir
                 window.tabs.activeTab().update slash.tilde dir
                 @shell.term.pwd()

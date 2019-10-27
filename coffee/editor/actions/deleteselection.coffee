@@ -5,7 +5,7 @@
 # 000   000  000       000                 000  000       000      000       000          000     000  000   000  000  0000
 # 0000000    00000000  0000000        0000000   00000000  0000000  00000000   0000000     000     000   0000000   000   000
 
-{ _ } = require 'kxk' 
+{ klog, _ } = require 'kxk' 
 
 module.exports =
     
@@ -14,7 +14,7 @@ module.exports =
         @do.start()
         if not @do.numSelections()
             @selectMoreLines()
-        @deleteSelection()
+        @deleteSelection deleteLines:not @isInputCursor()
         @do.end()
 
     deleteSelection: (opt = deleteLines:true) ->

@@ -22,7 +22,7 @@ class Editor extends Buffer
 
         @name   = name
         @config = config ? {}
-        @config.syntaxName ?= 'txt'
+        @config.syntaxName ?= 'sh'
 
         Editor.initActions() if not Editor.actions?
 
@@ -75,7 +75,7 @@ class Editor extends Buffer
     setupFileType: ->
 
         oldType = @fileType
-        newType = @config?.syntaxName ? 'txt'
+        newType = @config?.syntaxName ? 'sh'
 
         @syntax?.setFileType newType
         @setFileType newType

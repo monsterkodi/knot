@@ -33,7 +33,7 @@ module.exports =
 
         @do.start()
         if @do.numSelections()
-            @deleteSelection()
+            @deleteSelection deleteLines:not @isInputCursor()
         else if not @deleteEmptySurrounds()
             @deleteCharacterBackward opt
         @do.end()
@@ -61,7 +61,7 @@ module.exports =
         for c in reversed newCursors
             if c[0] == 0 # cursor at start of line
                 if opt?.ignoreLineBoundary or @do.numCursors() == 1
-                    if c[1] > 0 # cursor not in first line
+                    if c[1] > 0 and not @isInputCursor() # cursor not in first line or input line
                         ll = @do.line(c[1]-1).length
                         @do.change c[1]-1, @do.line(c[1]-1) + @do.line(c[1])
                         @do.delete c[1]

@@ -88,7 +88,9 @@ class TextEditor extends Editor
     # 000  000  0000  000        000   000     000     
     # 000  000   000  000         0000000      000     
     
-    isInputCursor: -> @mainCursor()[1] >= @numLines()-1
+    isInputCursor: ->
+        
+        @mainCursor()[1] >= @numLines()-1
         
     restoreInputCursor: ->
         

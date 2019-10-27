@@ -18,7 +18,10 @@ class Alias extends Cmmd
             a:      'alias'
             c:      'clear'
             cls:    'clear'
+            cl:     'c&&l'
             k:      'konrad'
+            nl:     'npm ls --depth 0 | node c:/Users/kodi/s/colorcat/bin/colorcat -sP c:/Users/kodi/s/konrad/cc/npm.noon'
+            ng:     'npm ls --depth 0 -g | node c:/Users/kodi/s/colorcat/bin/colorcat -sP c:/Users/kodi/s/konrad/cc/npm.noon'
             ks:     'k -s'
             kd:     'k -d'
             kc:     'k -c'
@@ -40,7 +43,7 @@ class Alias extends Cmmd
         
         for a in Object.keys @alias
             if cmd == a or cmd.startsWith a + ' '
-                return @shell.executeAlias @alias[a] + cmd[a.length..]
+                return @shell.executeCmd @alias[a] + cmd[a.length..]
         
         switch cmd
             when 'clear' then return post.emit 'menuAction' 'Clear'

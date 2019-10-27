@@ -213,12 +213,6 @@ titleColor = #222222
 // #0af #88e #aaf #b4a #aaa #666
 // #ff0 #f80 #f00 #0a0 #0f0     
 
-.dir
-    color           #a84
-
-.file
-    color           #aaa
-
 .cc
 .cpp
 .git
@@ -286,8 +280,19 @@ titleColor = #222222
 .dir .dotfile
     color           #88e
 
+.dir
+    color           #88f
+    &.punct
+        opacity     0.2
+
+.file
+    color           #bbf
+
 .tab 
     color       #aaf
+    & .path:not(.sep):not(:last-child):hover
+        color   #fff
+        opacity 1
     & .path
         opacity 0.5
         &.top

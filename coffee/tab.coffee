@@ -41,6 +41,7 @@ class Tab
         
         if event.target.id
             post.emit 'cd' event.target.id
+            
         delete @downPos
         
     # 000   000  00000000   0000000     0000000   000000000  00000000  
