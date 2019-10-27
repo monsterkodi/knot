@@ -73,7 +73,7 @@ module.exports =
 
         cursorMoves:
             name:  'Move Cursors To Start'
-            combos: ['ctrl+home', 'ctrl+end', 'page up', 'page down', 'ctrl+shift+home', 'ctrl+shift+end', 'shift+page up', 'shift+page down']
+            combos: ['ctrl+home' 'ctrl+end' 'page up' 'page down' 'ctrl+shift+home' 'ctrl+shift+end' 'shift+page up' 'shift+page down']
 
 
     #  0000000  00000000  000000000

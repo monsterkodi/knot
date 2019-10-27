@@ -40,7 +40,7 @@ class TextEditor extends Editor
         @spanCache = [] # cache for rendered line spans
         @lineDivs  = {} # maps line numbers to displayed divs
 
-        @config.lineHeight ?= 1.2
+        @config.lineHeight ?= 1.28
 
         @setFontSize prefs.get "#{@name}FontSize" @config.fontSize ? 20
         @scroll = new EditorScroll @

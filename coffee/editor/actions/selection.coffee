@@ -15,7 +15,7 @@ module.exports =
         selectAll:
             name:  'Select All'
             combo: 'command+a'
-            accel: 'ctrl+a'
+            accel: 'alt+a'
             
         selectNone:
             name:  'Deselect'

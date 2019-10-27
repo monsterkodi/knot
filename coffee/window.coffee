@@ -141,7 +141,6 @@ getFontSize = -> window.stash.get 'fontSize' defaultFontSize
 
 setFontSize = (s) ->
                 
-                
     s = getFontSize() if not _.isFinite s
     s = parseInt clamp 8, 88, s
 

@@ -26,8 +26,17 @@ class Tab
     update: (@text) ->
             
         @div.innerHTML = ''
-        @div.appendChild elem 'span' class:'dot'  text:'●'
-        @div.appendChild elem 'span' class:'name' text:@text
+        @div.appendChild elem 'span' class:'dot' text:'●'
+        
+        if @text in ['/' '']
+            @div.appendChild elem 'span' class:'path top' text:'/'
+        else            
+            split = slash.split @text
+            for i in [0...split.length-1]
+                s = split[i]
+                @div.appendChild elem 'span' class:'path' text:s, id:split[0..i].join '/'
+                @div.appendChild elem 'span' class:'path sep' text:'/'
+            @div.appendChild elem 'span' class:'path top' text:split[-1], id:@text
         @
 
     text:  -> @info?.text ? '' 

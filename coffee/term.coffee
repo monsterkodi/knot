@@ -112,7 +112,8 @@ class Term
     onFontSize: (size) =>
         
         @editor.setFontSize size
-
+        @editor.singleCursorAtEnd()
+        
     pwd: ->
             
         dir = slash.tilde process.cwd()
@@ -127,13 +128,16 @@ class Term
                 if pos.x < 40
                     index = @editor.meta.metas.indexOf meta
                     if index < @editor.meta.metas.length-1
-                        @editor.do.start()
-                        @editor.do.setCursors ([0,i] for i in [meta[0]...@editor.meta.metas[index+1][0]]), main:'closest'
-                        @editor.deleteSelectionOrCursorLines()
+                        # @editor.do.start()
+                        # @editor.do.setCursors ([0,i] for i in [meta[0]...@editor.meta.metas[index+1][0]]), main:'closest'
+                        # @editor.deleteSelectionOrCursorLines()
+                        # @editor.singleCursorAtEnd()
+                        # @editor.do.end()
+                        @editor.singleCursorAtPos [0,meta[0]]
+                        for i in [meta[0]...@editor.meta.metas[index+1][0]]
+                            @editor.deleteSelectionOrCursorLines()
                         @editor.singleCursorAtEnd()
-                        @editor.do.end()
                 else
-                    klog 'cd ' + @editor.line meta[0]
                     post.emit 'execute' 'cd ' + @editor.line meta[0]
         
 module.exports = Term

@@ -33,7 +33,7 @@ module.exports =
             name:  'Highlight and Select Word'
             text:  'highlights all occurrences of text in selection or word at cursor and selects it. expands to the left if already selected.'
             combo: 'command+e'
-            accel: 'ctrl+e'
+            accel: 'alt+e'
 
     # 000000000  00000000  000   000  000000000  
     #    000     000        000 000      000     
