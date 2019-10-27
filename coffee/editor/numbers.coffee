@@ -75,13 +75,7 @@ class Numbers extends event
             numberDiv = @lineDivs[li] = @lineDivs[lo]
             delete @lineDivs[lo]
 
-            # numberSpan = numberDiv.firstChild
-            # numberSpan.textContent = '▶' # li+1
             @updateColor li
-            # @emit 'numberChanged',
-                # numberDiv:  numberDiv
-                # numberSpan: numberSpan
-                # lineIndex:  li
 
         if num > 0
             while oldBot < bot

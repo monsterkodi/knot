@@ -26,7 +26,7 @@ class Editor extends Buffer
 
         Editor.initActions() if not Editor.actions?
 
-        @indentString    = _.padStart "", 4
+        @indentString    = _.padStart '' 4
         @stickySelection = false
         @syntax          = new Syntax @config.syntaxName, @line, @lines
         @do              = new Do @
@@ -135,8 +135,8 @@ class Editor extends Buffer
 
         # _______________________________________________________________ comment
 
-        # @lineComment = @syntax.balancer.regions.lineComment?.open
-        # @multiComment = @syntax.balancer.regions.multiComment
+        @lineComment  = '#'
+        @multiComment = '###'
 
     #  0000000  00000000  000000000         000      000  000   000  00000000   0000000
     # 000       000          000            000      000  0000  000  000       000

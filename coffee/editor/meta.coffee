@@ -6,7 +6,7 @@
 000   000  00000000     000     000   000
 ###
 
-{ stopEvent, empty, elem, post, slash, fs, kerror, $, _ } = require 'kxk'
+{ stopEvent, empty, elem, post, slash, fs, klog, kerror, $, _ } = require 'kxk'
 
 ranges = require '../tools/ranges'
 File   = require '../tools/file'
@@ -29,10 +29,6 @@ class Meta
         @editor.on 'linesShown'       @onLinesShown
         @editor.on 'linesShifted'     @onLinesShifted
 
-        if @editor.numbers?
-            @editor.numbers.on 'numberAdded'   @onNumber
-            @editor.numbers.on 'numberChanged' @onNumber
-
         @elem.addEventListener 'mousedown' @onMouseDown
 
     #  0000000  000   000   0000000   000   000   0000000   00000000  0000000
@@ -43,25 +39,6 @@ class Meta
 
     onChanged: (changeInfo) =>
         
-        for change in changeInfo.changes
-            li = change.oldIndex
-            continue if change.change == 'deleted'
-            for meta in @metasAtLineIndex li
-                if meta[2].clss == "searchResult" and meta[2].href?
-                    [file, line] = slash.splitFileLine meta[2].href
-                    line -= 1
-                    localChange = _.cloneDeep change
-                    localChange.oldIndex = line
-                    localChange.newIndex = line
-                    localChange.doIndex  = line
-                    localChange.after    = @editor.line(meta[0])
-                    @editor.emit 'fileSearchResultChange', file, localChange
-                    meta[2].state = 'unsaved'
-                    if meta[2].span?
-                        button = @saveButton li
-                        if not meta[2].span.innerHTML.startsWith "<span"
-                            meta[2].span.innerHTML = button
-
     #  0000000   0000000   000   000  00000000
     # 000       000   000  000   000  000
     # 0000000   000000000   000 000   0000000
@@ -120,32 +97,6 @@ class Meta
 
     saveButton: (li) ->
         "<span class=\"saveButton\" onclick=\"window.terminal.meta.saveLine(#{li});\">&#128190;</span>"
-
-    # 000   000  000   000  00     00  0000000    00000000  00000000
-    # 0000  000  000   000  000   000  000   000  000       000   000
-    # 000 0 000  000   000  000000000  0000000    0000000   0000000
-    # 000  0000  000   000  000 0 000  000   000  000       000   000
-    # 000   000   0000000   000   000  0000000    00000000  000   000
-
-    onNumber: (e) =>
-
-        metas = @metasAtLineIndex e.lineIndex
-        for meta in metas
-            meta[2].span = e.numberSpan
-            e.numberSpan.className = ''
-            e.numberSpan.parentNode.className = 'linenumber'
-            klog 'meta' meta
-            switch meta[2].clss
-                when 'searchResult' 'termCommand' 'termResult' 
-                    num = meta[2].state == 'unsaved' and @saveButton(meta[0])
-                    num = meta[2].line? and meta[2].line if not num
-                    num = slash.splitFileLine(meta[2].href)[1] if not num
-                    num = '?' if not num
-                    e.numberSpan.parentNode.className = 'linenumber ' + meta[2].lineClss if meta[2].lineClss?
-                    e.numberSpan.className = meta[2].lineClss if meta[2].lineClss?
-                    e.numberSpan.innerHTML = num
-                when 'spacer'
-                    e.numberSpan.innerHTML = '&nbsp;'
 
     #  0000000  00000000  000000000        00000000    0000000    0000000
     # 000       000          000           000   000  000   000  000
@@ -221,7 +172,7 @@ class Meta
 
     add: (meta) ->
 
-        lineMeta = @addLineMeta [meta.line, [meta.start, meta.end], meta]
+        lineMeta = @addLineMeta [meta.line, [meta.start ? 0, meta.end ? 0], meta]
 
         if @editor.scroll.top <= meta.line <= @editor.scroll.bot
             @addDiv lineMeta
@@ -231,16 +182,15 @@ class Meta
     # 000   000  000  000000    000000
     # 000   000  000  000       000
     # 0000000    000  000       000
-
+    
     addDiffMeta: (meta) ->
 
         meta.diff = true
         @addNumberMeta meta
-
+        
     addNumberMeta: (meta) ->
 
         meta.no_x = true
-        meta.clss = 'termCommand'
         lineMeta = @addLineMeta [meta.line, [0, 0], meta]
 
         if @editor.scroll.top <= meta.line <= @editor.scroll.bot

@@ -21,41 +21,69 @@ class Shell
         
         post.on 'execute' @onExecute
         
-    onExecute: => 
+    onExecute: (@cmd) => 
     
-        cmd = @term.editor.lastLine().trim()
+        @errorText = ''
+        @cmd ?= @term.editor.lastLine()
+        @cmd  = @cmd.trim()
         
-        if empty(cmd) 
+        if empty @cmd
             @editor.appendText ''
-            return
-        
-        if @alias.onCommand cmd
             @editor.singleCursorAtEnd()
             return
+        
+        @executeAlias @cmd
+        
+    executeAlias: (@cmd) =>
+        
+        if @alias.onCommand @cmd
+            @editor.singleCursorAtEnd()
+            return true
 
-        if @chdir.onCommand cmd
+        if @chdir.onCommand @cmd
             @editor.singleCursorAtEnd()
-            return
+            return true
             
-        @executeCommand cmd
+        @executeCommand @cmd
             
-    executeCommand: (cmd) =>
+    executeCommand: (@cmd) =>
             
-        klog 'shell.executeCommand' cmd
-        
-        @child = childp.exec cmd
+        @child = childp.exec @cmd
         
         @child.stdout.on 'data' @onStdOut
         @child.stderr.on 'data' @onStdErr
+        @child.on 'exit' @onExit
+        
+        true
+        
+    onExit: (code) =>
+
+        if code == 0
+            setImmediate @onDone
+        else
+            if @chdir.onFallback @cmd
+                @editor.singleCursorAtEnd()
+            else
+                @editor.appendText 'error: ' + @errorText
+                @editor.singleCursorAtEnd()
+        
+    onDone: =>
+
+        @term.pwd()
+        @editor.appendText ''
+        @editor.singleCursorAtEnd()
         
     onStdOut: (data) =>
         
+        if data[-1] == '\n'
+            data = data[0...data.length-1]
         @editor.appendText data
         @editor.singleCursorAtEnd()
 
     onStdErr: (data) =>
         
-        @editor.appendText 'error: ' + data
-        @editor.singleCursorAtEnd()
+        @errorText += data
+        # @editor.appendText 'error: ' + data
+        # @editor.singleCursorAtEnd()
         
 module.exports = Shell

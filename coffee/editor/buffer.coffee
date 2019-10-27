@@ -6,7 +6,7 @@
 0000000     0000000   000       000       00000000  000   000
 ###
 
-{ clamp, empty, kerror, _ } = require 'kxk'
+{ clamp, empty, kstr, klog, kerror, _ } = require 'kxk'
 
 matchr  = require '../tools/matchr'
 State   = require './state'
@@ -26,9 +26,9 @@ class Buffer extends event
         @setState new State()
 
     setLines: (lines) ->
-        @emit 'numLines', 0 # give listeners a chance to clear their stuff
+        @emit 'numLines' 0 # give listeners a chance to clear their stuff
         @setState new State lines:lines
-        @emit 'numLines', @numLines()
+        @emit 'numLines' @numLines()
 
     setState: (state) -> @state = new State state.s
 
@@ -175,6 +175,10 @@ class Buffer extends event
     #      000  000       000      000       000          000     000  000   000  000  0000       000
     # 0000000   00000000  0000000  00000000   0000000     000     000   0000000   000   000  0000000
 
+    isAnsiLine: (li) => 
+        if line = @line li
+            line != kstr.stripAnsi line
+    
     selectionsInLineIndexRangeRelativeToLineIndex: (lineIndexRange, relIndex) ->
 
         sl = @selectionsInLineIndexRange lineIndexRange

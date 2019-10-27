@@ -40,7 +40,7 @@ class TextEditor extends Editor
         @spanCache = [] # cache for rendered line spans
         @lineDivs  = {} # maps line numbers to displayed divs
 
-        @config.lineHeight ?= 1.15
+        @config.lineHeight ?= 1.2
 
         @setFontSize prefs.get "#{@name}FontSize" @config.fontSize ? 20
         @scroll = new EditorScroll @
@@ -187,6 +187,17 @@ class TextEditor extends Editor
             log "#{@name}.appendText - no text?"
             return
 
+        if text != kstr.stripAnsi text
+            li = @numLines()
+            for line in text.split '\n'
+                ansi = new kstr.ansi
+                diss = ansi.dissect(line)[1]
+                lineSpan = render.lineSpan diss, @size
+                @spanCache[li] = lineSpan
+                li += 1
+            @appendText kstr.stripAnsi text
+            return
+            
         appended = []
         ls = text?.split /\n/
 
@@ -216,8 +227,6 @@ class TextEditor extends Editor
     # 000        0000000   000   000     000
 
     setFontSize: (fontSize) =>
-        
-        klog 'texteditor setFontSize' fontSize
         
         @layers.style.fontSize = "#{fontSize}px"
         @size.numbersWidth = 'Numbers' in @config.features and 36 or 0
@@ -469,16 +478,14 @@ class TextEditor extends Editor
     renderSelection: ->
 
         h = ""
-        s = @selectionsInLineIndexRangeRelativeToLineIndex [@scroll.top, @scroll.bot], @scroll.top
-        if s
+        if s = @selectionsInLineIndexRangeRelativeToLineIndex [@scroll.top, @scroll.bot], @scroll.top
             h += render.selection s, @size
         @layerDict.selections.innerHTML = h
 
     renderHighlights: ->
 
         h = ""
-        s = @highlightsInLineIndexRangeRelativeToLineIndex [@scroll.top, @scroll.bot], @scroll.top
-        if s
+        if s = @highlightsInLineIndexRangeRelativeToLineIndex [@scroll.top, @scroll.bot], @scroll.top
             h += render.selection s, @size, "highlight"
         @layerDict.highlights.innerHTML = h
 
@@ -742,7 +749,6 @@ class TextEditor extends Editor
                 if action.key? and _.isFunction @[action.key]
                     @[action.key] key, combo: combo, mod: mod, event: event
                     return
-                # klog 'unhandled'
                 return 'unhandled'
                 
             if action.accels? and os.platform() != 'darwin'

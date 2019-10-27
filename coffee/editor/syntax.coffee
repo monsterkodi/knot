@@ -37,7 +37,7 @@ class Syntax
             diss = ansi.dissect(text)[1]
             # klog "ansi #{li} >#{text}<" diss
         else
-            diss = klor.dissect([text])[0]
+            diss = klor.dissect([text], 'txt')[0]
             # klog klor.parse [text], 'txt'
             # klog "klor #{li} >#{text}<" diss.length
             

@@ -6,7 +6,7 @@
    000     00000000  000   000  000   000  
 ###
 
-{ post, keyinfo, stopEvent, setStyle, slash, empty, elem, kstr, klog, os, $ } = require 'kxk'
+{ post, keyinfo, stopEvent, setStyle, slash, empty, elem, kstr, kpos, klog, os, $ } = require 'kxk'
 
 BaseEditor = require './editor/editor'
 TextEditor = require './editor/texteditor'
@@ -94,8 +94,15 @@ class Term
     # 000       000      000       000   000  000   000  
     #  0000000  0000000  00000000  000   000  000   000  
     
-    clear: -> @editor.setText ''
-           
+    clear: ->
+        
+        @editor.clear()
+        @editor.meta.clear()
+        @pwd()
+    
+        @editor.appendText ''
+        @editor.singleCursorAtEnd()
+                   
     # 00000000   0000000   000   000  000000000       0000000  000  0000000  00000000  
     # 000       000   000  0000  000     000         000       000     000   000       
     # 000000    000   000  000 0 000     000         0000000   000    000    0000000   
@@ -104,9 +111,29 @@ class Term
 
     onFontSize: (size) =>
         
-        klog 'onFontSize' size
-        
         @editor.setFontSize size
-        # @resized()
+
+    pwd: ->
+            
+        dir = slash.tilde process.cwd()
+        @editor.appendText dir
+                
+        @editor.meta.add
+            line: @editor.numLines()-1
+            clss: 'pwd'
+            end: dir.length+1
+            click: (meta, event) => 
+                pos = kpos event
+                if pos.x < 40
+                    index = @editor.meta.metas.indexOf meta
+                    if index < @editor.meta.metas.length-1
+                        @editor.do.start()
+                        @editor.do.setCursors ([0,i] for i in [meta[0]...@editor.meta.metas[index+1][0]]), main:'closest'
+                        @editor.deleteSelectionOrCursorLines()
+                        @editor.singleCursorAtEnd()
+                        @editor.do.end()
+                else
+                    klog 'cd ' + @editor.line meta[0]
+                    post.emit 'execute' 'cd ' + @editor.line meta[0]
         
 module.exports = Term

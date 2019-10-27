@@ -28,9 +28,16 @@ class Chdir extends Cmmd
             try 
                 process.chdir dir
                 window.tabs.activeTab().update slash.tilde dir
-                klog "chdir #{dir}"
+                @shell.term.pwd()
                 return @newLine()
             catch err
                 kerror err
+                
+    onFallback: (cmd) ->
+        
+        dir = slash.join process.cwd(), cmd
+        if slash.isDir dir
+            @onCommand 'cd ' + cmd
+            return true
         
 module.exports = Chdir

@@ -11,36 +11,46 @@
 Cmmd = require './cmmd'
 
 class Alias extends Cmmd
+    
+    @: ->
+        
+        @alias = 
+            a:      'alias'
+            c:      'clear'
+            cls:    'clear'
+            k:      'konrad'
+            ks:     'k -s'
+            kd:     'k -d'
+            kb:     'k -b'
+            kf:     'k -f'
+            ki:     'k -i'
+            kp:     'k -p'
+            km:     'k -m'
+            kR:     'k -R'
+            l:      'color-ls'
+            ls:     'color-ls'
+            la:     'l -a'
+            ll:     'l -l'
+            p:      'pwd'
+            e:      'electron .'
+        super
 
     onCommand: (cmd) ->
         
+        for a in Object.keys @alias
+            if cmd == a or cmd.startsWith a + ' '
+                return @shell.executeAlias @alias[a] + cmd[a.length..]
+        
         switch cmd
-            when 'c' 'cls' 'clear' then return post.emit 'menuAction' 'Clear'
-            when 'pwd'   then return @pwd() #@clearLine(); @pwd(); return @newLine()
+            when 'clear' then return post.emit 'menuAction' 'Clear'
+            when 'pwd'   then return @newLine @shell.term.pwd()
             when 'blink' then return @newLine @editor.toggleBlink()
-            when 'alias' then return @newLine @alias cmd
-            when 'k'  then return @shell.executeCommand 'konrad'
-            when 'ks' then return @shell.executeCommand 'konrad -s'
-            when 'kd' then return @shell.executeCommand 'konrad -d'
-            when 'ki' then return @shell.executeCommand 'konrad -i'
-            when 'km' then return @shell.executeCommand 'konrad -m'
-            when 'kR' then return @shell.executeCommand 'konrad -R'
-
-        # klog 'cmd' cmd
-        
-    pwd: ->
-            
-        bckgr = '[48;5;235m'
-        # '[38;5;238m'
-        # '[38;5;147m'
-        arrow = '[38;5;235m[49m\ue0b0'
-            
-        @editor.appendText bckgr + slash.tilde(process.cwd()) + arrow
-        @newLine()
-        
-    alias: (cmd) ->    
+            when 'alias' then return @newLine @aliasCmd cmd
+                                
+    aliasCmd: (cmd) ->    
         
         if cmd == 'alias'
-            @editor.appendText ['c''cls''clear'].join '\n'
+            for k,v of @alias
+                @editor.appendText "#{k} #{v}"
     
 module.exports = Alias
