@@ -47,9 +47,12 @@ class Shell
             @editor.singleCursorAtEnd()
             return
         
+        post.emit 'cmd' @cmd, @term.tab.text
         @executeCmd @cmd
-        
+                
     executeCmd: (@cmd) =>
+        
+        @cmd = @substitute @cmd
         
         split = @cmd.split '&&'
         if split.length > 1
@@ -72,6 +75,10 @@ class Shell
             
         @shellCmd @cmd
             
+    substitute: (cmd) ->
+        
+        cmd = @alias.substitute cmd
+        
     #  0000000  000   000  00000000  000      000       0000000  00     00  0000000    
     # 000       000   000  000       000      000      000       000   000  000   000  
     # 0000000   000000000  0000000   000      000      000       000000000  000   000  

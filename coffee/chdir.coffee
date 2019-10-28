@@ -11,25 +11,32 @@
 Cmmd = require './cmmd'
 
 class Chdir extends Cmmd
+    
+    @: -> 
+        
+        super
+        @lastDir = '~'
 
     onCommand: (cmd) ->
                 
-        if cmd == 'cd'
+        if cmd in ['cd' '~']
             cmd = 'cd ~'
-        else if cmd == 'cd..'
+        else if cmd in ['cd..' '..']
             cmd = 'cd ..'
-        else if cmd == 'cd.'
+        else if cmd in ['cd.' '.']
             cmd = 'cd .'
-        else if cmd == '..'
-            cmd = 'cd ..'
+        else if cmd in ['cd -' 'cd-' '-']
+            cmd = "cd #{@lastDir}"
             
         if cmd.startsWith 'cd '
             dir = slash.resolve cmd.slice(3).trim()
             try 
-                prefs.set 'cwd' dir
+                cwd = process.cwd()
                 process.chdir dir
+                prefs.set 'cwd' dir
                 @term.tab.update slash.tilde dir
                 @term.pwd()
+                @lastDir = cwd if cwd != dir
                 return @newLine()
             catch err
                 kerror "#{err}"

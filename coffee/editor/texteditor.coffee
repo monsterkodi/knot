@@ -602,12 +602,14 @@ class TextEditor extends Editor
     lineSpanAtXY:(x,y) ->
         
         if lineElem = @lineElemAtXY x,y
-            lr = lineElem.getBoundingClientRect()
             for e in lineElem.firstChild.children
                 br = e.getBoundingClientRect()
                 if br.left <= x <= br.left+br.width
                     offset = x-br.left
-                    return span: e, offsetLeft: offset, offsetChar: parseInt offset/@size.charWidth
+                    return span:e, offsetLeft:offset, offsetChar:parseInt(offset/@size.charWidth), pos:@posAtXY x,y 
+                else if x > br.left+br.width
+                    offset = br.width
+                    return span:e, offsetLeft:offset, offsetChar:parseInt(offset/@size.charWidth), pos:@posAtXY x,y 
         null
 
     numFullLines: -> @scroll.fullLines
@@ -619,13 +621,11 @@ class TextEditor extends Editor
 
     clearLines: =>
 
-        # klog 'clearLines'
         @elem.innerHTML = ''
         @emit 'clearLines'
 
     clear: => 
         
-        # klog 'clear'
         @setLines []
 
     focus: -> @view.focus()
@@ -662,7 +662,8 @@ class TextEditor extends Editor
                             if event.metaKey or @stickySelection
                                 @addRangeToSelection range
                             else
-                                @selectSingleRange range
+                                @highlightWordAndAddToSelection()
+                                # @selectSingleRange range
                         if @clickCount == 3
                             r = @rangeForLineAtIndex @clickPos[1]
                             if event.metaKey

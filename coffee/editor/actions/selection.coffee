@@ -257,9 +257,6 @@ module.exports =
         
     selectNextHighlight: -> # command+g
         
-        if not @numHighlights() and window? # < this sucks
-            searchText = window.commandline.commands.find?.currentText
-            @highlightText searchText if searchText?.length
         return if not @numHighlights()
         r = rangeAfterPosInRanges @cursorPos(), @highlights()
         r ?= @highlight 0
@@ -269,9 +266,6 @@ module.exports =
 
     selectPrevHighlight: -> # command+shift+g
         
-        if not @numHighlights() and window? # < this sucks
-            searchText = window.commandline.commands.find?.currentText
-            @highlightText searchText if searchText?.length
         return if not @numHighlights()
         hs = @highlights()
         r = rangeBeforePosInRanges @cursorPos(), hs

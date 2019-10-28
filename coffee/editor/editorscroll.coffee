@@ -58,7 +58,6 @@ class EditorScroll extends events
     calc: ->
         
         if @viewHeight <= 0
-            klog '@viewHeight' @viewHeight
             return
             
         @scrollMax   = Math.max(0,@fullHeight - @viewHeight)   # maximum scroll offset (pixels)

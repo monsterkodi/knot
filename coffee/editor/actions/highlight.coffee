@@ -95,12 +95,6 @@ module.exports =
 
     selectAllWords: -> # command+alt+d
         
-        if @name == 'commandline-editor' # hack to forward action to main editor
-            if editor = window.commandline?.command?.receivingEditor()
-                editor.selectAllWords()
-                editor.focus()
-                return
-    
         @highlightWordAndAddToSelection()
         @do.start()
         @do.select @do.highlights()
@@ -150,13 +144,7 @@ module.exports =
             if @renderHighlights?
                 @renderHighlights()
                 @emit 'highlight'
-                
-                if window.split.commandlineVisible()
-                    window.commandline.startCommand 'find' if window.commandline.command?.prefsID not in ['search', 'find']
-                window.commandline.commands.find.currentText = text
-                window.commandline.commands.search.currentText = text
-                window.commandline.setText text
-                
+                                
                 @focus()
 
     #  0000000  000      00000000   0000000   00000000   

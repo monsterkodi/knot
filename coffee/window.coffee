@@ -9,6 +9,7 @@
 { post, stopEvent, keyinfo, childp, slash, prefs, clamp, stash, empty, open, udp, win, os, kerror, klog, $, _ } = require 'kxk'
 
 Tabs  = require './tabs'
+Brain = require './brain'
 Wheel = require './tools/wheel'
 
 electron = require 'electron'
@@ -46,6 +47,7 @@ if window.stash.get 'devTools'
     window.win.webContents.openDevTools()
 
 window.tabs = tabs = new Tabs $ "#titlebar"
+window.brain = new Brain
 window.wheel = new Wheel 
 
 term = -> (tabs.activeTab() ? tabs.tabs[0]).term

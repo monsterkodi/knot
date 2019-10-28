@@ -232,7 +232,7 @@ body
     pointer-events      none
 
 .line
-    line-height         1.28
+    line-height         1.26
     white-space         nowrap
     position            absolute
     & span
@@ -282,7 +282,7 @@ body
 .linenumber
     width               numbersWidth
     position            absolute
-    line-height         1.28
+    line-height         1.26
 
     & span
         display         inline-block
@@ -459,6 +459,7 @@ body
 
 .autocomplete-span
     opacity             1
+    white-space         pre
 
 .autocomplete-list
     pointer-events      auto
@@ -468,12 +469,16 @@ body
     overflow-x          hidden
     overflow-y          auto
     left                0
-    top                 100%
     &::-webkit-scrollbar
         width            4px
     &::-webkit-scrollbar-thumb
         width            2px
 
+    &.above
+        bottom          100%
+    &.below
+        top             100%    
+        
 .autocomplete-item
     pointer-events      auto
     white-space         nowrap

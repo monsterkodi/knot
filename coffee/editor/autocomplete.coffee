@@ -6,7 +6,7 @@
 000   000   0000000      000      0000000    0000000   0000000   000   000  000        0000000  00000000     000     00000000
 ###
 
-{ elem, klog, kerror, stopEvent, post, clamp, empty, $, _ } = require 'kxk'
+{ elem, klog, kerror, stopEvent, post, prefs, clamp, empty, $, _ } = require 'kxk'
 
 event = require 'events'
 
@@ -16,9 +16,6 @@ class Autocomplete extends event
         
         super()
         
-        @wordinfo  = 
-            clear:count:666
-            alias:count:666
         @matchList = []
         @clones    = []
         @cloned    = []
@@ -33,14 +30,9 @@ class Autocomplete extends event
         @specialWordRegExp = new RegExp "(\\s+|[\\w#{@especial}]+|[^\\s])", 'g'
         @splitRegExp       = new RegExp "[^\\w\\d#{@especial}]+", 'g'        
     
-        @editor.on 'edit'           @onEdit
-        @editor.on 'linesSet'       @onLinesSet
-        @editor.on 'lineInserted'   @onLineInserted
-        @editor.on 'willDeleteLine' @onWillDeleteLine
-        @editor.on 'lineChanged'    @onLineChanged
-        @editor.on 'linesAppended'  @onLinesAppended
-        @editor.on 'cursor'         @close
-        @editor.on 'blur'           @close
+        @editor.on 'edit'   @onEdit
+        @editor.on 'cursor' @close
+        @editor.on 'blur'   @close
         
     #  0000000   000   000  00000000  0000000    000  000000000
     # 000   000  0000  000  000       000   000  000     000   
@@ -51,39 +43,38 @@ class Autocomplete extends event
     onEdit: (info) =>
         
         @close()
+        
+        klog info.before
+        
         @word = _.last info.before.split @splitRegExp
-        switch info.action
+        @word = info.before if @word?.length == 0
+        
+        if info.action == 'insert'
             
-            when 'delete' # ever happening?
-                error 'delete!!!!'
-                if @wordinfo[@word]?.temp and @wordinfo[@word]?.count <= 0
-                    delete @wordinfo[@word]
-                    
-            when 'insert'
+            klog "@word.length >#{@word}<" @word?.length
+            return if not @word?.length
+            return if empty window.brain.words
+            
+            matches = _.pickBy window.brain.words, (c,w) => w.startsWith(@word) and w.length > @word.length            
+            matches = _.toPairs matches
+            for m in matches
+                d = @editor.distanceOfWord m[0]
+                m[1].distance = 100 - Math.min d, 100
                 
-                return if not @word?.length
-                return if empty @wordinfo
+            matches.sort (a,b) ->
+                (b[1].distance+b[1].count+1/b[0].length) - (a[1].distance+a[1].count+1/a[0].length)
                 
-                matches = _.pickBy @wordinfo, (c,w) => w.startsWith(@word) and w.length > @word.length            
-                matches = _.toPairs matches
-                for m in matches
-                    d = @editor.distanceOfWord m[0]
-                    m[1].distance = 100 - Math.min d, 100
-                    
-                matches.sort (a,b) ->
-                    (b[1].distance+b[1].count+1/b[0].length) - (a[1].distance+a[1].count+1/a[0].length)
-                    
-                words = matches.map (m) -> m[0]
-                for w in words
-                    if not @firstMatch
-                        @firstMatch = w 
-                    else
-                        @matchList.push w
-                            
-                return if not @firstMatch?
-                @completion = @firstMatch.slice @word.length
-                
-                @open info
+            words = matches.map (m) -> m[0]
+            for w in words
+                if not @firstMatch
+                    @firstMatch = w 
+                else
+                    @matchList.push w
+                        
+            return if not @firstMatch?
+            @completion = @firstMatch.slice @word.length
+            
+            @open info
         
     #  0000000   00000000   00000000  000   000
     # 000   000  000   000  000       0000  000
@@ -93,25 +84,33 @@ class Autocomplete extends event
     
     open: (info) ->
         
-        cursor = $('.main', @editor.view)
+        cursor = $('.main' @editor.view)
         if not cursor?
             kerror "Autocomplete.open --- no cursor?"
             return
 
-        @span = elem 'span', class: 'autocomplete-span'
-        @span.textContent = @completion
+        @span = elem 'span' class:'autocomplete-span'
+        @span.textContent      = @completion
         @span.style.opacity    = 1
         @span.style.background = "#44a"
         @span.style.color      = "#fff"
 
         cr = cursor.getBoundingClientRect()
-        spanInfo = @editor.lineSpanAtXY cr.left, cr.top
-        
+        spanInfo = @editor.lineSpanAtXY cr.left, cr.top+2
         if not spanInfo?
-            
+            klog 'no spanInfo'
             p = @editor.posAtXY cr.left, cr.top
-            ci = p[1]-@editor.scroll.top
-            return kerror "no span for autocomplete? cursor topleft: #{parseInt cr.left} #{parseInt cr.top}", info
+            if firstSpan = @editor.lineSpanAtXY 2, cr.top+2
+                fakeSpan = elem 'span'
+                fakeSpan.parentElement = firstSpan.parentElement
+                spanInfo = offsetChar:0 pos:p, span:fakeSpan
+                klog 'fakespan' spanInfo
+            else
+                ci = p[1]-@editor.scroll.top
+                return kerror "no span for autocomplete? cursor topleft: #{parseInt cr.left} #{parseInt cr.top}" info
+        
+        pos = @editor.clampPos spanInfo.pos
+        # klog pos, @editor.numLines(), '\n', @editor.scroll.bot
 
         sp = spanInfo.span
         inner = sp.innerHTML
@@ -138,18 +137,28 @@ class Autocomplete extends event
         for c in @clones
             @span.insertAdjacentElement 'afterend', c
             
+        klog @completion, @completion.length
+            
         @moveClonesBy @completion.length            
         
         if @matchList.length
-            
+                            
             @list = elem class: 'autocomplete-list'
             @list.addEventListener 'wheel'     @onWheel
             @list.addEventListener 'mousedown' @onMouseDown
             index = 0
+            
             for m in @matchList
                 item = elem class:'autocomplete-item' index:index++
                 item.textContent = m
                 @list.appendChild item
+                
+            above = pos[1] + @matchList.length - @editor.scroll.top >= @editor.scroll.fullLines
+            if above
+                @list.classList.add 'above'
+            else
+                @list.classList.add 'below'
+                
             cursor.appendChild @list
 
     #  0000000  000       0000000    0000000  00000000
@@ -254,50 +263,6 @@ class Autocomplete extends event
         spanOffset += @editor.size.charWidth*beforeLength
         @span.style.transform = "translatex(#{spanOffset}px)"
         
-    # 00000000    0000000   00000000    0000000  00000000
-    # 000   000  000   000  000   000  000       000     
-    # 00000000   000000000  0000000    0000000   0000000 
-    # 000        000   000  000   000       000  000     
-    # 000        000   000  000   000  0000000   00000000
-    
-    parseLines:(lines, opt) ->
-        
-        @close()
-
-        return if not lines?
-        
-        cursorWord = @cursorWord()
-        
-        for l in lines
-            
-            if not l?.split? then return kerror "Autocomplete.parseLines -- line has no split? action: #{opt.action} line: #{l}", lines
-                
-            words = l.split @splitRegExp
-            words = words.filter (w) => 
-                # return false if not Indexer.testWord w
-                return false if w == cursorWord
-                return false if @word == w.slice 0, w.length-1
-                return false if @headerRegExp.test w
-                true
-                
-            for w in words # append words without leading special character
-                i = w.search @notSpecialRegExp
-                if i > 0 and w[0] != "#"
-                    w = w.slice i
-                    words.push w if not /^[\-]?[\d]+$/.test w
-            
-            for w in words
-                info  = @wordinfo[w] ? {}
-                count = info.count ? 0
-                count += opt?.count ? 1
-                info.count = count
-                info.temp = true if opt.action is 'change'
-                @wordinfo[w] = info
-                
-        # klog 'words' @wordinfo
-                
-        post.emit 'autocompleteCount' _.size @wordinfo
-                            
     #  0000000  000   000  00000000    0000000   0000000   00000000   000   000   0000000   00000000   0000000  
     # 000       000   000  000   000  000       000   000  000   000  000 0 000  000   000  000   000  000   000
     # 000       000   000  0000000    0000000   000   000  0000000    000000000  000   000  0000000    000   000
@@ -313,18 +278,6 @@ class Autocomplete extends event
         
     cursorWord: -> @cursorWords()[1]
     
-    #  0000000   000   000
-    # 000   000  0000  000
-    # 000   000  000 0 000
-    # 000   000  000  0000
-    #  0000000   000   000
-    
-    onLinesAppended:  (lines) => @parseLines lines, action: 'append'
-    onLineInserted:   (li)    => @parseLines [@editor.line(li)], action: 'insert'
-    onLineChanged:    (li)    => @parseLines [@editor.line(li)], action: 'change' count:0
-    onWillDeleteLine: (line)  => @parseLines [line], action: 'delete' count:-1
-    onLinesSet:       (lines) => @parseLines lines, action: 'set' if lines.length
-
     # 000   000  00000000  000   000
     # 000  000   000        000 000 
     # 0000000    0000000     00000  
@@ -338,7 +291,7 @@ class Autocomplete extends event
         # klog 'combo' combo, @list?, @selected
 
         switch combo
-            when 'right'
+            when 'right' 'tab'
                 @onEnter()
                 return
             when 'enter'

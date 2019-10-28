@@ -31,10 +31,10 @@ class Wheel
         if (@accum < 0 and delta > 0) or (@accum > 0 and delta < 0)
             @accum = 0
         else
-            post.emit 'scrollBy' delta 
             if @accum == 0
                 window.requestAnimationFrame @onAnimation
             @accum += delta
+            post.emit 'scrollBy' @accum/5
       
     onMouseDown: (event) =>
         
