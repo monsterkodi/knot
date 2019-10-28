@@ -49,6 +49,8 @@ class Term
     onScrollBy: (delta) =>
         
         @editor.scroll.by delta
+        if not (0 < @editor.scroll.scroll < @editor.scroll.scrollMax-1)
+            post.emit 'stopWheel'
     
     # 00000000   00000000   0000000  000  0000000  00000000  
     # 000   000  000       000       000     000   000       

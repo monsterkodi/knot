@@ -165,6 +165,8 @@ onWheel = (event) ->
 
     if mod == (os.platform() == 'darwin' and 'command' or 'ctrl')
         
+        post.emit 'stopWheel'
+        
         s = getFontSize()
                 
         if event.deltaY < 0
