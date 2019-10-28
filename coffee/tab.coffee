@@ -10,7 +10,7 @@
 
 class Tab
     
-    @: (@tabs) ->
+    @: (@tabs, @term) ->
         
         @div  = elem class:'tab' 
         @update slash.tilde process.cwd()
@@ -40,7 +40,7 @@ class Tab
             return
         
         if event.target.id
-            post.emit 'cd' event.target.id
+            @term.shell.chdir event.target.id
             
         delete @downPos
         
@@ -91,7 +91,10 @@ class Tab
         if not @isActive()
             @tabs.activeTab()?.clearActive()
             @div.classList.add 'active'
+            @term.div.style.zIndex = '10'
             
-    clearActive: -> @div.classList.remove 'active'
+    clearActive: -> 
+        @div.classList.remove 'active'
+        @term.div.style.zIndex = '0'
         
 module.exports = Tab

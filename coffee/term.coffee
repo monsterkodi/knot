@@ -11,14 +11,15 @@
 BaseEditor = require './editor/editor'
 TextEditor = require './editor/texteditor'
 render     = require './editor/render'
-Wheel      = require './tools/wheel'
 Shell      = require './shell'
 
 class Term
 
     @: ->
         
-        @div =$ "#term"
+        main =$ '#main'
+        @div = elem class:'term' 
+        main.appendChild @div
 
         @num  = 0   
         @rows = 0
@@ -26,57 +27,24 @@ class Term
         @size =
             charWidth:  0
             lineHeight: 0
-        
-        @editor = new TextEditor $(".editor"),
-            features: [
-                'Scrollbar'
-                'Minimap'
-                'Meta'
-                'Numbers'
-                'Autocomplete'
-                'Brackets'
-                'Strings'
-                'CursorLine'
-            ],
-            fontSize: 19
                 
-        @wheel = new Wheel @editor.scroll
-        @shell = new Shell @
-            
+        @editor = new TextEditor @div, features:[
+            'Scrollbar'
+            'Minimap'
+            'Meta'
+            'Numbers'
+            'Autocomplete'
+            'Brackets'
+            'Strings'
+            'CursorLine'
+        ]
+                
         @editor.setText ''
-        @editor.focus()
-            
+        
+        @shell = new Shell @
+                        
         post.on 'fontSize' @onFontSize
         post.on 'scrollBy' @onScrollBy
-        post.on 'tab'      @onTab
-
-        @onFontSize window.stash.get 'fontSize'
-        
-    # 000000000   0000000   0000000    
-    #    000     000   000  000   000  
-    #    000     000000000  0000000    
-    #    000     000   000  000   000  
-    #    000     000   000  0000000    
-            
-    onTab: (tab) => 
-        
-        @storeTab()
-        @editor.setText tab.buffer ? ''
-        @editor.singleCursorAtEnd()
-        @editor.focus()
-        dir = slash.untilde tab.text
-        process.chdir dir
-        prefs.set 'cwd' dir
-    
-    addTab: (path) ->
-        
-        window.tabs.addTab path ? slash.tilde process.cwd()
-
-    storeTab: -> 
-    
-        tabs = window.tabs
-        if tab = tabs.activeTab()
-            tab.buffer = @editor.text()
             
     onScrollBy: (delta) =>
         
@@ -144,6 +112,6 @@ class Term
                             @editor.deleteSelectionOrCursorLines()
                         @editor.singleCursorAtEnd()
                 else
-                    post.emit 'cd' @editor.line meta[0]
+                    @shell.chdir @editor.line meta[0]
                             
 module.exports = Term

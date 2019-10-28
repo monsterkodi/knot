@@ -8,8 +8,8 @@
 
 { post, stopEvent, keyinfo, childp, slash, prefs, clamp, stash, empty, open, udp, win, os, kerror, klog, $, _ } = require 'kxk'
 
-Term  = require './term'
 Tabs  = require './tabs'
+Wheel = require './tools/wheel'
 
 electron = require 'electron'
          
@@ -45,8 +45,10 @@ if bounds = window.stash.get 'bounds'
 if window.stash.get 'devTools'
     window.win.webContents.openDevTools()
 
-window.tabs = new Tabs $ "#titlebar"
-window.term = term = new Term
+window.tabs = tabs = new Tabs $ "#titlebar"
+window.wheel = new Wheel 
+
+term = -> tabs.activeTab()?.term
 
 #  0000000   000   000   0000000  000       0000000    0000000  00000000
 # 000   000  0000  000  000       000      000   000  000       000
@@ -70,7 +72,7 @@ onClose = ->
         
     clearListeners()
 
-window.win.on 'resize' -> term.resized()
+window.win.on 'resize' -> tabs.resized()
 
 #  0000000   000   000  000       0000000    0000000   0000000
 # 000   000  0000  000  000      000   000  000   000  000   000
@@ -137,22 +139,19 @@ post.on 'saveStash' -> saveStash()
 
 defaultFontSize = 18
 
-getFontSize = -> window.stash.get 'fontSize' defaultFontSize
+getFontSize = -> prefs.get 'fontSize' defaultFontSize
 
 setFontSize = (s) ->
                 
     s = getFontSize() if not _.isFinite s
     s = parseInt clamp 8, 88, s
 
-    window.stash.set 'fontSize' s
+    prefs.set 'fontSize' s
     post.emit 'fontSize' s
 
 window.setFontSize = setFontSize
     
-resetFontSize = ->
-    
-    window.stash.set 'fontSize' defaultFontSize
-    setFontSize defaultFontSize
+resetFontSize = -> setFontSize defaultFontSize
      
 # 000   000  000   000  00000000  00000000  000      
 # 000 0 000  000   000  000       000       000      
@@ -174,7 +173,7 @@ onWheel = (event) ->
             setFontSize s-1
         
     else
-        window.term.wheel.onWheel event
+        window.wheel.onWheel event
         
     stopEvent event
     
@@ -199,13 +198,13 @@ post.on 'menuAction' (action) ->
         when 'Previous Tab'     then tabs.navigate 'left'
         when 'Next Tab'         then tabs.navigate 'right'
         when 'New Window'       then post.toMain 'newWindow'
-        when 'New Tab'          then term.addTab()
+        when 'New Tab'          then tabs.addTab()
         when 'Increase'         then setFontSize getFontSize()+1
         when 'Decrease'         then setFontSize getFontSize()-1
         when 'Reset'            then resetFontSize()
-        when 'Clear'            then term.clear()
-        when 'Copy'             then term.copy()
-        when 'Paste'            then term.paste()
+        when 'Clear'            then term().clear()
+        when 'Copy'             then term().copy()
+        when 'Paste'            then term().paste()
             
         when 'Visual Studio' 'VS Code' 'Atom' 'ko'
             setEditor action

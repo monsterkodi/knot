@@ -10,7 +10,7 @@
 
 class Wheel
 
-    @: (@scroll) ->
+    @: ->
         
         @accum = 0
         
@@ -31,7 +31,7 @@ class Wheel
         if (@accum < 0 and delta > 0) or (@accum > 0 and delta < 0)
             @accum = 0
         else
-            post.emit 'scrollBy' Math.sign(delta) * @scroll.lineHeight
+            post.emit 'scrollBy' Math.sign(delta) # * @scroll.lineHeight
             if @accum == 0
                 window.requestAnimationFrame @onAnimation
             @accum += delta
@@ -49,7 +49,7 @@ class Wheel
         delta = @accum/5
         post.emit 'scrollBy' delta 
 
-        if Math.abs(@accum) < 10 or not (0 < @scroll.scroll < @scroll.scrollMax)
+        if Math.abs(@accum) < 10 #or not (0 < @scroll.scroll < @scroll.scrollMax)
             @accum = 0
         else
             window.requestAnimationFrame @onAnimation

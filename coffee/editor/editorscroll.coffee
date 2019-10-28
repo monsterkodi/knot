@@ -6,7 +6,7 @@
 00000000  0000000    000     000      0000000   000   000        0000000    0000000  000   000   0000000   0000000  0000000  
 ###
 
-{ clamp } = require 'kxk'
+{ klog, clamp } = require 'kxk'
 
 events = require 'events'
 kxk    = require 'kxk'
@@ -58,11 +58,14 @@ class EditorScroll extends events
     calc: ->
         
         if @viewHeight <= 0
+            klog '@viewHeight' @viewHeight
             return
             
         @scrollMax   = Math.max(0,@fullHeight - @viewHeight)   # maximum scroll offset (pixels)
         @fullLines   = Math.floor(@viewHeight / @lineHeight)   # number of lines in view (excluding partials)
         @viewLines   = Math.ceil(@viewHeight / @lineHeight)+1  # number of lines in view (including partials)
+        
+        # klog 'calc' @viewLines, @lineHeight
         
     # 0000000    000   000
     # 000   000   000 000 
@@ -112,9 +115,14 @@ class EditorScroll extends events
         @bot = Math.min top+@viewLines, @numLines-1
         @top = Math.max 0, @bot - @viewLines
 
+        # klog 'old' oldTop, oldBot, @top, @bot, @viewLines, @numLines
+        
         return if oldTop == @top and oldBot == @bot
             
         if (@top > oldBot) or (@bot < oldTop) or (oldBot < oldTop) 
+            
+            # klog 'start from scratch'
+            
             # new range outside, start from scratch
             num = @bot - @top + 1
             
@@ -122,6 +130,8 @@ class EditorScroll extends events
                 @emit 'showLines' @top, @bot, num
 
         else   
+            
+            # klog 'shiftLines'
             
             num = @top - oldTop
             
@@ -184,6 +194,8 @@ class EditorScroll extends events
 
     setLineHeight: (h) =>
             
+        return kerror 'editorscroll.setLineHeight -- NaN' if Number.isNaN h
+        # klog 'setLineHeight' @lineHeight, h
         if @lineHeight != h
             @lineHeight = h
             @fullHeight = @numLines * @lineHeight

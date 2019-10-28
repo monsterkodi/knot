@@ -15,7 +15,10 @@ electron     = require 'electron'
 
 class TextEditor extends Editor
 
-    @: (@view, config) ->
+    @: (parent, config) ->
+
+        @view = elem class:'editor' tabindex:'0'
+        parent.appendChild @view
 
         super 'editor' config
 
@@ -40,7 +43,7 @@ class TextEditor extends Editor
         @spanCache = [] # cache for rendered line spans
         @lineDivs  = {} # maps line numbers to displayed divs
 
-        @setFontSize prefs.get "#{@name}FontSize" @config.fontSize ? 20
+        @setFontSize prefs.get "fontSize" @config.fontSize ? 18
         @scroll = new EditorScroll @
         @scroll.on 'shiftLines' @shiftLines
         @scroll.on 'showLines'  @showLines
@@ -154,16 +157,17 @@ class TextEditor extends Editor
     
     setLines: (lines) ->
 
+        # klog 'setLines' lines
         @clearLines()
 
         lines ?= []
 
         @spanCache = []
         @lineDivs  = {}
+        
+        @scroll.reset()
 
         super lines
-
-        @scroll.reset()
 
         viewHeight = @viewHeight()
         
@@ -235,6 +239,7 @@ class TextEditor extends Editor
         @size.charWidth    = fontSize * 0.63
         @size.offsetX      = Math.floor @size.charWidth/2 + @size.numbersWidth
 
+        # klog '@size.lineHeight' fontSize, @size.lineHeight
         @scroll?.setLineHeight @size.lineHeight
         @setText @text() if @text()
 
@@ -334,9 +339,13 @@ class TextEditor extends Editor
 
     appendLine: (li) ->
 
+        # klog "appendLine #{li}" @elem.outerHTML
+        
         @lineDivs[li] = elem class:'line'
         @lineDivs[li].appendChild @cachedSpan li
         @elem.appendChild @lineDivs[li]
+        
+        # klog "appendLine #{li}" @elem.outerHTML
 
     #  0000000  000   000  000  00000000  000000000     000      000  000   000  00000000   0000000
     # 000       000   000  000  000          000        000      000  0000  000  000       000
@@ -610,10 +619,13 @@ class TextEditor extends Editor
 
     clearLines: =>
 
+        # klog 'clearLines'
         @elem.innerHTML = ''
         @emit 'clearLines'
 
     clear: => 
+        
+        # klog 'clear'
         @setLines []
 
     focus: -> @view.focus()

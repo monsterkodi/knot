@@ -16,7 +16,7 @@ class Editor extends Buffer
 
     @actions = null
 
-    constructor: (name, config) ->
+    @: (name, config) ->
 
         super()
 
@@ -154,14 +154,16 @@ class Editor extends Buffer
                 lines = text.split /\r?\n/
                 @newlineCharacters = '\r\n'
 
+        # klog 'setText' lines
         @setLines lines
 
     setLines: (lines) ->
 
+        # klog 'setLines' lines.length
         @syntax.clear()
         @syntax.setLines lines
         super lines
-        @emit 'linesSet', lines
+        @emit 'linesSet' lines
 
     textOfSelectionForClipboard: ->
 

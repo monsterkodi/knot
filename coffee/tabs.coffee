@@ -8,7 +8,8 @@
 
 { post, stopEvent, empty, valid, slash, popup, elem, drag, kpos, $, _ } = require 'kxk'
 
-Tab = require './tab'
+Tab  = require './tab'
+Term = require './term'
 
 class Tabs
     
@@ -51,12 +52,11 @@ class Tabs
         paths  = window.stash.get 'tabs:paths'
         
         if empty paths # happens when first window opens
-            # window.term.addTab '~'
-            window.term.addTab slash.tilde process.cwd()
+            @addTab slash.tilde process.cwd()
             return
         
         while paths.length
-            window.term.addTab paths.shift()
+            @addTab paths.shift()
         
         @tabs[active]?.activate()
             
@@ -136,7 +136,9 @@ class Tabs
         _.find @tabs, (t) -> 
             br = t.div.getBoundingClientRect()
             br.left <= x <= br.left + br.width
-    
+
+    resized: -> for tab in @tabs then tab.resized()
+            
     #  0000000  000       0000000    0000000  00000000  
     # 000       000      000   000  000       000       
     # 000       000      000   000  0000000   0000000   
@@ -181,9 +183,11 @@ class Tabs
     
     addTab: (text) ->
         
-        tab = new Tab @
-        if text
-            tab.update text
+        term = new Term
+        tab = new Tab @, term
+        
+        if text then tab.update text
+            
         @tabs.push tab
         tab.activate()
         tab

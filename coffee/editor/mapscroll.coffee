@@ -6,7 +6,7 @@
 000   000  000   000  000              0000000    0000000  000   000   0000000   0000000  0000000
 ###
 
-{ clamp } = require 'kxk'
+{ klog, clamp } = require 'kxk'
 
 events = require 'events'
 
@@ -47,6 +47,8 @@ class MapScroll extends events
         @viewLines   = Math.ceil(@viewHeight / @lineHeight)   # number of lines in view (including partials)
         @linesHeight = @viewLines * @lineHeight               # height of visible lines (pixels)
 
+        # klog '@viewLines' @viewLines, @lineHeight
+        
         if @exposeMax < 0
             @exposeNum = -@exposeMax * @viewLines # maximum size of expose range is viewHeight dependent
         else
@@ -215,7 +217,7 @@ class MapScroll extends events
                 @by 0
             else
                 @init()
-                @emit 'clearLines'             
+                @emit 'clearLines'            
 
     # 000      000  000   000  00000000  000   000  00000000  000   0000000   000   000  000000000
     # 000      000  0000  000  000       000   000  000       000  000        000   000     000   
