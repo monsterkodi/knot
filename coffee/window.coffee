@@ -169,9 +169,9 @@ onWheel = (event) ->
         s = getFontSize()
                 
         if event.deltaY < 0
-            setFontSize s+2
+            setFontSize s+1
         else
-            setFontSize s-2
+            setFontSize s-1
         
     else
         window.term.wheel.onWheel event
@@ -200,8 +200,8 @@ post.on 'menuAction' (action) ->
         when 'Next Tab'         then tabs.navigate 'right'
         when 'New Window'       then post.toMain 'newWindow'
         when 'New Tab'          then term.addTab()
-        when 'Increase'         then setFontSize getFontSize()+2
-        when 'Decrease'         then setFontSize getFontSize()-2
+        when 'Increase'         then setFontSize getFontSize()+1
+        when 'Decrease'         then setFontSize getFontSize()-1
         when 'Reset'            then resetFontSize()
         when 'Clear'            then term.clear()
         when 'Copy'             then term.copy()

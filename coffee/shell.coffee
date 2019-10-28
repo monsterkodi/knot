@@ -115,7 +115,7 @@ class Shell
                 cmd = args.shift()
                 @child = childp.spawn cmd, args, opt
                 
-                pipe previousChild, currentChild.stdin, process.stderr
+                pipe previousChild, @child.stdin, process.stderr
         
                 previousChild = @child
         

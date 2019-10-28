@@ -40,8 +40,6 @@ class TextEditor extends Editor
         @spanCache = [] # cache for rendered line spans
         @lineDivs  = {} # maps line numbers to displayed divs
 
-        @config.lineHeight ?= 1.28
-
         @setFontSize prefs.get "#{@name}FontSize" @config.fontSize ? 20
         @scroll = new EditorScroll @
         @scroll.on 'shiftLines' @shiftLines
@@ -233,8 +231,8 @@ class TextEditor extends Editor
         @layers.style.fontSize = "#{fontSize}px"
         @size.numbersWidth = 'Numbers' in @config.features and 36 or 0
         @size.fontSize     = fontSize
-        @size.lineHeight   = Math.floor fontSize * @config.lineHeight
-        @size.charWidth    = fontSize * 0.6
+        @size.lineHeight   = fontSize * 1.28
+        @size.charWidth    = fontSize * 0.63
         @size.offsetX      = Math.floor @size.charWidth/2 + @size.numbersWidth
 
         @scroll?.setLineHeight @size.lineHeight
