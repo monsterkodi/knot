@@ -6,7 +6,7 @@
    000     000   000  0000000  
 ###
 
-{ slash, post, klog, kpos, elem } = require 'kxk'
+{ slash, prefs, post, klog, kpos, elem } = require 'kxk'
 
 class Tab
     
@@ -40,7 +40,8 @@ class Tab
             return
         
         if event.target.id
-            @term.shell.chdir event.target.id
+            @term.shell.cd event.target.id
+            @term.tab.activate()
             
         delete @downPos
         
@@ -92,6 +93,9 @@ class Tab
             @tabs.activeTab()?.clearActive()
             @div.classList.add 'active'
             @term.div.style.zIndex = '10'
+            @term.editor.focus()
+            prefs.set 'cwd' @text
+            process.chdir slash.untilde @text
             
     clearActive: -> 
         @div.classList.remove 'active'

@@ -137,8 +137,26 @@ class Tabs
             br = t.div.getBoundingClientRect()
             br.left <= x <= br.left + br.width
 
-    resized: -> for tab in @tabs then tab.resized()
+    resized: -> for tab in @tabs then tab.term.resized()
+          
+    #  0000000   0000000    0000000  
+    # 000   000  000   000  000   000
+    # 000000000  000   000  000   000
+    # 000   000  000   000  000   000
+    # 000   000  0000000    0000000  
+    
+    addTab: (text) ->
+        
+        tab = new Tab @, new Term
+        tab.term.tab = tab
+        
+        if text then tab.update text
             
+        @tabs.push tab
+        tab.activate()
+        post.emit 'menuAction' 'Clear'
+        tab
+        
     #  0000000  000       0000000    0000000  00000000  
     # 000       000      000   000  000       000       
     # 000       000      000   000  0000000   0000000   
@@ -158,7 +176,7 @@ class Tabs
         _.pull @tabs, tab
         
         if empty @tabs # close the window when last tab was closed
-            post.emit 'menuAction', 'Close' 
+            post.emit 'menuAction' 'Close' 
         
         @
   
@@ -175,23 +193,6 @@ class Tabs
         while @numTabs()
             @tabs.pop().close()
         
-    #  0000000   0000000    0000000          000000000   0000000   0000000    
-    # 000   000  000   000  000   000           000     000   000  000   000  
-    # 000000000  000   000  000   000           000     000000000  0000000    
-    # 000   000  000   000  000   000           000     000   000  000   000  
-    # 000   000  0000000    0000000             000     000   000  0000000    
-    
-    addTab: (text) ->
-        
-        term = new Term
-        tab = new Tab @, term
-        
-        if text then tab.update text
-            
-        @tabs.push tab
-        tab.activate()
-        tab
-
     # 000   000   0000000   000   000  000   0000000    0000000   000000000  00000000  
     # 0000  000  000   000  000   000  000  000        000   000     000     000       
     # 000 0 000  000000000   000 000   000  000  0000  000000000     000     0000000   

@@ -10,7 +10,9 @@
 
 class Cmmd
 
-    @: (@shell) -> @editor = @shell.term.editor
+    @: (@shell) -> 
+        @term   = @shell.term
+        @editor = @term.editor
         
     onCommand: (cmd) -> klog 'unhandled cmd' cmd
                 

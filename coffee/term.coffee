@@ -28,7 +28,7 @@ class Term
             charWidth:  0
             lineHeight: 0
                 
-        @editor = new TextEditor @div, features:[
+        @editor = new TextEditor @, features:[
             'Scrollbar'
             'Minimap'
             'Meta'
@@ -112,6 +112,6 @@ class Term
                             @editor.deleteSelectionOrCursorLines()
                         @editor.singleCursorAtEnd()
                 else
-                    @shell.chdir @editor.line meta[0]
+                    @shell.cd @editor.line meta[0]
                             
 module.exports = Term

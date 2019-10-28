@@ -28,8 +28,8 @@ class Chdir extends Cmmd
             try 
                 prefs.set 'cwd' dir
                 process.chdir dir
-                window.tabs.activeTab().update slash.tilde dir
-                @shell.term.pwd()
+                @term.tab.update slash.tilde dir
+                @term.pwd()
                 return @newLine()
             catch err
                 kerror "#{err}"

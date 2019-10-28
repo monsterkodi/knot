@@ -48,7 +48,7 @@ if window.stash.get 'devTools'
 window.tabs = tabs = new Tabs $ "#titlebar"
 window.wheel = new Wheel 
 
-term = -> tabs.activeTab()?.term
+term = -> (tabs.activeTab() ? tabs.tabs[0]).term
 
 #  0000000   000   000   0000000  000       0000000    0000000  00000000
 # 000   000  0000  000  000       000      000   000  000       000

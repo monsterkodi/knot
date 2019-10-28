@@ -30,7 +30,7 @@ module.exports =
     newline: (key, info) ->
         
         if @isInputCursor()
-            post.emit 'execute'
+            @term.shell.execute()
         else
             @do.start()
             @do.setCursors @restoreInputCursor()

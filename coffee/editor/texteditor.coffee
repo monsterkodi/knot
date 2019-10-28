@@ -15,10 +15,10 @@ electron     = require 'electron'
 
 class TextEditor extends Editor
 
-    @: (parent, config) ->
+    @: (@term, config) ->
 
         @view = elem class:'editor' tabindex:'0'
-        parent.appendChild @view
+        @term.div.appendChild @view
 
         super 'editor' config
 
@@ -235,8 +235,8 @@ class TextEditor extends Editor
         @layers.style.fontSize = "#{fontSize}px"
         @size.numbersWidth = 'Numbers' in @config.features and 36 or 0
         @size.fontSize     = fontSize
-        @size.lineHeight   = fontSize * 1.28
-        @size.charWidth    = fontSize * 0.63
+        @size.lineHeight   = fontSize * 1.26
+        @size.charWidth    = fontSize * 0.6
         @size.offsetX      = Math.floor @size.charWidth/2 + @size.numbersWidth
 
         # klog '@size.lineHeight' fontSize, @size.lineHeight
