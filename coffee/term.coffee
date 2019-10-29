@@ -100,7 +100,7 @@ class Term
             
         dir = slash.tilde process.cwd()
                 
-        @editor.appendText dir
+        @editor.appendOutput dir
         
         @editor.meta.add
             line: @editor.numLines()-1
@@ -124,8 +124,9 @@ class Term
         
         if @editor.isInputCursor()
             switch combo
-                when 'up'   then return @history.prev()
-                when 'down' then return @history.next()
+                when 'alt+up' then return @editor.moveCursorsUp()
+                when 'up'     then return @history.prev()
+                when 'down'   then return @history.next()
         
         'unhandled'
         

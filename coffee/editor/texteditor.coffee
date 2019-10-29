@@ -224,6 +224,24 @@ class TextEditor extends Editor
         @emit 'linesAppended' ls # autocomplete
         @emit 'numLines' @numLines() # minimap
         
+    appendOutput: (text) ->
+        
+        if @numLines() == 0
+            klog 'appendOutput' @numLines()
+            @appendText text
+            @appendText ''
+            @singleCursorAtEnd()
+            return
+        
+        lastLine = @lastLine()
+
+        @do.start()
+        @selectMoreLines()
+        @deleteSelection deleteLines:true
+        @appendText text
+        @appendText lastLine
+        @do.end()
+        
     # 00000000   0000000   000   000  000000000
     # 000       000   000  0000  000     000
     # 000000    000   000  000 0 000     000

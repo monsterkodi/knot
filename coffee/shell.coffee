@@ -42,9 +42,10 @@ class Shell
         @cmd ?= @term.editor.lastLine()
         @cmd  = @cmd.trim()
         
+        @editor.appendText ''
+        @editor.singleCursorAtEnd()
+            
         if empty @cmd
-            @editor.appendText ''
-            @editor.singleCursorAtEnd()
             return
         
         @term.history.onCmd @cmd
@@ -169,8 +170,8 @@ class Shell
     onDone: =>
 
         @term.pwd()
-        if empty @queue
-            @editor.appendText ''
+        # if empty @queue
+            # @editor.appendText ''
         @dequeue()
 
     # 0000000    00000000   0000000   000   000  00000000  000   000  00000000  
@@ -194,12 +195,12 @@ class Shell
     
     onStdOut: (data) =>
         
+        if not data.replace?
+            data = data.toString 'utf8'
         if data[-1] == '\n'
             data = data[0...data.length-1]
-        if data.replace
-            @editor.appendText data
-        else
-            @editor.appendText data.toString 'utf8'
+            
+        @editor.appendOutput data
         @editor.singleCursorAtEnd()
 
     onStdErr: (data) =>
