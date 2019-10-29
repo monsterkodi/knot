@@ -37,7 +37,6 @@ class Shell
     
         if @child
             cmd = @cmd ? @editor.lastLine()
-            klog 'child active?' @child.pid, cmd
             @inputQueue.push cmd
             @editor.insertSingleLine ''
             return
