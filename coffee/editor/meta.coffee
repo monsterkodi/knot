@@ -164,12 +164,12 @@ class Meta
         meta[2].div?.remove()
         meta[2].div = null
 
-    # 000000000  00000000  000   000  000000000
-    #    000     000        000 000      000
-    #    000     0000000     00000       000
-    #    000     000        000 000      000
-    #    000     00000000  000   000     000
-
+    #  0000000   0000000    0000000    
+    # 000   000  000   000  000   000  
+    # 000000000  000   000  000   000  
+    # 000   000  000   000  000   000  
+    # 000   000  0000000    0000000    
+    
     add: (meta) ->
 
         lineMeta = @addLineMeta [meta.line, [meta.start ? 0, meta.end ? 0], meta]
@@ -177,6 +177,8 @@ class Meta
         if @editor.scroll.top <= meta.line <= @editor.scroll.bot
             @addDiv lineMeta
             @editor.numbers.updateMeta meta.line
+            
+        lineMeta
 
     # 0000000    000  00000000  00000000
     # 000   000  000  000       000
@@ -252,6 +254,13 @@ class Meta
         for meta in @metasAtLineIndex li
             return meta[2].href if meta[2].href?
 
+    nextMetaOfSameClass: (meta) ->
+        
+        for li in [meta[0]+1...@editor.numLines()]
+            for m in @metasAtLineIndex li
+                if m[2].class == meta.class
+                    return m
+            
     #  0000000  000   000   0000000   000   000  000   000
     # 000       000   000  000   000  000 0 000  0000  000
     # 0000000   000000000  000   000  000000000  000 0 000

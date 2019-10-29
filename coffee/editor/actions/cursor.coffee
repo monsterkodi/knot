@@ -85,6 +85,7 @@ module.exports =
     singleCursorAtEnd: ->
         
         @singleCursorAtPos [@line(@numLines()-1).length,@numLines()-1]
+        @term.moveInputMeta()
     
     singleCursorAtPos: (p, opt = extend:false) ->
 

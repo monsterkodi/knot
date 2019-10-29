@@ -6,7 +6,7 @@
    000     00000000  000   000  000   000  
 ###
 
-{ post, prefs, slash, klor, keyinfo, stopEvent, setStyle, elem, empty, kstr, kpos, klog, os, $ } = require 'kxk'
+{ post, kerror, slash, elem, kpos, klog, $ } = require 'kxk'
 
 BaseEditor = require './editor/editor'
 TextEditor = require './editor/texteditor'
@@ -68,8 +68,46 @@ class Term
     # 000       000      000       000   000  000   000  
     #  0000000  0000000  00000000  000   000  000   000  
     
-    clear: -> @editor.clear()
-                       
+    clear: -> 
+    
+        @editor.clear()
+        @inputMeta = @editor.meta.add
+            line: 0
+            clss: 'input'
+            number: '▶'
+            click: (meta, event) =>
+                pos = kpos event
+                if pos.x < 40
+                    klog 'input number'
+                else
+                    klog 'input text?'
+                     
+    # 00     00  00000000  000000000   0000000   
+    # 000   000  000          000     000   000  
+    # 000000000  0000000      000     000000000  
+    # 000 0 000  000          000     000   000  
+    # 000   000  00000000     000     000   000  
+    
+    insertCmdMeta: (li, cmd) ->
+        
+        @editor.meta.add 
+            line: li
+            clss: 'cmd'
+            number: '▶'
+            end: cmd.length+1
+            click: (meta, event) =>
+                @editor.insertSingleLine @editor.line meta[0]
+                @editor.singleCursorAtEnd()
+                @shell.execute @editor.line meta[0]
+    
+    moveInputMeta: ->
+        
+        if @editor.numLines()-1 > @inputMeta[0]
+            @editor.meta.moveLineMeta @inputMeta, @editor.numLines()-1-@inputMeta[0]
+        else
+            if @inputMeta[0] != @editor.numLines()-1
+                kerror 'input meta not at end?' @inputMeta[0], @editor.numLines()-1
+                    
     # 00000000   0000000   000   000  000000000       0000000  000  0000000  00000000  
     # 000       000   000  0000  000     000         000       000     000   000       
     # 000000    000   000  000 0 000     000         0000000   000    000    0000000   
@@ -96,6 +134,7 @@ class Term
         @editor.meta.add
             line: Math.max 0, @editor.numLines()-2
             clss: 'pwd'
+            number: ' '
             end: dir.length+1
             click: (meta, event) =>
                 pos = kpos event
@@ -103,8 +142,9 @@ class Term
                     index = @editor.meta.metas.indexOf meta
                     if index < @editor.meta.metas.length-1
                         @editor.singleCursorAtPos [0,meta[0]]
-                        for i in [meta[0]...@editor.meta.metas[index+1][0]]
-                            @editor.deleteSelectionOrCursorLines()
+                        if next = @editor.meta.nextMetaOfSameClass meta
+                            for i in [meta[0]...next[0]]
+                                @editor.deleteSelectionOrCursorLines()
                         @editor.moveCursorsDown()
                 else
                     @editor.singleCursorAtEnd()

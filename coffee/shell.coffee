@@ -19,6 +19,7 @@ class Shell
         @alias = new Alias @
         @chdir = new Chdir @
         @queue = []
+        @inputQueue = []
         
     cd: (dir) =>
         
@@ -35,11 +36,14 @@ class Shell
     execute: (@cmd) =>
     
         if @child
-            klog 'child active?' @child.pid, @cmd ? @term.editor.lastLine()
+            cmd = @cmd ? @editor.lastLine()
+            klog 'child active?' @child.pid, cmd
+            @inputQueue.push cmd
+            @editor.insertSingleLine ''
             return
         
         @errorText = ''
-        @cmd ?= @term.editor.lastLine()
+        @cmd ?= @editor.lastLine()
         @cmd  = @cmd.trim()
         
         @editor.appendText ''
@@ -50,6 +54,9 @@ class Shell
         
         @term.history.onCmd @cmd
         post.emit 'cmd' @cmd, @term.tab.text
+        
+        @term.insertCmdMeta @editor.numLines()-2, @cmd
+        
         @executeCmd @substitute @cmd
                 
     executeCmd: (@cmd) =>
@@ -172,7 +179,7 @@ class Shell
             
     onDone: =>
 
-        if empty @queue
+        if empty(@queue) and empty(@inputQueue)
             @term.pwd()
         else
             @dequeue()
@@ -187,6 +194,10 @@ class Shell
  
         if @queue.length
             @executeCmd @queue.shift()
+        else if @inputQueue.length
+            cmd = @inputQueue.shift()
+            @editor.insertSingleLine cmd
+            @execute cmd
         else
             @onDone()
         
