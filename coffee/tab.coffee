@@ -40,8 +40,9 @@ class Tab
             return
         
         if event.target.id
-            @term.shell.cd event.target.id
-            @term.tab.activate()
+            @activate()
+            if not slash.samePath process.cwd(), event.target.id
+                @term.shell.cd event.target.id
             
         delete @downPos
         
@@ -82,7 +83,7 @@ class Tab
     
     activate: ->
         
-        post.emit 'tab' @
+        # post.emit 'tab' @
         @setActive()
 
     isActive: -> @div.classList.contains 'active'
@@ -94,6 +95,8 @@ class Tab
             @div.classList.add 'active'
             @term.div.style.zIndex = '10'
             @term.editor.focus()
+            
+        if not slash.samePath @text, process.cwd()
             prefs.set 'cwd' @text
             process.chdir slash.untilde @text
             

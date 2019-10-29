@@ -183,6 +183,8 @@ onWheel = (event) ->
         
     stopEvent event
     
+post.on 'scrollBy' (delta) -> term().scrollBy delta
+
 window.document.addEventListener 'wheel' onWheel, true 
     
 # 00     00  00000000  000   000  000   000   0000000    0000000  000000000  000   0000000   000   000  
@@ -209,8 +211,8 @@ post.on 'menuAction' (action) ->
         when 'Decrease'         then setFontSize getFontSize()-1
         when 'Reset'            then resetFontSize()
         when 'Clear'            then term().clear(); term().pwd()
-        when 'Copy'             then term().copy()
-        when 'Paste'            then term().paste()
+        when 'Copy'             then term().editor.copy()
+        when 'Paste'            then term().editor.paste()
             
         when 'Visual Studio' 'VS Code' 'Atom' 'ko'
             setEditor action

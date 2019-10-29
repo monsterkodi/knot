@@ -113,7 +113,8 @@ module.exports =
         if @numSelections() == 0
             srange = @rangeForRealWordAtPos @cursorPos()
             if empty @textInRange(srange).trim()
-                kerror 'highlightTextOfSelectionOrWordAtCursor empty!'
+                @clearHighlights()
+                return
             @selectSingleRange srange
         
         sel = @selection 0     

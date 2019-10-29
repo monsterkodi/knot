@@ -174,6 +174,8 @@ class Numbers extends event
     updateMeta: (li) ->
         
         m = @editor.meta.lineMetas[li]?[0]
-        @lineDivs[li].firstChild.innerHTML = m and (m[2].number or '▪') or '●'
+        if m and m[2].number?.clss
+            @lineDivs[li].classList.add m[2].number.clss
+        @lineDivs[li].firstChild.innerHTML = m and (m[2].number?.text or '▪') or '●'
 
 module.exports = Numbers

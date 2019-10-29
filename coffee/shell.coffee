@@ -24,7 +24,7 @@ class Shell
     cd: (dir) =>
         
         if not slash.samePath dir, process.cwd()
-            @execute 'cd ' + dir
+            @executeCmd 'cd ' + dir
             @editor.focus()
         
     # 00000000  000   000  00000000   0000000  000   000  000000000  00000000  

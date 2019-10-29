@@ -46,9 +46,8 @@ class Term
         @history = new History @
                         
         post.on 'fontSize' @onFontSize
-        post.on 'scrollBy' @onScrollBy
                     
-    onScrollBy: (delta) =>
+    scrollBy: (delta) =>
         
         @editor.scroll.by delta
         if not (0 < @editor.scroll.scroll < @editor.scroll.scrollMax-1)
@@ -74,7 +73,7 @@ class Term
         @inputMeta = @editor.meta.add
             line: 0
             clss: 'input'
-            number: '▶'
+            number: text: '▶'
             click: (meta, event) =>
                 pos = kpos event
                 if pos.x < 40
@@ -93,11 +92,13 @@ class Term
         @editor.meta.add 
             line: li
             clss: 'cmd'
-            number: '▶'
+            number: 
+                text: '▶'
+                clss: 'cmd'
             end: cmd.length+1
             click: (meta, event) =>
-                @editor.insertSingleLine @editor.line meta[0]
                 @editor.singleCursorAtEnd()
+                @editor.insertSingleLine @editor.line meta[0]
                 @shell.execute @editor.line meta[0]
     
     moveInputMeta: ->
@@ -127,14 +128,15 @@ class Term
     
     pwd: ->
         
-        # klog 'pwd' @editor.lines()
         dir = slash.tilde process.cwd()
                 
         @editor.appendOutput dir
         @editor.meta.add
             line: Math.max 0, @editor.numLines()-2
             clss: 'pwd'
-            number: ' '
+            number: 
+                text: ' '
+                clss: 'pwd'
             end: dir.length+1
             click: (meta, event) =>
                 pos = kpos event

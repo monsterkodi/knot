@@ -6,7 +6,7 @@
 000   000  00000000     000     000   000
 ###
 
-{ stopEvent, empty, elem, post, slash, fs, klog, kerror, $, _ } = require 'kxk'
+{ post, stopEvent, kerror, slash, empty, elem, kpos, klog, fs, $, _ } = require 'kxk'
 
 ranges = require '../tools/ranges'
 File   = require '../tools/file'
@@ -30,6 +30,7 @@ class Meta
         @editor.on 'linesShifted' @onLinesShifted
 
         @elem.addEventListener 'mousedown' @onMouseDown
+        @elem.addEventListener 'mouseup'   @onMouseUp
 
     #  0000000  000   000   0000000   000   000   0000000   00000000  0000000
     # 000       000   000  000   000  0000  000  000        000       000   000
@@ -205,11 +206,18 @@ class Meta
     # 000       000      000  000       000  000
     #  0000000  0000000  000   0000000  000   000
 
-    onMouseDown: (event) ->
+    onMouseDown: (event) -> @downPos = kpos event
+    
+    onMouseUp: (event) ->
         
+        if 5 < @downPos?.dist kpos event
+            delete @downPos
+            return
+          
+        delete @downPos
         if event.target.meta?[2].click?
             result = event.target.meta?[2].click event.target.meta, event
-            stopEvent event if result != 'unhandled'
+            # stopEvent event if result != 'unhandled'
 
     #  0000000   00000000   00000000   00000000  000   000  0000000
     # 000   000  000   000  000   000  000       0000  000  000   000
@@ -258,7 +266,7 @@ class Meta
         
         for li in [meta[0]+1...@editor.numLines()]
             for m in @metasAtLineIndex li
-                if m[2].class == meta.class
+                if m[2].clss == meta[2].clss
                     return m
             
     #  0000000  000   000   0000000   000   000  000   000

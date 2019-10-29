@@ -264,14 +264,28 @@ class TextEditor extends Editor
         @size.fontSize     = fontSize
         @size.lineHeight   = fontSize * 1.26
         @size.charWidth    = fontSize * 0.6
-        @size.offsetX      = Math.floor @size.charWidth/2 + @size.numbersWidth
+        @size.offsetX      = Math.floor @size.charWidth + @size.numbersWidth
 
-        # klog '@size.lineHeight' fontSize, @size.lineHeight
         @scroll?.setLineHeight @size.lineHeight
-        @setText @text() if @text()
+        if @text()
+            ansi = @ansiText()
+            metas = @meta.metas
+            @term.clear()
+            @appendOutput ansi
+            for meta in metas
+                meta[2].line = meta[0]
+                @meta.add meta[2]
 
         @emit 'fontSizeChanged'
 
+    ansiText: ->
+        
+        text = ''
+        for li in [0...@numLines()-1]
+            text += @ansiLines[li] ? @state.line li
+            text += '\n'
+        text[..text.length-2]
+        
     #  0000000  000   000   0000000   000   000   0000000   00000000  0000000
     # 000       000   000  000   000  0000  000  000        000       000   000
     # 000       000000000  000000000  000 0 000  000  0000  0000000   000   000
