@@ -5,7 +5,7 @@
 # 000  000  0000       000  000       000   000     000   
 # 000  000   000  0000000   00000000  000   000     000   
 
-{ clamp, reversed, _ } = require 'kxk'
+{ empty, clamp, text, reversed, _ } = require 'kxk'
 
 module.exports =
     
@@ -39,6 +39,18 @@ module.exports =
         @do.end()
         @emitEdit 'insert'
 
+    insertSingleLine: (text) ->
+        
+        text = text.split('\n')[0]
+        text ?= ''
+        
+        li = @numLines()-1
+        @do.start()
+        @deleteCursorLines()
+        @do.change li, text
+        @do.setCursors [[text.length, li]]
+        @do.end()
+        
     twiggleSubstitute: (line:,cursor:,char:) ->
         
         if cursor[0] and line[cursor[0]-1] == '~'

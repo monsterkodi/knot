@@ -29,8 +29,8 @@ View
         combo      command+k
         accel      alt+cmdctrl+k
     -
-    Previous Tab            cmdctrl+[ alt+cmdctrl+shift+left 
-    Next Tab                cmdctrl+] alt+cmdctrl+shift+right
+    Previous Tab            alt+[ alt+cmdctrl+shift+left 
+    Next Tab                alt+] alt+cmdctrl+shift+right
     Close Other Tabs        cmdctrl+shift+w
     ---
     Font Size   

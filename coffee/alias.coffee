@@ -8,7 +8,8 @@
 
 { slash, post, klog } = require 'kxk'
 
-Cmmd = require './cmmd'
+Cmmd    = require './cmmd'
+History = require './history'
 
 class Alias extends Cmmd
     
@@ -20,6 +21,7 @@ class Alias extends Cmmd
             cls:    'clear'
             cl:     'c&&l'
             cdl:    'cd $$ && clear && l'
+            h:      'history'
             k:      'konrad'
             nl:     'npm ls --depth 0 | node c:/Users/kodi/s/colorcat/bin/colorcat -sP c:/Users/kodi/s/konrad/cc/npm.noon'
             ng:     'npm ls --depth 0 -g | node c:/Users/kodi/s/colorcat/bin/colorcat -sP c:/Users/kodi/s/konrad/cc/npm.noon'
@@ -56,16 +58,29 @@ class Alias extends Cmmd
             if cmd == a or cmd.startsWith a + ' '
                 return @shell.executeCmd @alias[a] + cmd[a.length..]
         
+        if cmd == 'history' or cmd.startsWith 'history '
+            return @newLine @histCmd cmd
+                
         switch cmd
-            when 'clear' then return post.emit 'menuAction' 'Clear'
-            when 'pwd'   then return @newLine @shell.term.pwd()
-            when 'blink' then return @newLine @editor.toggleBlink()
-            when 'alias' then return @newLine @aliasCmd cmd
+            when 'clear'   then return post.emit 'menuAction' 'Clear'
+            when 'pwd'     then return @newLine @shell.term.pwd()
+            when 'blink'   then return @newLine @editor.toggleBlink()
+            when 'alias'   then return @newLine @aliasCmd cmd
                                 
     aliasCmd: (cmd) ->    
         
         if cmd == 'alias'
             for k,v of @alias
                 @editor.appendText "#{k} #{v}"
-    
+                
+    histCmd: (cmd) ->
+        
+        if cmd == 'history'
+            @term.history.list()
+        else
+            arg = cmd[8..].trim()
+            switch cmd
+                when 'clear' then History.clear()
+                else @term.history.cmd arg
+                    
 module.exports = Alias

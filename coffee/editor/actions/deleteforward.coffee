@@ -44,6 +44,10 @@ module.exports =
             if c[0] != 0 and not @isCursorAtEndOfLine(c)
                 return @deleteToEndOfLine()
         
+        @deleteCursorLines()
+        
+    deleteCursorLines: ->
+        
         @do.start()
         @selectMoreLines()
         @deleteSelection deleteLines:not @isInputCursor()      

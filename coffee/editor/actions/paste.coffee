@@ -110,7 +110,7 @@ module.exports =
                 [before, after] = @splitStateLineAtPos @do, cp
                 after = after.trimLeft()
 
-                indt   = _.padStart "", indentationInLine @do.line cp[1]
+                indt   = _.padStart '' indentationInLine @do.line cp[1]
                 if before.trim().length
                     @do.change li, before
                     li += 1

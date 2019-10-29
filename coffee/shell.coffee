@@ -47,6 +47,7 @@ class Shell
             @editor.singleCursorAtEnd()
             return
         
+        @term.history.onCmd @cmd
         post.emit 'cmd' @cmd, @term.tab.text
         @executeCmd @cmd
                 

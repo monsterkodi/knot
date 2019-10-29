@@ -11,6 +11,7 @@
 BaseEditor = require './editor/editor'
 TextEditor = require './editor/texteditor'
 render     = require './editor/render'
+History    = require './history'
 Shell      = require './shell'
 
 class Term
@@ -41,11 +42,12 @@ class Term
                 
         @editor.setText ''
         
-        @shell = new Shell @
+        @shell   = new Shell @
+        @history = new History @
                         
         post.on 'fontSize' @onFontSize
         post.on 'scrollBy' @onScrollBy
-            
+                    
     onScrollBy: (delta) =>
         
         @editor.scroll.by delta
@@ -115,5 +117,16 @@ class Term
                         @editor.singleCursorAtEnd()
                 else
                     @shell.cd @editor.line meta[0]
-                            
+                     
+    handleKey: (mod, key, combo, char, event) ->        
+        
+        # klog 'term.handleKey' mod, key, combo
+        
+        if @editor.isInputCursor()
+            switch combo
+                when 'up'   then return @history.prev()
+                when 'down' then return @history.next()
+        
+        'unhandled'
+        
 module.exports = Term

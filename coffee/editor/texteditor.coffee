@@ -733,8 +733,8 @@ class TextEditor extends Editor
 
     handleModKeyComboCharEvent: (mod, key, combo, char, event) ->
         
-        if @autocomplete?
-            return if 'unhandled' != @autocomplete.handleModKeyComboEvent mod, key, combo, event
+        # if @autocomplete?
+            # return if 'unhandled' != @autocomplete.handleModKeyComboEvent mod, key, combo, event
 
         switch combo
             
@@ -792,6 +792,11 @@ class TextEditor extends Editor
         return if not combo
         return if key == 'right click' # weird right command key
 
+        if @autocomplete?
+            return if 'unhandled' != @autocomplete.handleModKeyComboEvent mod, key, combo, event
+        
+        return if 'unhandled' != @term.handleKey mod, key, combo, char, event 
+        
         result = @handleModKeyComboCharEvent mod, key, combo, char, event
 
         if 'unhandled' != result

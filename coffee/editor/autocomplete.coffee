@@ -44,14 +44,14 @@ class Autocomplete extends event
         
         @close()
         
-        klog info.before
+        # klog info.before
         
         @word = _.last info.before.split @splitRegExp
         @word = info.before if @word?.length == 0
         
         if info.action == 'insert'
             
-            klog "@word.length >#{@word}<" @word?.length
+            # klog "@word.length >#{@word}<" @word?.length
             return if not @word?.length
             return if empty window.brain.words
             
@@ -137,7 +137,7 @@ class Autocomplete extends event
         for c in @clones
             @span.insertAdjacentElement 'afterend', c
             
-        klog @completion, @completion.length
+        # klog @completion, @completion.length
             
         @moveClonesBy @completion.length            
         
