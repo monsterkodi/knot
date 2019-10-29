@@ -68,17 +68,8 @@ class Term
     # 000       000      000       000   000  000   000  
     #  0000000  0000000  00000000  000   000  000   000  
     
-    clear: ->
-        
-        @editor.clear()
-        @editor.meta.clear()
-        @editor.numbers.onClearLines()
-        @pwd()
-    
-        if empty @shell.queue
-            @editor.appendText ''
-            @editor.singleCursorAtEnd()
-                   
+    clear: -> @editor.clear()
+                       
     # 00000000   0000000   000   000  000000000       0000000  000  0000000  00000000  
     # 000       000   000  0000  000     000         000       000     000   000       
     # 000000    000   000  000 0 000     000         0000000   000    000    0000000   
@@ -97,16 +88,16 @@ class Term
     # 000        00     00  0000000    
     
     pwd: ->
-            
+        
+        # klog 'pwd' @editor.lines()
         dir = slash.tilde process.cwd()
                 
         @editor.appendOutput dir
-        
         @editor.meta.add
-            line: @editor.numLines()-1
+            line: Math.max 0, @editor.numLines()-2
             clss: 'pwd'
             end: dir.length+1
-            click: (meta, event) => 
+            click: (meta, event) =>
                 pos = kpos event
                 if pos.x < 40
                     index = @editor.meta.metas.indexOf meta
@@ -114,9 +105,12 @@ class Term
                         @editor.singleCursorAtPos [0,meta[0]]
                         for i in [meta[0]...@editor.meta.metas[index+1][0]]
                             @editor.deleteSelectionOrCursorLines()
-                        @editor.singleCursorAtEnd()
+                        @editor.moveCursorsDown()
                 else
+                    @editor.singleCursorAtEnd()
                     @shell.cd @editor.line meta[0]
+                    
+        true
                      
     handleKey: (mod, key, combo, char, event) ->        
         

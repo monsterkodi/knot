@@ -50,11 +50,9 @@ class Shell
         
         @term.history.onCmd @cmd
         post.emit 'cmd' @cmd, @term.tab.text
-        @executeCmd @cmd
+        @executeCmd @substitute @cmd
                 
     executeCmd: (@cmd) =>
-        
-        @cmd = @substitute @cmd
         
         split = @cmd.split '&&'
         if split.length > 1
@@ -77,6 +75,11 @@ class Shell
             
         @shellCmd @cmd
             
+    enqueue: (cmd) -> 
+    
+        @queue.push cmd
+        true
+        
     substitute: (cmd) ->
         
         cmd = @alias.substitute cmd
@@ -169,10 +172,10 @@ class Shell
             
     onDone: =>
 
-        @term.pwd()
-        # if empty @queue
-            # @editor.appendText ''
-        @dequeue()
+        if empty @queue
+            @term.pwd()
+        else
+            @dequeue()
 
     # 0000000    00000000   0000000   000   000  00000000  000   000  00000000  
     # 000   000  000       000   000  000   000  000       000   000  000       
@@ -181,11 +184,11 @@ class Shell
     # 0000000    00000000   00000 00   0000000   00000000   0000000   00000000  
     
     dequeue: =>
-        
+ 
         if @queue.length
             @executeCmd @queue.shift()
         else
-            @editor.singleCursorAtEnd()
+            @onDone()
         
     #  0000000  000000000  0000000    
     # 000          000     000   000  
@@ -198,7 +201,7 @@ class Shell
         if not data.replace?
             data = data.toString 'utf8'
         if data[-1] == '\n'
-            data = data[0...data.length-1]
+            data = data[0..data.length-2]
             
         @editor.appendOutput data
         @editor.singleCursorAtEnd()

@@ -82,6 +82,6 @@ class History
     list: ->
         
         for i in [0...History.list.length]
-            @editor.appendText "#{kstr.rpad i, 3} #{History.list[i]}"
+            @editor.appendOutput "#{kstr.rpad i, 3} #{History.list[i]}"
         
 module.exports = History

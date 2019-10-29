@@ -168,8 +168,11 @@ class Numbers extends event
         if li in hi
             cls += ' highligd'
 
-        @lineDivs[li].firstChild.innerHTML = @editor.meta.lineMetas[li] and ' ' or '▶'
-            
         @lineDivs[li].className = 'linenumber' + cls
+        @updateMeta li
+        
+    updateMeta: (li) ->
+        
+        @lineDivs[li].firstChild.innerHTML = @editor.meta.lineMetas[li] and ' ' or '▶'
 
 module.exports = Numbers

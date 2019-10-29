@@ -6,7 +6,7 @@
    000     00000000  000   000     000           00000000  0000000    000     000      0000000   000   000
 ###
 
-{ keyinfo, stopEvent, setStyle, slash, prefs, drag, empty, elem, post, clamp, kpos, kstr, sw, os, kerror, klog, $, _ } = require 'kxk' 
+{ keyinfo, stopEvent, setStyle, slash, prefs, drag, empty, valid, elem, post, clamp, kpos, kstr, sw, os, kerror, klog, $, _ } = require 'kxk' 
   
 render       = require './render'
 EditorScroll = require './editorscroll'
@@ -40,6 +40,7 @@ class TextEditor extends Editor
         @size = {}
         @elem = @layerDict.lines
 
+        @ansiLines = [] # original ansi code strings
         @spanCache = [] # cache for rendered line spans
         @lineDivs  = {} # maps line numbers to displayed divs
 
@@ -155,15 +156,18 @@ class TextEditor extends Editor
     # 000      000  000  0000  000            000  
     # 0000000  000  000   000  00000000  0000000   
     
+    clear: => @setLines ['']
+    
     setLines: (lines) ->
 
-        # klog 'setLines' lines
-        @clearLines()
+        @elem.innerHTML = ''
+        @emit 'clearLines'
 
         lines ?= []
 
         @spanCache = []
         @lineDivs  = {}
+        @ansiLines = []
         
         @scroll.reset()
 
@@ -178,7 +182,7 @@ class TextEditor extends Editor
         @layersHeight = @layerScroll.offsetHeight
 
         @updateLayers()
-
+        
     #  0000000   00000000   00000000   00000000  000   000  0000000    
     # 000   000  000   000  000   000  000       0000  000  000   000  
     # 000000000  00000000   00000000   0000000   000 0 000  000   000  
@@ -191,16 +195,16 @@ class TextEditor extends Editor
             log "#{@name}.appendText - no text?"
             return
 
-        if text != kstr.stripAnsi text
-            li = @numLines()
-            for line in text.split '\n'
-                ansi = new kstr.ansi
-                diss = ansi.dissect(line)[1]
-                lineSpan = render.lineSpan diss, @size
-                @spanCache[li] = lineSpan
-                li += 1
-            @appendText kstr.stripAnsi text
-            return
+        # if text != kstr.stripAnsi text
+            # li = @numLines()
+            # for line in text.split '\n'
+                # ansi = new kstr.ansi
+                # diss = ansi.dissect(line)[1]
+                # lineSpan = render.lineSpan diss, @size
+                # @spanCache[li] = lineSpan
+                # li += 1
+            # @appendText kstr.stripAnsi text
+            # return
             
         appended = []
         ls = text?.split /\n/
@@ -224,23 +228,28 @@ class TextEditor extends Editor
         @emit 'linesAppended' ls # autocomplete
         @emit 'numLines' @numLines() # minimap
         
+    #  0000000   000   000  000000000  00000000   000   000  000000000  
+    # 000   000  000   000     000     000   000  000   000     000     
+    # 000   000  000   000     000     00000000   000   000     000     
+    # 000   000  000   000     000     000        000   000     000     
+    #  0000000    0000000      000     000         0000000      000     
+    
     appendOutput: (text) ->
-        
-        if @numLines() == 0
-            klog 'appendOutput' @numLines()
-            @appendText text
-            @appendText ''
-            @singleCursorAtEnd()
-            return
-        
-        lastLine = @lastLine()
 
         @do.start()
-        @selectMoreLines()
-        @deleteSelection deleteLines:true
-        @appendText text
-        @appendText lastLine
+        
+        ls = text?.split /\n/
+
+        for l in ls
+            stripped = kstr.stripAnsi l
+            if l != stripped 
+                @ansiLines[@do.numLines()-1] = l
+            @do.insert @do.numLines()-1, stripped
+            
         @do.end()
+        
+        @singleCursorAtEnd()
+        @
         
     # 00000000   0000000   000   000  000000000
     # 000       000   000  0000  000     000
@@ -273,6 +282,8 @@ class TextEditor extends Editor
 
         @syntax.changed changeInfo
 
+        # klog changeInfo
+        
         for change in changeInfo.changes
             [di,li,ch] = [change.doIndex, change.newIndex, change.change]
             switch ch
@@ -283,10 +294,12 @@ class TextEditor extends Editor
                     
                 when 'deleted'
                     @spanCache = @spanCache.slice 0, di
+                    @ansiLines.splice di, 1
                     @emit 'lineDeleted' di
                     
                 when 'inserted'
                     @spanCache = @spanCache.slice 0, di
+                    # @ansiLines.splice li, 0, ''
                     @emit 'lineInserted' li, di
 
         if changeInfo.inserts or changeInfo.deletes
@@ -314,7 +327,7 @@ class TextEditor extends Editor
     # 000   000  00000000   000   000  000000000     000     0000000
     # 000   000  000        000   000  000   000     000     000
     #  0000000   000        0000000    000   000     000     00000000
-
+    
     updateLine: (li, oi) ->
 
         oi = li if not oi?
@@ -325,8 +338,8 @@ class TextEditor extends Editor
             return
             
         return kerror "updateLine - out of bounds? li #{li} oi #{oi}" if not @lineDivs[oi]
-
-        @spanCache[li] = render.lineSpan @syntax.getDiss(li), @size
+        
+        @spanCache[li] = @renderSpan li
 
         div = @lineDivs[oi]
         div.replaceChild @spanCache[li], div.firstChild
@@ -447,11 +460,20 @@ class TextEditor extends Editor
     # 000   000  000       000  0000  000   000  000       000   000
     # 000   000  00000000  000   000  0000000    00000000  000   000
 
+    renderSpan: (li) ->
+        
+        if @ansiLines[li]?.length
+            ansi = new kstr.ansi
+            diss = ansi.dissect(@ansiLines[li])[1]
+            span = render.lineSpan diss, @size
+        else
+            span = render.lineSpan @syntax.getDiss(li), @size
+    
     cachedSpan: (li) ->
 
         if not @spanCache[li]
 
-            @spanCache[li] = render.lineSpan @syntax.getDiss(li), @size
+            @spanCache[li] = @renderSpan li
 
         @spanCache[li]
 
@@ -636,15 +658,6 @@ class TextEditor extends Editor
         
         if @scroll?.viewHeight >= 0 then return @scroll.viewHeight
         @view?.clientHeight
-
-    clearLines: =>
-
-        @elem.innerHTML = ''
-        @emit 'clearLines'
-
-    clear: => 
-        
-        @setLines []
 
     focus: -> @view.focus()
 

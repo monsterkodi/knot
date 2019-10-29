@@ -39,7 +39,6 @@ class Alias extends Cmmd
             la:     'l -a'
             ll:     'l -l'
             lla:    'l -la'
-            p:      'pwd'
             e:      'electron .'
         super
 
@@ -56,22 +55,23 @@ class Alias extends Cmmd
         
         for a in Object.keys @alias
             if cmd == a or cmd.startsWith a + ' '
-                return @shell.executeCmd @alias[a] + cmd[a.length..]
+                return @shell.enqueue @alias[a] + cmd[a.length..]
         
         if cmd == 'history' or cmd.startsWith 'history '
-            return @newLine @histCmd cmd
+            return @histCmd cmd
                 
         switch cmd
-            when 'clear'   then return post.emit 'menuAction' 'Clear'
-            when 'pwd'     then return @newLine @shell.term.pwd()
-            when 'blink'   then return @newLine @editor.toggleBlink()
-            when 'alias'   then return @newLine @aliasCmd cmd
+            when 'clear'   then return @term.clear()
+            when 'cwd'     then return @editor.appendOutput slash.path process.cwd()
+            when 'blink'   then return @editor.toggleBlink()
+            when 'alias'   then return @aliasCmd cmd
                                 
     aliasCmd: (cmd) ->    
         
         if cmd == 'alias'
             for k,v of @alias
-                @editor.appendText "#{k} #{v}"
+                @editor.appendOutput "#{k} #{v}"
+        true
                 
     histCmd: (cmd) ->
         
@@ -82,5 +82,6 @@ class Alias extends Cmmd
             switch cmd
                 when 'clear' then History.clear()
                 else @term.history.cmd arg
+        true
                     
 module.exports = Alias

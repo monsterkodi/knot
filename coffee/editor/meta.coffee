@@ -20,14 +20,14 @@ class Meta
 
         @elem =$ ".meta" @editor.view
 
-        @editor.on 'changed'          @onChanged
-        @editor.on 'lineAppended'     @onLineAppended
-        @editor.on 'clearLines'       @onClearLines
-        @editor.on 'lineInserted'     @onLineInserted
-        @editor.on 'lineDeleted'      @onLineDeleted
+        # @editor.on 'changed'      @onChanged
+        @editor.on 'lineAppended' @onLineAppended
+        @editor.on 'clearLines'   @onClearLines
+        @editor.on 'lineInserted' @onLineInserted
+        @editor.on 'lineDeleted'  @onLineDeleted
 
-        @editor.on 'linesShown'       @onLinesShown
-        @editor.on 'linesShifted'     @onLinesShifted
+        @editor.on 'linesShown'   @onLinesShown
+        @editor.on 'linesShifted' @onLinesShifted
 
         @elem.addEventListener 'mousedown' @onMouseDown
 
@@ -37,7 +37,7 @@ class Meta
     # 000       000   000  000   000  000  0000  000   000  000       000   000
     #  0000000  000   000  000   000  000   000   0000000   00000000  0000000
 
-    onChanged: (changeInfo) =>
+    # onChanged: (changeInfo) =>
         
     #  0000000   0000000   000   000  00000000
     # 000       000   000  000   000  000
@@ -176,6 +176,7 @@ class Meta
 
         if @editor.scroll.top <= meta.line <= @editor.scroll.bot
             @addDiv lineMeta
+            @editor.numbers.updateMeta meta.line
 
     # 0000000    000  00000000  00000000
     # 000   000  000  000       000
@@ -258,7 +259,7 @@ class Meta
     # 0000000   000   000   0000000   00     00  000   000
 
     onLinesShown: (top, bot, num) =>
-        
+        # klog 'shown' top, num, @metas.length
         for meta in @metas
             @delDiv meta
             if top <= meta[0] <= bot
@@ -327,9 +328,9 @@ class Meta
 
         for meta in @metas
             @delDiv meta
-        @elem.innerHTML = ""
+        @clear()
 
-    clear: =>
+    clear: => 
 
         @elem.innerHTML = ""
         @metas = []

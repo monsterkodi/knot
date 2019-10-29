@@ -208,7 +208,7 @@ post.on 'menuAction' (action) ->
         when 'Increase'         then setFontSize getFontSize()+1
         when 'Decrease'         then setFontSize getFontSize()-1
         when 'Reset'            then resetFontSize()
-        when 'Clear'            then term().clear()
+        when 'Clear'            then term().clear(); term().pwd()
         when 'Copy'             then term().copy()
         when 'Paste'            then term().paste()
             
