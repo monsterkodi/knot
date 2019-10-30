@@ -83,12 +83,17 @@ class Shell
             
     enqueue: (cmd) -> 
     
+        cmd = cmd.replace /\~/g, slash.home()
+        klog 'enqueue' cmd
         @queue.push cmd
-        true
+        cmd
         
     substitute: (cmd) ->
         
         cmd = @alias.substitute cmd
+        cmd = cmd.replace /\~/g, slash.home()
+        klog 'substitute' cmd
+        cmd
         
     #  0000000  000   000  00000000  000      000       0000000  00     00  0000000    
     # 000       000   000  000       000      000      000       000   000  000   000  

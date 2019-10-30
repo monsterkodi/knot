@@ -6,7 +6,7 @@
 0000000    000   000  000   000  000  000   000
 ###
 
-{ post, prefs, kerror, klog } = require 'kxk'
+{ post, kerror, prefs, klog, $, _ } = require 'kxk'
 
 class Brain
 
@@ -18,9 +18,18 @@ class Brain
         @headerRegExp = new RegExp "^[0#{@especial}]+$"
         @notSpecialRegExp  = new RegExp "[^#{@especial}]"
         
-        @words = prefs.get 'brain▸words' clear:count:666 alias:count:666
+        @defaultWords = 
+            alias:count:666
+            clear:count:999
+            'cd ':count:0
+            history:count:999
+            help:count:0
+            
+        @words = prefs.get 'brain▸words' _.cloneDeep @defaultWords
         
         post.on 'cmd' @onCmd
+    
+    clear: => @words = @defaultWords
         
     onCmd: (cmd, cwd) =>
         
@@ -55,6 +64,7 @@ class Brain
     
     addWord: (w) ->
         
+        return if w?.length < 2
         info  = @words[w] ? {}
         count = info.count ? 0
         count += opt?.count ? 1

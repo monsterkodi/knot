@@ -14,9 +14,7 @@ license         Unlicense
 bugs
                 url  https://github.com/monsterkodi/knot/issues
 dependencies
-                ansi-256-colors  ^1.1.0
                 fuzzy           ^0.1.3
-                klor            ^1.4.0
                 kxk             ^0.345.0
                 seamless-immutable  ^7.1.4
 devDependencies

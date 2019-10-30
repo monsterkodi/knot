@@ -6,7 +6,7 @@
 000   000  0000000  000  000   000  0000000 
 ###
 
-{ slash, post, klog } = require 'kxk'
+{ slash, kstr } = require 'kxk'
 
 Cmmd    = require './cmmd'
 History = require './history'
@@ -23,13 +23,19 @@ class Alias extends Cmmd
             cdl:    'cd $$ && clear && l'
             h:      'history'
             k:      'konrad'
-            nl:     'npm ls --depth 0 | node c:/Users/kodi/s/colorcat/bin/colorcat -sP c:/Users/kodi/s/konrad/cc/npm.noon'
-            ng:     'npm ls --depth 0 -g | node c:/Users/kodi/s/colorcat/bin/colorcat -sP c:/Users/kodi/s/konrad/cc/npm.noon'
+            nl:     'npm ls --depth 0 | node ~/s/colorcat/bin/colorcat -sP ~/s/konrad/cc/npm.noon'
+            ng:     'npm ls --depth 0 -g | node ~/s/colorcat/bin/colorcat -sP ~/s/konrad/cc/npm.noon'
+            ni:     'npm install && nl'
+            na:     'npm install --save $$ | node ~/s/colocat/bin/colorcat -sP ~/s/konrad/cc/npm.noon'
+            nd:     'npm install --save-dev $$ | node ~/s/colocat/bin/colorcat -sP ~/s/konrad/cc/npm.noon'
+            nr:     'npm uninstall --save $$ | node ~/s/colocat/bin/colorcat -sP ~/s/konrad/cc/npm.noon'
             ks:     'k -s'
             kd:     'k -d'
             kc:     'k -c'
             kb:     'k -b'
             kf:     'k -f'
+            kt:     'k -t'
+            ku:     'k -u'
             ki:     'k -i'
             kp:     'k -p'
             km:     'k -m'
@@ -40,6 +46,7 @@ class Alias extends Cmmd
             ll:     'l -l'
             lla:    'l -la'
             e:      'electron .'
+            ed:     'e -D'
         super
 
     substitute: (cmd) ->
@@ -57,14 +64,14 @@ class Alias extends Cmmd
             if cmd == a or cmd.startsWith a + ' '
                 return @shell.enqueue @alias[a] + cmd[a.length..]
         
-        if cmd == 'history' or cmd.startsWith 'history '
-            return @histCmd cmd
+        if cmd == 'history' or cmd.startsWith 'history ' then return @histCmd  cmd
+        if cmd == 'brain'   or cmd.startsWith 'brain '   then return @brainCmd cmd
+        if cmd == 'alias'   or cmd.startsWith 'alias '   then return @aliasCmd cmd
                 
         switch cmd
             when 'clear'   then return @term.clear()
             when 'cwd'     then return @editor.appendOutput slash.path process.cwd()
             when 'blink'   then return @editor.toggleBlink()
-            when 'alias'   then return @aliasCmd cmd
                                 
     aliasCmd: (cmd) ->    
         
@@ -72,14 +79,23 @@ class Alias extends Cmmd
             for k,v of @alias
                 @editor.appendOutput "#{k} #{v}"
         true
-                
+
+    brainCmd: (cmd) ->
+        
+        if cmd == 'brain'
+            @editor.appendOutput kstr window.brain.words
+        else
+            switch arg = cmd[6..].trim()
+                when 'clear' then window.brain.clear()
+        true
+        
     histCmd: (cmd) ->
         
         if cmd == 'history'
             @term.history.list()
         else
             arg = cmd[8..].trim()
-            switch cmd
+            switch arg
                 when 'clear' then History.clear()
                 else @term.history.cmd arg
         true

@@ -6,15 +6,13 @@
 000   000   0000000      000      0000000    0000000   0000000   000   000  000        0000000  00000000     000     00000000
 ###
 
-{ elem, klog, kerror, stopEvent, post, prefs, clamp, empty, $, _ } = require 'kxk'
+{ stopEvent, kerror, empty, clamp, elem, klog, $, _ } = require 'kxk'
 
 event = require 'events'
 
-class Autocomplete extends event
+class Autocomplete
 
     @: (@editor) -> 
-        
-        super()
         
         @matchList = []
         @clones    = []
@@ -30,52 +28,49 @@ class Autocomplete extends event
         @specialWordRegExp = new RegExp "(\\s+|[\\w#{@especial}]+|[^\\s])", 'g'
         @splitRegExp       = new RegExp "[^\\w\\d#{@especial}]+", 'g'        
     
-        @editor.on 'edit'   @onEdit
+        @editor.on 'insert' @onInsert
         @editor.on 'cursor' @close
         @editor.on 'blur'   @close
         
-    #  0000000   000   000  00000000  0000000    000  000000000
-    # 000   000  0000  000  000       000   000  000     000   
-    # 000   000  000 0 000  0000000   000   000  000     000   
-    # 000   000  000  0000  000       000   000  000     000   
-    #  0000000   000   000  00000000  0000000    000     000   
+    #  0000000   000   000  000  000   000   0000000  00000000  00000000   000000000  
+    # 000   000  0000  000  000  0000  000  000       000       000   000     000     
+    # 000   000  000 0 000  000  000 0 000  0000000   0000000   0000000       000     
+    # 000   000  000  0000  000  000  0000       000  000       000   000     000     
+    #  0000000   000   000  000  000   000  0000000   00000000  000   000     000     
 
-    onEdit: (info) =>
+    onInsert: (info) =>
         
         @close()
-        
-        # klog info.before
         
         @word = _.last info.before.split @splitRegExp
         @word = info.before if @word?.length == 0
         
-        if info.action == 'insert'
-            
-            # klog "@word.length >#{@word}<" @word?.length
-            return if not @word?.length
-            return if empty window.brain.words
-            
-            matches = _.pickBy window.brain.words, (c,w) => w.startsWith(@word) and w.length > @word.length            
-            matches = _.toPairs matches
-            for m in matches
-                d = @editor.distanceOfWord m[0]
-                m[1].distance = 100 - Math.min d, 100
-                
-            matches.sort (a,b) ->
-                (b[1].distance+b[1].count+1/b[0].length) - (a[1].distance+a[1].count+1/a[0].length)
-                
-            words = matches.map (m) -> m[0]
-            for w in words
-                if not @firstMatch
-                    @firstMatch = w 
-                else
-                    @matchList.push w
-                        
-            return if not @firstMatch?
-            @completion = @firstMatch.slice @word.length
-            
-            @open info
+        # klog 'info' info
+        # klog '@word' @word
         
+        # klog "@word.length >#{@word}<" @word?.length
+        return if not @word?.length
+        return if empty window.brain.words
+        
+        # klog window.brain.words
+        
+        matches = _.pickBy window.brain.words, (c,w) => w.startsWith(@word) and w.length > @word.length
+        matches = _.toPairs matches
+            
+        matches.sort (a,b) -> (b[1].count+1/b[0].length) - (a[1].count+1/a[0].length)
+            
+        words = matches.map (m) -> m[0]
+        for w in words
+            if not @firstMatch
+                @firstMatch = w 
+            else
+                @matchList.push w
+                    
+        return if not @firstMatch?
+        @completion = @firstMatch.slice @word.length
+        
+        @open info
+            
     #  0000000   00000000   00000000  000   000
     # 000   000  000   000  000       0000  000
     # 000   000  00000000   0000000   000 0 000
@@ -135,9 +130,9 @@ class Autocomplete extends event
             c.style.display = 'none'
 
         for c in @clones
-            @span.insertAdjacentElement 'afterend', c
+            @span.insertAdjacentElement 'afterend' c
             
-        # klog @completion, @completion.length
+        # klog "move clones by" @completion.length, @completion
             
         @moveClonesBy @completion.length            
         
@@ -253,14 +248,21 @@ class Autocomplete extends event
         
         return if empty @clones
         beforeLength = @clones[0].innerHTML.length
+        
+        # klog 'moveClonesBy' @clones[0].innerHTML, beforeLength, @completion
+        
         for ci in [1...@clones.length]
             c = @clones[ci]
             offset = parseFloat @cloned[ci-1].style.transform.split('translateX(')[1]
             charOffset = numChars
             charOffset += beforeLength if ci == 1
+            # klog 'moveClonesBy' ci, offset, numChars, beforeLength, charOffset
             c.style.transform = "translatex(#{offset+@editor.size.charWidth*charOffset}px)"
-        spanOffset = parseFloat @cloned[0].style.transform.split('translateX(')[1]
-        spanOffset += @editor.size.charWidth*beforeLength
+        # spanOffset = parseFloat @cloned[0].style.transform.split('translateX(')[1]
+        # spanOffset += @editor.size.charWidth*beforeLength
+        
+        spanOffset = @editor.size.charWidth*@editor.mainCursor()[0]
+        # klog 'moveClonesBy' spanOffset
         @span.style.transform = "translatex(#{spanOffset}px)"
         
     #  0000000  000   000  00000000    0000000   0000000   00000000   000   000   0000000   00000000   0000000  

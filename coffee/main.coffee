@@ -12,7 +12,7 @@
 
 main = undefined
 
-post.on 'newWindow', -> main.createWindow()
+post.on 'newWindow' -> main.createWindow()
 
 # 000   000  000  000   000   0000000
 # 000 0 000  000  0000  000  000
@@ -48,6 +48,7 @@ class Main extends app
             icon:       '../img/app.ico'
             tray:       '../img/menu.png'
             about:      '../img/about.png'
+            prefsSeperator: '▸'
             aboutDebug: false  
             minWidth:   500 
             onShow:     -> main.onShow()

@@ -19,6 +19,7 @@ w = new win
     pkg:    require '../package.json'
     menu:   '../coffee/menu.noon'
     icon:   '../img/menu@2x.png'
+    prefsSeperator: '▸'
     # onLoad: -> window.term.onResize()
     context: (items) -> onContext items
 

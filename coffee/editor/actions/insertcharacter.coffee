@@ -37,7 +37,7 @@ module.exports =
         
         @do.setCursors newCursors
         @do.end()
-        @emitEdit 'insert'
+        @emitInsert()
 
     insertSingleLine: (text) ->
         
