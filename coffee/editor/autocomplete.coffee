@@ -8,8 +8,6 @@
 
 { stopEvent, kerror, empty, clamp, elem, klog, $, _ } = require 'kxk'
 
-event = require 'events'
-
 class Autocomplete
 
     @: (@editor) -> 

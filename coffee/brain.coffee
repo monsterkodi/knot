@@ -6,47 +6,43 @@
 0000000    000   000  000   000  000  000   000
 ###
 
-{ post, kerror, prefs, klog, $, _ } = require 'kxk'
+{ post, kerror, prefs, kstr, klog, $, _ } = require 'kxk'
 
 class Brain
 
     @: ->
         
-        specials = "_-@#"
-        @especial = ("\\"+c for c in specials.split '').join ''
-        @splitRegExp = new RegExp "[^\\w\\d#{@especial}]+" 'g'   
-        @headerRegExp = new RegExp "^[0#{@especial}]+$"
+        @especial          = ("\\"+c for c in "_-@#").join ''
+        @splitRegExp       = new RegExp "[^\\w\\d#{@especial}]+" 'g'   
+        @headerRegExp      = new RegExp "^[0#{@especial}]+$"
         @notSpecialRegExp  = new RegExp "[^#{@especial}]"
         
         @defaultWords = 
-            alias:count:666
-            clear:count:999
-            'cd ':count:0
             history:count:999
+            clear:count:999
+            alias:count:666
             help:count:0
+            'cd ':count:0
             
         @words = prefs.get 'brain▸words' _.cloneDeep @defaultWords
+        @cmds  = prefs.get 'brain▸cmds' {}
         
         post.on 'cmd' @onCmd
     
-    clear: => @words = @defaultWords
+    clear: => 
+        
+        @words = _.cloneDeep @defaultWords
+        @cmds  = []
         
     onCmd: (cmd, cwd) =>
         
-        # klog 'brain.onCmd' cmd, cwd
-                    
         if not cmd?.split? then return kerror "Brain.onCmd -- no split? #{cmd}"
             
-        @addWord cmd
+        @addCmd cmd
         
         words = cmd.split @splitRegExp
         
-        # klog 'words1' words
-        
         words = words.filter (w) => 
-            # return false if not Indexer.testWord w
-            # return false if w == cursorWord
-            # return false if @word == w.slice 0, w.length-1
             return false if @headerRegExp.test w
             true
             
@@ -60,19 +56,30 @@ class Brain
             @addWord w
         
         prefs.set 'brain▸words' @words
-        # @dump()
+        prefs.set 'brain▸cmds'  @cmds
     
-    addWord: (w) ->
+    addCmd: (cmd) ->
         
-        return if w?.length < 2
-        info  = @words[w] ? {}
-        count = info.count ? 0
-        count += opt?.count ? 1
-        info.count = count
-        @words[w] = info
+        return if cmd?.length < 2
+        info       = @cmds[cmd] ? {}
+        info.count = (info.count ? 0) + 1
+        @cmds[cmd] = info
+            
+    addWord: (word) ->
         
-    dump: ->
+        return if word?.length < 2
+        info         = @words[word] ? {}
+        info.count   = (info.count ? 0) + 1
+        @words[word] = info
         
-        klog Object.keys(@words).sort().map (w) => "#{w} #{@words[w].count}"
+    dump: (editor) ->
+        
+        s = []
+        s = s.concat "words"
+        s = s.concat Object.keys(@words).sort().map (w) => "     #{kstr.rpad w, 20} #{@words[w].count}"
+        s = s.concat "cmds"
+        s = s.concat Object.keys(@cmds).sort().map (w) => "     #{kstr.rpad w, 20} #{@cmds[w].count}"
+        klog s
+        editor?.appendOutput s.join '\n'
 
 module.exports = Brain

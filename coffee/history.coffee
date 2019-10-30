@@ -14,7 +14,7 @@ class History
     
     @init: =>
         
-        @list = prefs.get 'history▸list' []
+        @list = prefs.get 'history' []
         post.on 'cmd' @onCmd
         
     @onCmd: (cmd) =>
@@ -30,12 +30,12 @@ class History
                     break
         
         @list.push cmd
-        prefs.set 'history▸list' @list
+        prefs.set 'history' @list
         
     @clear: =>
         
         @list = []
-        prefs.set 'history▸list' @list
+        prefs.set 'history' @list
     
     @: (@term) ->
         

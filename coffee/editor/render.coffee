@@ -116,14 +116,14 @@ class Render
         sw = size.charWidth * (sel[1][1]-sel[1][0])
         tx = size.charWidth *  sel[1][0] + size.offsetX
         ty = size.lineHeight * sel[0]
-        lh = size.lineHeight
+        lh = size.lineHeight + 1
 
-        if clss.startsWith 'stringmatch'
-            lh /= 2 if clss.endsWith 'single'
-            lh /= 2 if clss.endsWith 'double'
-            if clss.endsWith 'bold'
-                ty += lh/4
-                lh /= 2
+        # if clss.startsWith 'stringmatch'
+            # lh /= 2 if clss.endsWith 'single'
+            # lh /= 2 if clss.endsWith 'double'
+            # if clss.endsWith 'bold'
+                # ty += lh/4
+                # lh /= 2
 
         empty = sel[1][0] == sel[1][1] and "empty" or ""
 

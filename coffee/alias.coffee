@@ -83,7 +83,7 @@ class Alias extends Cmmd
     brainCmd: (cmd) ->
         
         if cmd == 'brain'
-            @editor.appendOutput kstr window.brain.words
+            window.brain.dump @editor            
         else
             switch arg = cmd[6..].trim()
                 when 'clear' then window.brain.clear()

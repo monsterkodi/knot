@@ -103,7 +103,7 @@ class Main extends app
 
         if toSave
             post.toWins 'saveStash'
-            post.on 'stashSaved', =>
+            post.on 'stashSaved' =>
                 toSave -= 1
                 if toSave == 0
                     @exitApp()

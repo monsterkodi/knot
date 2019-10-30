@@ -6,7 +6,7 @@
    000     00000000  000   000     000           00000000  0000000    000     000      0000000   000   000
 ###
 
-{ keyinfo, stopEvent, setStyle, slash, prefs, drag, empty, valid, elem, post, clamp, kpos, kstr, sw, os, kerror, klog, $, _ } = require 'kxk' 
+{ post, stopEvent, keyinfo, kerror, prefs, clamp, empty, elem, kstr, drag, os, $, _ } = require 'kxk'
   
 render       = require './render'
 EditorScroll = require './editorscroll'
@@ -62,8 +62,6 @@ class TextEditor extends Editor
                 featureName = feature.toLowerCase()
                 featureClss = require "./#{featureName}"
                 @[featureName] = new featureClss @
-
-        # post.on 'combo' @onCombo
 
     # 0000000    00000000  000
     # 000   000  000       000
@@ -194,17 +192,6 @@ class TextEditor extends Editor
         if not text?
             log "#{@name}.appendText - no text?"
             return
-
-        # if text != kstr.stripAnsi text
-            # li = @numLines()
-            # for line in text.split '\n'
-                # ansi = new kstr.ansi
-                # diss = ansi.dissect(line)[1]
-                # lineSpan = render.lineSpan diss, @size
-                # @spanCache[li] = lineSpan
-                # li += 1
-            # @appendText kstr.stripAnsi text
-            # return
             
         appended = []
         ls = text?.split /\n/
@@ -262,7 +249,7 @@ class TextEditor extends Editor
         @layers.style.fontSize = "#{fontSize}px"
         @size.numbersWidth = 'Numbers' in @config.features and 36 or 0
         @size.fontSize     = fontSize
-        @size.lineHeight   = fontSize * 1.26
+        @size.lineHeight   = fontSize * 1.25 # keep in sync with style line-heights
         @size.charWidth    = fontSize * 0.6
         @size.offsetX      = Math.floor @size.charWidth + @size.numbersWidth
 
@@ -296,8 +283,6 @@ class TextEditor extends Editor
 
         @syntax.changed changeInfo
 
-        # klog changeInfo
-        
         for change in changeInfo.changes
             [di,li,ch] = [change.doIndex, change.newIndex, change.change]
             switch ch
@@ -313,7 +298,6 @@ class TextEditor extends Editor
                     
                 when 'inserted'
                     @spanCache = @spanCache.slice 0, di
-                    # @ansiLines.splice li, 0, ''
                     @emit 'lineInserted' li, di
 
         if changeInfo.inserts or changeInfo.deletes
@@ -384,14 +368,10 @@ class TextEditor extends Editor
 
     appendLine: (li) ->
 
-        # klog "appendLine #{li}" @elem.outerHTML
-        
         @lineDivs[li] = elem class:'line'
         @lineDivs[li].appendChild @cachedSpan li
         @elem.appendChild @lineDivs[li]
         
-        # klog "appendLine #{li}" @elem.outerHTML
-
     #  0000000  000   000  000  00000000  000000000     000      000  000   000  00000000   0000000
     # 000       000   000  000  000          000        000      000  0000  000  000       000
     # 0000000   000000000  000  000000       000        000      000  000 0 000  0000000   0000000
@@ -406,7 +386,7 @@ class TextEditor extends Editor
         divInto = (li,lo) =>
 
             if not @lineDivs[lo]
-                log "#{@name}.shiftLines.divInto - no div? #{top} #{bot} #{num} old #{oldTop} #{oldBot} lo #{lo} li #{li}"
+                kerror "#{@name}.shiftLines.divInto - no div? #{top} #{bot} #{num} old #{oldTop} #{oldBot} lo #{lo} li #{li}"
                 return
 
             @lineDivs[li] = @lineDivs[lo]
@@ -430,7 +410,7 @@ class TextEditor extends Editor
                 divInto oldTop, oldBot
                 oldBot -= 1
 
-        @emit 'linesShifted', top, bot, num
+        @emit 'linesShifted' top, bot, num
 
         @updateLinePositions()
         @updateLayers()
@@ -465,7 +445,7 @@ class TextEditor extends Editor
     clearHighlights: () ->
 
         if @numHighlights()
-            $('.highlights', @layers).innerHTML = ''
+            $('.highlights' @layers).innerHTML = ''
             super()
 
     # 00000000   00000000  000   000  0000000    00000000  00000000
@@ -558,7 +538,7 @@ class TextEditor extends Editor
     # 000   000  000      000  000  0000  000  000
     # 0000000    0000000  000  000   000  000   000
 
-    cursorDiv: -> $ '.cursor.main', @layerDict['cursors']
+    cursorDiv: -> $ '.cursor.main' @layerDict['cursors']
 
     suspendBlink: ->
 
@@ -566,7 +546,7 @@ class TextEditor extends Editor
         @stopBlink()
         @cursorDiv()?.classList.toggle 'blink' false
         clearTimeout @suspendTimer
-        blinkDelay = prefs.get 'cursorBlinkDelay', [800,200]
+        blinkDelay = prefs.get 'cursorBlinkDelay' [800,200]
         @suspendTimer = setTimeout @releaseBlink, blinkDelay[0]
 
     releaseBlink: =>
@@ -578,7 +558,7 @@ class TextEditor extends Editor
     toggleBlink: ->
 
         blink = not prefs.get 'blink' false
-        prefs.set 'blink', blink
+        prefs.set 'blink' blink
         if blink
             @startBlink()
         else
@@ -778,9 +758,6 @@ class TextEditor extends Editor
 
     handleModKeyComboCharEvent: (mod, key, combo, char, event) ->
         
-        # if @autocomplete?
-            # return if 'unhandled' != @autocomplete.handleModKeyComboEvent mod, key, combo, event
-
         switch combo
             
             when 'ctrl+\\'              then return post.emit 'menuAction' 'Toggle Center Text'

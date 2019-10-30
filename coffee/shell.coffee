@@ -54,7 +54,7 @@ class Shell
         @term.history.onCmd @cmd
         post.emit 'cmd' @cmd, @term.tab.text
         
-        @term.insertCmdMeta @editor.numLines()-2, @cmd
+        @lastMeta = @term.insertCmdMeta @editor.numLines()-2 @cmd
         
         @executeCmd @substitute @cmd
                 
@@ -84,7 +84,7 @@ class Shell
     enqueue: (cmd) -> 
     
         cmd = cmd.replace /\~/g, slash.home()
-        klog 'enqueue' cmd
+        # klog 'enqueue' cmd
         @queue.push cmd
         cmd
         
@@ -92,7 +92,7 @@ class Shell
         
         cmd = @alias.substitute cmd
         cmd = cmd.replace /\~/g, slash.home()
-        klog 'substitute' cmd
+        # klog 'substitute' cmd
         cmd
         
     #  0000000  000   000  00000000  000      000       0000000  00     00  0000000    
@@ -175,10 +175,12 @@ class Shell
         if code == 0
             setImmediate @onDone
         else
+            klog 'code' code
             if @chdir.onFallback @cmd
                 klog 'fallback'
             else
-                @editor.appendText 'error: ' + @errorText
+                @editor.appendOutput 'error: ' + @errorText
+                @term.failMeta @lastMeta
             @dequeue()
             
     onDone: =>

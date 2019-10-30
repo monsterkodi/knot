@@ -87,6 +87,10 @@ class Term
     # 000 0 000  000          000     000   000  
     # 000   000  00000000     000     000   000  
     
+    failMeta: (meta) ->
+
+        klog 'failMeta' meta
+    
     insertCmdMeta: (li, cmd) ->
         
         @editor.meta.add 
