@@ -8,8 +8,9 @@
 
 { empty, slash, childp, post, kstr, klog } = require 'kxk'
 
-Alias = require './alias'
-Chdir = require './chdir'
+History = require './history'
+Alias   = require './alias'
+Chdir   = require './chdir'
 
 class Shell
 
@@ -44,6 +45,10 @@ class Shell
         @errorText = ''
         @cmd ?= @editor.lastLine()
         @cmd  = @cmd.trim()
+
+        if @cmd != hsub = History.substitute @cmd
+            @cmd = hsub
+            @editor.insertSingleLine @cmd
         
         @editor.appendText ''
         @editor.singleCursorAtEnd()
@@ -51,10 +56,11 @@ class Shell
         if empty @cmd
             return
         
-        @term.history.onCmd @cmd
-        post.emit 'cmd' @cmd, @term.tab.text
-        
+        @term.history.shellCmd @cmd # might reset history pointer to last
+
         @lastMeta = @term.insertCmdMeta @editor.numLines()-2 @cmd
+        @lastMeta.cmd = @cmd
+        @lastMeta.cwd = process.cwd()
         
         @executeCmd @substitute @cmd
                 
@@ -81,18 +87,21 @@ class Shell
             
         @shellCmd @cmd
             
-    enqueue: (cmd) -> 
+    enqueue: (cmd, opt) -> 
     
+        if opt?.updateMetaCmd
+            @lastMeta.cmd = cmd
         cmd = cmd.replace /\~/g, slash.home()
-        # klog 'enqueue' cmd
-        @queue.push cmd
+        if opt?.front
+            @queue.unshift cmd
+        else
+            @queue.push cmd
         cmd
         
     substitute: (cmd) ->
         
         cmd = @alias.substitute cmd
         cmd = cmd.replace /\~/g, slash.home()
-        # klog 'substitute' cmd
         cmd
         
     #  0000000  000   000  00000000  000      000       0000000  00     00  0000000    
@@ -163,6 +172,18 @@ class Shell
         
         true
         
+    #  0000000   0000000   000   000   0000000  00000000  000      
+    # 000       000   000  0000  000  000       000       000      
+    # 000       000000000  000 0 000  000       0000000   000      
+    # 000       000   000  000  0000  000       000       000      
+    #  0000000  000   000  000   000   0000000  00000000  0000000  
+    
+    handleCancel: ->
+        
+        return 'unhandled' if not @child
+        @child.kill()
+        true
+        
     # 00000000  000   000  000  000000000  
     # 000        000 000   000     000     
     # 0000000     00000    000     000     
@@ -174,26 +195,28 @@ class Shell
         killed = @child.killed
         delete @child
         if code == 0 or killed or @chdir.onFallback @cmd
-            @term.succMeta @lastMeta
             setImmediate @onDone
         else
             @term.failMeta @lastMeta
             if not /is not recognized/.test @errorText
                 @editor.appendOutput '\n'+@errorText
-            @dequeue()
+            @dequeue 'fail'
             
-    onDone: =>
+    # 0000000     0000000   000   000  00000000  
+    # 000   000  000   000  0000  000  000       
+    # 000   000  000   000  000 0 000  0000000   
+    # 000   000  000   000  000  0000  000       
+    # 0000000     0000000   000   000  00000000  
+    
+    onDone: (lastCode) =>
 
+        if lastCode != 'fail'
+            post.emit 'cmd' @lastMeta.cmd, @lastMeta.cwd # insert into global history
+            @term.succMeta @lastMeta
         if empty(@queue) and empty(@inputQueue)
             @term.pwd()
         else
             @dequeue()
-
-    handleCancel: ->
-        
-        return 'unhandled' if not @child
-        @child.kill()
-        true
             
     # 0000000    00000000   0000000   000   000  00000000  000   000  00000000  
     # 000   000  000       000   000  000   000  000       000   000  000       
@@ -201,7 +224,7 @@ class Shell
     # 000   000  000       000 0000   000   000  000       000   000  000       
     # 0000000    00000000   00000 00   0000000   00000000   0000000   00000000  
     
-    dequeue: =>
+    dequeue: (lastCode) =>
  
         if @queue.length
             @executeCmd @queue.shift()
@@ -210,7 +233,7 @@ class Shell
             @editor.insertSingleLine cmd
             @execute cmd
         else
-            @onDone()
+            @onDone lastCode
         
     #  0000000  000000000  0000000    
     # 000          000     000   000  

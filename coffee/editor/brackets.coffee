@@ -6,9 +6,7 @@
 0000000    000   000  000   000   0000000  000   000  00000000     000     0000000 
 ###
 
-{ _ } = require 'kxk'
-
-matchr  = require '../tools/matchr'
+{ matchr, _ } = require 'kxk'
 
 class Brackets
     
@@ -122,7 +120,7 @@ class Brackets
         
         [cp, li] = pos
         line = @editor.line(li)
-        rngs = matchr.ranges @config, line     
+        rngs = matchr.ranges @config, line
         
         i = rngs.length-1
         while i >= 0 # remove escaped

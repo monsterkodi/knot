@@ -6,10 +6,16 @@
 000   000  000  0000000      000      0000000   000   000     000   
 ###
 
-{ empty, post, prefs, kstr, klog } = require 'kxk'
+{ post, matchr, prefs, empty, klog, kstr } = require 'kxk'
 
 class History
 
+    # 000      000   0000000  000000000  
+    # 000      000  000          000     
+    # 000      000  0000000      000     
+    # 000      000       000     000     
+    # 0000000  000  0000000      000     
+    
     @list = []
     
     @init: =>
@@ -17,9 +23,10 @@ class History
         @list = prefs.get 'history' []
         post.on 'cmd' @onCmd
         
-    @onCmd: (cmd) =>
+    @onCmd: (cmd) => # cmd did succeed
         
         return if cmd in ['h''history''c''clear']
+        return if cmd[0] == '!'
         return if cmd == @list[-1]
         
         if @list.length 
@@ -32,10 +39,26 @@ class History
         @list.push cmd
         prefs.set 'history' @list
         
+    @substitute: (cmd) ->
+        if cmd == '!'
+            return @list[-1]
+        for rng in matchr.ranges(/!-?\d+/, cmd).reverse()
+            index = parseInt rng.match[1..]
+            index += @list.length if index < 0
+            if hst = @list[index]
+                cmd = cmd.splice rng.start, rng.match.length, hst
+        cmd
+        
     @clear: =>
         
         @list = []
         prefs.set 'history' @list
+    
+    # 000000000  00000000  00000000   00     00  
+    #    000     000       000   000  000   000  
+    #    000     0000000   0000000    000000000  
+    #    000     000       000   000  000 0 000  
+    #    000     00000000  000   000  000   000  
     
     @: (@term) ->
         
@@ -43,17 +66,29 @@ class History
         @editor = @term.editor
         @index = -1
        
-    onCmd: (cmd) ->
+    shellCmd: (cmd) -> # cmd will exeute in shell
         
         if @index >= 0
             if cmd != History.list[@index]
                 @index = -1
         
+    cmd: (arg) -> # history command
+    
+        [arg, rest...] = arg.split ' '
+    
+        switch arg
+            when 'list' then @list()
+        true
+                
     onSplice: (index) =>
         
         if @index > 0 and @index >= index
             @index--
+
+    list: -> 
         
+        @editor.appendOutput ("#{kstr.rpad i, 3} #{History.list[i]}" for i in [0...History.list.length]).join '\n'
+            
     prev: ->
 
         if @index == 0 or empty History.list
@@ -78,10 +113,5 @@ class History
         ll = History.list.length
         @index = (@index+ll+d) % ll
         @editor.insertSingleLine History.list[@index]
-
-    list: ->
-        
-        for i in [0...History.list.length]
-            @editor.appendOutput "#{kstr.rpad i, 3} #{History.list[i]}"
         
 module.exports = History

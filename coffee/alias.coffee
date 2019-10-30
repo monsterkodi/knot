@@ -6,7 +6,7 @@
 000   000  0000000  000  000   000  0000000 
 ###
 
-{ slash, kstr } = require 'kxk'
+{ slash, empty } = require 'kxk'
 
 Cmmd    = require './cmmd'
 History = require './history'
@@ -62,7 +62,7 @@ class Alias extends Cmmd
         
         for a in Object.keys @alias
             if cmd == a or cmd.startsWith a + ' '
-                return @shell.enqueue @alias[a] + cmd[a.length..]
+                return @shell.enqueue @alias[a] + cmd[a.length..], front:true
         
         if cmd == 'history' or cmd.startsWith 'history ' then return @histCmd  cmd
         if cmd == 'brain'   or cmd.startsWith 'brain '   then return @brainCmd cmd
@@ -91,13 +91,11 @@ class Alias extends Cmmd
         
     histCmd: (cmd) ->
         
-        if cmd == 'history'
-            @term.history.list()
-        else
-            arg = cmd[8..].trim()
-            switch arg
-                when 'clear' then History.clear()
-                else @term.history.cmd arg
+        arg = cmd[8..].trim()
+        arg = 'list' if empty arg
+        switch arg
+            when 'clear' then History.clear()
+            else return @term.history.cmd arg
         true
                     
 module.exports = Alias

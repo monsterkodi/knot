@@ -6,9 +6,7 @@
 0000000      000     000   000     000     000   000  000   000
 ###
 
-{ kerror, kstr, valid, klor, klog, elem, empty, fs, noon, slash, _ } = require 'kxk'
-
-matchr = require '../tools/matchr'
+{ kerror, matchr, empty, style, klor, elem, last, kstr, _ } = require 'kxk'
 
 class Syntax
     
