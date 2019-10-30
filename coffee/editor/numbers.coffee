@@ -136,7 +136,7 @@ class Numbers extends event
 
         fs = Math.min 22, @editor.size.fontSize-4
         @elem.style.fontSize = "#{fs}px"
-        setStyle '.linenumber' 'padding-top' "#{parseInt @editor.size.fontSize/10}px"
+        # setStyle '.linenumber' 'padding-top' "#{parseInt @editor.size.fontSize/10}px"
 
     #  0000000   0000000   000       0000000   00000000    0000000
     # 000       000   000  000      000   000  000   000  000

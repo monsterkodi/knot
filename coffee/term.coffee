@@ -6,7 +6,7 @@
    000     00000000  000   000  000   000  
 ###
 
-{ post, kerror, slash, elem, kpos, klog, $ } = require 'kxk'
+{ post, kerror, slash, elem, klog, kpos, $ } = require 'kxk'
 
 BaseEditor = require './editor/editor'
 TextEditor = require './editor/texteditor'
@@ -46,41 +46,7 @@ class Term
         @history = new History @
                         
         post.on 'fontSize' @onFontSize
-                    
-    scrollBy: (delta) =>
-        
-        @editor.scroll.by delta
-        if not (0 < @editor.scroll.scroll < @editor.scroll.scrollMax-1)
-            post.emit 'stopWheel'
-    
-    # 00000000   00000000   0000000  000  0000000  00000000  
-    # 000   000  000       000       000     000   000       
-    # 0000000    0000000   0000000   000    000    0000000   
-    # 000   000  000            000  000   000     000       
-    # 000   000  00000000  0000000   000  0000000  00000000  
-    
-    resized: => @editor.resized()
-        
-    #  0000000  000      00000000   0000000   00000000   
-    # 000       000      000       000   000  000   000  
-    # 000       000      0000000   000000000  0000000    
-    # 000       000      000       000   000  000   000  
-    #  0000000  0000000  00000000  000   000  000   000  
-    
-    clear: -> 
-    
-        @editor.clear()
-        @inputMeta = @editor.meta.add
-            line: 0
-            clss: 'input'
-            number: text: '▶'
-            click: (meta, event) =>
-                pos = kpos event
-                if pos.x < 40
-                    klog 'input number'
-                else
-                    klog 'input text?'
-                     
+                                
     # 00     00  00000000  000000000   0000000   
     # 000   000  000          000     000   000  
     # 000000000  0000000      000     000000000  
@@ -89,8 +55,16 @@ class Term
     
     failMeta: (meta) ->
 
-        klog 'failMeta' meta
-    
+        meta[2].number = text:'✖' clss:'fail'
+        meta[2].clss = 'fail'
+        @editor.meta.update meta
+        
+    succMeta: (meta) ->
+
+        meta[2].number = text:'▶' clss:'succ'
+        meta[2].clss = 'succ'
+        @editor.meta.update meta
+        
     insertCmdMeta: (li, cmd) ->
         
         @editor.meta.add 
@@ -112,7 +86,27 @@ class Term
         else
             if @inputMeta[0] != @editor.numLines()-1
                 kerror 'input meta not at end?' @inputMeta[0], @editor.numLines()-1
-                    
+              
+    #  0000000  000      00000000   0000000   00000000   
+    # 000       000      000       000   000  000   000  
+    # 000       000      0000000   000000000  0000000    
+    # 000       000      000       000   000  000   000  
+    #  0000000  0000000  00000000  000   000  000   000  
+    
+    clear: -> 
+    
+        @editor.clear()
+        @inputMeta = @editor.meta.add
+            line: 0
+            clss: 'input'
+            number: text: '▶'
+            click: (meta, event) =>
+                pos = kpos event
+                if pos.x < 40
+                    klog 'input number'
+                else
+                    klog 'input text?'
+                
     # 00000000   0000000   000   000  000000000       0000000  000  0000000  00000000  
     # 000       000   000  0000  000     000         000       000     000   000       
     # 000000    000   000  000 0 000     000         0000000   000    000    0000000   
@@ -124,6 +118,14 @@ class Term
         @editor.setFontSize size
         @editor.singleCursorAtEnd()
         
+    resized: => @editor.resized()
+    
+    scrollBy: (delta) =>
+        
+        @editor.scroll.by delta
+        if not (0 < @editor.scroll.scroll < @editor.scroll.scrollMax-1)
+            post.emit 'stopWheel'
+    
     # 00000000   000   000  0000000    
     # 000   000  000 0 000  000   000  
     # 00000000   000000000  000   000  
@@ -158,6 +160,12 @@ class Term
                     
         true
                      
+    # 000   000  00000000  000   000  
+    # 000  000   000        000 000   
+    # 0000000    0000000     00000    
+    # 000  000   000          000     
+    # 000   000  00000000     000     
+    
     handleKey: (mod, key, combo, char, event) ->        
         
         # klog 'term.handleKey' mod, key, combo
@@ -167,6 +175,7 @@ class Term
                 when 'alt+up' then return @editor.moveCursorsUp()
                 when 'up'     then return @history.prev()
                 when 'down'   then return @history.next()
+                when 'ctrl+c' then return @shell.handleCancel()
         
         'unhandled'
         

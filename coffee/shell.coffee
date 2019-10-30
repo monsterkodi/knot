@@ -171,16 +171,15 @@ class Shell
     
     onExit: (code) =>
 
+        killed = @child.killed
         delete @child
-        if code == 0
+        if code == 0 or killed or @chdir.onFallback @cmd
+            @term.succMeta @lastMeta
             setImmediate @onDone
         else
-            klog 'code' code
-            if @chdir.onFallback @cmd
-                klog 'fallback'
-            else
-                @editor.appendOutput 'error: ' + @errorText
-                @term.failMeta @lastMeta
+            @term.failMeta @lastMeta
+            if not /is not recognized/.test @errorText
+                @editor.appendOutput '\n'+@errorText
             @dequeue()
             
     onDone: =>
@@ -190,6 +189,12 @@ class Shell
         else
             @dequeue()
 
+    handleCancel: ->
+        
+        return 'unhandled' if not @child
+        @child.kill()
+        true
+            
     # 0000000    00000000   0000000   000   000  00000000  000   000  00000000  
     # 000   000  000       000   000  000   000  000       000   000  000       
     # 000   000  0000000   000 00 00  000   000  0000000   000   000  0000000   

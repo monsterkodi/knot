@@ -91,7 +91,7 @@ module.exports =
 
         if @numLines() == 0
             @do.start()
-            @do.insert 0, ''
+            @do.insert 0 ''
             @do.end()
         p = @clampPos p
 
@@ -110,8 +110,8 @@ module.exports =
         extend = info?.extend ? 0 <= info?.mod.indexOf 'shift'
         
         switch key
-            when 'home'      then @singleCursorAtPos [0, 0], extend: extend
-            when 'end'       then @singleCursorAtPos [0,@numLines()-1], extend: extend
+            when 'home'      then @singleCursorAtPos [0 0], extend: extend
+            when 'end'       then @singleCursorAtPos [0 @numLines()-1], extend: extend
             when 'page up'   
                 @moveCursorsUp   extend, @numFullLines()-3
             when 'page down' then @moveCursorsDown extend, @numFullLines()-3

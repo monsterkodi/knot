@@ -35,7 +35,6 @@ class Chdir extends Cmmd
                 process.chdir dir
                 prefs.set 'cwd' dir
                 @term.tab.update slash.tilde dir
-                # @term.pwd()
                 @lastDir = cwd if cwd != dir
                 return true
             catch err
