@@ -28,15 +28,7 @@ module.exports =
             '*': ['*' '*']                    
         
         @surroundCharacters = "{}[]()\"'".split ''
-        
-        switch @fileType
-            when 'html'   then @surroundCharacters = @surroundCharacters.concat ['<''>']
-            when 'coffee' 'koffee' then @surroundCharacters.push '#'
-            when 'md'     
-                @surroundCharacters = @surroundCharacters.concat ['*''<' '`']
-                @surroundPairs['<'] = ['<!--' '-->']
-                @surroundPairs['`'] = ['`' '`']
-                
+                        
     isUnbalancedSurroundCharacter: (ch) ->
         
         return false if ch in ["#"]
@@ -57,7 +49,7 @@ module.exports =
         
         for c in @textOfSelection()
             continue if c == '\n'
-            if c not in ['"', "'"]
+            if c not in ['"' "'"]
                 return false
         true
     
@@ -84,13 +76,10 @@ module.exports =
     
     insertSurroundCharacter: (ch) ->
 
-        if ch == '"' and @fileType in ['coffee', 'koffee'] and @insertTripleQuotes()
-            return true
-
         if @isUnbalancedSurroundCharacter ch
             return false 
         
-        if @numSelections() and ch in ['"', "'"] and @selectionContainsOnlyQuotes()
+        if @numSelections() and ch in ['"' "'"] and @selectionContainsOnlyQuotes()
             return false
         
         newCursors = @do.cursors()
@@ -108,14 +97,7 @@ module.exports =
                     @do.end()
                     @surroundStack.pop()
                     return false 
-        
-        if ch == '#' and @fileType in ['coffee', 'koffee'] # check if any cursor or selection is inside a string
-            found = false
-            for s in @do.selections()
-                if @isRangeInString s
-                    found = true
-                    break
-                    
+                            
             if not found
                 for c in newCursors
                     if @isRangeInString rangeForPos c
@@ -146,21 +128,7 @@ module.exports =
                         @do.change ns[0], @do.line(ns[0]).splice sr[1][0], 1, '"'
                     if @do.line(sr[0])[sr[1][1]-1] == "'"
                         @do.change ns[0], @do.line(ns[0]).splice sr[1][1]-1, 1, '"'
-                        
-            else if @fileType in ['coffee', 'koffee'] and cl == '(' and lengthOfRange(ns) > 0 # remove space after callee
-                [before, after] = @splitStateLineAtPos @do, rangeStartPos ns
-                trimmed = before.trimRight()
-                beforeGood = /\w$/.test(trimmed) and not /(if|when|in|and|or|is|not|else|return)$/.test trimmed
-                afterGood = after.trim().length and not after.startsWith ' '
-                if beforeGood and afterGood
-                    spaces = before.length-trimmed.length
-                    @do.change ns[0], @do.line(ns[0]).splice trimmed.length, spaces
-                    
-                    for c in positionsAfterLineColInPositions ns[0], ns[1][0]-1, newCursors
-                        c[0] -= spaces
-                    ns[1][0] -= spaces
-                    ns[1][1] -= spaces
-                    
+                                            
             @do.change ns[0], @do.line(ns[0]).splice ns[1][1], 0, cr
             @do.change ns[0], @do.line(ns[0]).splice ns[1][0], 0, cl
             

@@ -33,7 +33,7 @@ module.exports =
     deleteToEndOfLine: ->
         
         @do.start()
-        @moveCursorsToLineBoundary 'right', extend:true
+        @moveCursorsToLineBoundary 'right' extend:true
         @deleteSelection deleteLines:false
         @do.end()
         

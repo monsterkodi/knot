@@ -425,7 +425,7 @@ class TextEditor extends Editor
         
         for li, div of @lineDivs
             if not div? or not div.style?
-                return kerror 'no div? style?', div?, div?.style?
+                return kerror 'no div? style?' div?, div?.style?
             y = @size.lineHeight * (li - @scroll.top)
             div.style.transform = "translate3d(#{@size.offsetX}px,#{y}px, 0)"
             div.style.transition = "all #{animate/1000}s" if animate
@@ -730,7 +730,7 @@ class TextEditor extends Editor
 
     funcInfoAtLineIndex: (li) ->
 
-        files = post.get 'indexer', 'files', @currentFile
+        files = post.get 'indexer' 'files' @currentFile
         fileInfo = files[@currentFile]
         for func in fileInfo.funcs
             if func.line <= li <= func.last

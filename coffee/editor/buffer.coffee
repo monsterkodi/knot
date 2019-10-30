@@ -21,8 +21,8 @@ class Buffer extends event
     @: ->
         super()
         @newlineCharacters = '\n'
-        @wordRegExp = new RegExp "(\\s+|\\w+|[^\\s])", 'g'
-        @realWordRegExp = new RegExp "(\\w+)", 'g'
+        @wordRegExp = new RegExp "(\\s+|\\w+|[^\\s])" 'g'
+        @realWordRegExp = new RegExp "(\\w+)" 'g'
         @setState new State()
 
     setLines: (lines) ->
@@ -140,7 +140,7 @@ class Buffer extends event
     wordRangesInLineAtIndex: (li, opt={}) ->
 
         opt.regExp ?= @wordRegExp
-        opt.regExp = new RegExp "(\\s+|[\\w#{opt.include}]+|[^\\s])", 'g' if opt?.include?.length
+        opt.regExp = new RegExp "(\\s+|[\\w#{opt.include}]+|[^\\s])" 'g' if opt?.include?.length
         r = []
         while (mtch = opt.regExp.exec(@line(li))) != null
             r.push [li, [mtch.index, opt.regExp.lastIndex]]
@@ -367,16 +367,16 @@ class Buffer extends event
         type = opt?.type ? 'str'
         switch type
             when 'fuzzy'
-                re = new RegExp "\\w+", 'g'
+                re = new RegExp "\\w+" 'g'
                 while (mtch = re.exec(@line(i))) != null
                     r.push [i, [mtch.index, re.lastIndex]] if fuzzy.test t, @line(i).slice mtch.index, re.lastIndex
             else
-                t = _.escapeRegExp t if type in ['str', 'Str', 'glob']
+                t = _.escapeRegExp t if type in ['str' 'Str' 'glob']
                 if type is 'glob'
-                    t = t.replace new RegExp("\\*", 'g'), "\w*"
+                    t = t.replace new RegExp("\\*" 'g'), "\w*"
                     return r if not t.length
 
-                rngs = matchr.ranges t, @line(i), type in ['str', 'reg', 'glob'] and 'i' or ''
+                rngs = matchr.ranges t, @line(i), type in ['str' 'reg' 'glob'] and 'i' or ''
                 for rng in rngs
                     r.push [i, [rng.start, rng.start + rng.match.length]]
         r

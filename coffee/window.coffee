@@ -196,7 +196,7 @@ window.document.addEventListener 'wheel' onWheel, true
 
 setEditor = (editor) ->
     
-    prefs.set 'editor', editor
+    prefs.set 'editor' editor
     klog "editor: #{prefs.get 'editor'}"
 
 post.on 'menuAction' (action) ->

@@ -98,7 +98,7 @@ class EditorScroll extends events
                         
             @offsetTop = parseInt offset
             @updateOffset()
-            @emit 'scroll', @scroll, @offsetTop
+            @emit 'scroll' @scroll, @offsetTop
 
     #  0000000  00000000  000000000  000000000   0000000   00000000 
     # 000       000          000        000     000   000  000   000

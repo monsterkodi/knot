@@ -14,8 +14,8 @@ class Brackets
     
     @: (@editor) ->
         
-        @editor.on 'cursor',          @onCursor
-        @editor.on 'fileTypeChanged', @setupConfig
+        @editor.on 'cursor'          @onCursor
+        @editor.on 'fileTypeChanged' @setupConfig
         
         @setupConfig()
             

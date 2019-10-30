@@ -81,13 +81,13 @@ module.exports =
     startStickySelection: ->
         
         @stickySelection = true
-        post.emit 'sticky', true
+        post.emit 'sticky' true
         @emit 'selection'
 
     endStickySelection: ->
         
         @stickySelection = false
-        post.emit 'sticky', false
+        post.emit 'sticky' false
         @emit 'selection'
 
     #  0000000  000000000   0000000   00000000   000000000          00000000  000   000  0000000    
@@ -132,14 +132,14 @@ module.exports =
             newCursors   = @do.cursors()
             
             if oldCursors.length != newCursors.length
-                return kerror "Editor.#{@name}.endSelection -- oldCursors.size != newCursors.size", oldCursors.length, newCursors.length
+                return kerror "Editor.#{@name}.endSelection -- oldCursors.size != newCursors.size" oldCursors.length, newCursors.length
             
             for ci in [0...@do.numCursors()]
                 oc = oldCursors[ci]
                 nc = newCursors[ci]
                 
                 if not oc? or not nc?
-                    return kerror "Editor.#{@name}.endSelection -- invalid cursors", oc, nc
+                    return kerror "Editor.#{@name}.endSelection -- invalid cursors" oc, nc
                 else
                     ranges = @rangesForLinesBetweenPositions oc, nc, true #< extend to full lines if cursor at start of line                
                     newSelection = newSelection.concat ranges

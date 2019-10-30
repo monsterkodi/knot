@@ -91,7 +91,7 @@ class Meta
 
     delDiv: (meta) ->
 
-        return kerror 'no line meta?', meta if not meta?[2]?
+        return kerror 'no line meta?' meta if not meta?[2]?
         meta[2].div?.remove()
         meta[2].div = null
 

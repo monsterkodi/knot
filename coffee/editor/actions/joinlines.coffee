@@ -18,7 +18,7 @@ module.exports =
     insertThen: (before, after) ->
         if /(when|if)/.test before 
             bw = lastWordInLine before
-            if bw not in ['and', 'or'] and (not after.trim().startsWith 'then') and not /then/.test before
+            if bw not in ['and' 'or'] and (not after.trim().startsWith 'then') and not /then/.test before
                 after = 'then ' + after
         after
 
@@ -32,10 +32,7 @@ module.exports =
             if not @isCursorInLastLine c
                 before = @do.line(c[1]).trimRight() + " "
                 after  = @do.line(c[1]+1).trimLeft()
-                
-                if @fileType in ['coffee', 'koffee']
-                    after = @insertThen before, after
-                            
+                                            
                 @do.change c[1], before + after
                 @do.delete c[1]+1
                 

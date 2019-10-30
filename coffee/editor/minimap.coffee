@@ -36,7 +36,7 @@ class Minimap
         @elem.appendChild @highlig
         @elem.appendChild @cursors
 
-        @elem.addEventListener 'wheel', @editor.scrollbar?.onWheel
+        @elem.addEventListener 'wheel' @editor.scrollbar?.onWheel
 
         @editor.view.appendChild    @elem
         @editor.on 'viewHeight'     @onEditorViewHeight
@@ -190,7 +190,7 @@ class Minimap
 
         for change in changeInfo.changes
             li = change.oldIndex
-            break if not change.change in ['deleted', 'inserted']
+            break if not change.change in ['deleted' 'inserted']
             @drawLines li, li
 
         if li <= @scroll.exposeBot

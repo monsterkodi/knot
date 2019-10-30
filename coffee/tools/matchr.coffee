@@ -68,7 +68,7 @@ ranges = (regexes, text, flags) ->
         reg = regexes[r][0]
 
         if not reg? or not reg.exec?
-            console.error 'no reg?', regexes, text, flags
+            console.error 'no reg?' regexes, text, flags
             return rgs
 
         arg = regexes[r][1]

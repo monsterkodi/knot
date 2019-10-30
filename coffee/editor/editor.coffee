@@ -81,7 +81,7 @@ class Editor extends Buffer
         @setFileType newType
 
         if oldType != @fileType
-            @emit 'fileTypeChanged', @fileType
+            @emit 'fileTypeChanged' @fileType
 
     setFileType: (@fileType) ->
 
@@ -127,12 +127,6 @@ class Editor extends Buffer
         @indentNewLineLess = null
         @insertIndentedEmptyLineBetween = '{}'
 
-        switch @fileType
-            when 'coffee' 'koffee'
-                @indentNewLineMore =
-                    lineEndsWith: ['->', '=>', ':', '=']
-                    lineRegExp:   /^(\s+when|\s*if|\s*else\s+if\s+)(?!.*\sthen\s)|(^|\s)(else\s*$|switch\s|for\s|while\s|class\s)/
-
         # _______________________________________________________________ comment
 
         @lineComment  = '#'
@@ -176,7 +170,7 @@ class Editor extends Buffer
 
         l = state.line pos[1]
         kerror "no line at pos #{pos}?" if not l?
-        return ['',''] if not l?
+        return ['' ''] if not l?
         [l.slice(0, pos[0]), l.slice(pos[0])]
 
     # 00000000  00     00  000  000000000       000  000   000   0000000  00000000  00000000   000000000
@@ -227,7 +221,7 @@ class Editor extends Buffer
             il = thisIndent if il == 0
             il = Math.max il, @indentationAtLineIndex li+1
 
-            _.padStart "", il
+            _.padStart '' il
         else
             ''
 

@@ -88,7 +88,7 @@ class Main extends app
         if not empty stashFiles
             for file in stashFiles
                 win = @createWindow()
-                newStash = slash.join @userData, 'win', "#{win.id}.noon"
+                newStash = slash.join @userData, 'win' "#{win.id}.noon"
                 fs.copySync file, newStash
     
     #  0000000   000   000  000  000000000  

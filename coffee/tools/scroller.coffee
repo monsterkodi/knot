@@ -26,9 +26,9 @@ class Scroller
             onMove:  @onDrag
             cursor:  'ns-resize'
 
-        @elem.addEventListener       'wheel',  @onWheel
-        @column.div.addEventListener 'wheel',  @onWheel
-        @column.div.addEventListener 'scroll', @onScroll
+        @elem.addEventListener       'wheel'  @onWheel
+        @column.div.addEventListener 'wheel'  @onWheel
+        @column.div.addEventListener 'scroll' @onScroll
         @target = @column.div
         
     numRows:   -> @column.numRows()

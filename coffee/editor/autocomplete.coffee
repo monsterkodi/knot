@@ -23,8 +23,8 @@ class Autocomplete
         @headerRegExp      = new RegExp "^[0#{@especial}]+$"
         
         @notSpecialRegExp  = new RegExp "[^#{@especial}]"
-        @specialWordRegExp = new RegExp "(\\s+|[\\w#{@especial}]+|[^\\s])", 'g'
-        @splitRegExp       = new RegExp "[^\\w\\d#{@especial}]+", 'g'        
+        @specialWordRegExp = new RegExp "(\\s+|[\\w#{@especial}]+|[^\\s])" 'g'
+        @splitRegExp       = new RegExp "[^\\w\\d#{@especial}]+" 'g'        
     
         @editor.on 'insert' @onInsert
         @editor.on 'cursor' @close

@@ -11,7 +11,7 @@ module.exports =
     
     actions:
         insertOrDeleteTab:
-            combos: ['tab', 'shift+tab']
+            combos: ['tab' 'shift+tab']
         
     insertOrDeleteTab: (key, info) ->
         
@@ -31,7 +31,7 @@ module.exports =
             il = @indentString.length
             for c in newCursors
                 n = 4-(c[0]%il)
-                @do.change c[1], @do.line(c[1]).splice c[0], 0, _.padStart "", n
+                @do.change c[1], @do.line(c[1]).splice c[0], 0, _.padStart '' n
                 cursorDelta c, n
             @do.setCursors newCursors
             @do.end()   

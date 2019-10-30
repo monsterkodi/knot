@@ -62,7 +62,7 @@ class State
     setCursors:    (c) -> new State @s.set 'cursors'    c
     setMain:       (m) -> new State @s.set 'main'       m
 
-    changeLine: (i,t) -> new State @s.setIn ['lines', i], text:t
+    changeLine: (i,t) -> new State @s.setIn ['lines' i], text:t
     insertLine: (i,t) -> l = @s.lines.asMutable(); l.splice i, 0, text:t; new State @s.set 'lines' l
     deleteLine: (i)   -> l = @s.lines.asMutable(); l.splice i, 1;         new State @s.set 'lines' l
     popLine:          -> l = @s.lines.asMutable(); l.pop();               new State @s.set 'lines' l

@@ -9,9 +9,9 @@
 
 class Invisibles
 
-    constructor: (@editor) -> @editor.on 'file', @onFile
+    constructor: (@editor) -> @editor.on 'file' @onFile
 
-    del: -> @editor.removeListener 'file', @onFile
+    del: -> @editor.removeListener 'file' @onFile
 
     onFile: (file) =>
 
@@ -44,7 +44,7 @@ class Invisibles
             n = 1
             if s[p] == '\t'
                 n = 4-(p%4)
-                s = s.splice p, 1, _.padStart "", n
+                s = s.splice p, 1, _.padStart '' n
                 @editor.meta.add
                     line:  li
                     html:  '&#9656'

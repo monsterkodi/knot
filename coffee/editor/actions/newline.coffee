@@ -58,15 +58,6 @@ module.exports =
             if doIndent
                 
                 indent = @indentStringForLineAtIndex c[1] 
-                if @fileType in ['coffee', 'koffee']
-                    if /(when|if)/.test before 
-                        if after.startsWith 'then '
-                            after = after.slice(4).trimLeft() # remove then
-                            indent += @indentString
-                        else if before.trim().endsWith 'then'
-                            before = before.trimRight()
-                            before = before.slice 0, before.length-4 # remove then                            
-                            indent += @indentString
                  
             else
                 if c[0] <= indentationInLine @do.line c[1]
