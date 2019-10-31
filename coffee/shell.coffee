@@ -162,7 +162,7 @@ class Shell
             # 00000000  000   000  00000000   0000000  
             
             @child = childp.exec @cmd, shell:true#, -> klog 'child terminated'
-            klog 'exec' @cmd, @child.pid
+            # klog 'exec' @cmd, @child.pid
             
             @child.stdout.on 'data'  @onStdOut
             @child.stderr.on 'data'  @onStdErr
@@ -199,7 +199,7 @@ class Shell
     onExit: (code) =>
 
         killed = @child.killed
-        klog 'onExit' @child.pid, killed and 'killed' or code
+        # klog 'onExit' @child.pid, killed and 'killed' or code
         delete @child
         if code == 0 or killed or @fallback()
             setImmediate @onDone
@@ -223,7 +223,7 @@ class Shell
             delete @lastMeta.fallback
             return true
         
-        klog 'chdir fallback' @cmd
+        # klog 'chdir fallback' @cmd
         @chdir.onFallback @cmd
             
     # 0000000     0000000   000   000  00000000  
@@ -234,7 +234,7 @@ class Shell
     
     onDone: (lastCode) =>
 
-        if lastCode != 'fail'
+        if lastCode != 'fail' and @lastMeta?
             post.emit 'cmd' @lastMeta.cmd, @lastMeta.cwd # insert into global history
             @term.succMeta @lastMeta
         if empty(@queue) and empty(@inputQueue)

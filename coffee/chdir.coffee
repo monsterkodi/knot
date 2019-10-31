@@ -32,6 +32,7 @@ class Chdir extends Cmmd
             dir = slash.resolve cmd.slice(3).trim()
             try 
                 cwd = process.cwd()
+                klog 'chdir' dir
                 process.chdir dir
                 prefs.set 'cwd' dir
                 @term.tab.update slash.tilde dir
