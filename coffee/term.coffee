@@ -44,6 +44,7 @@ class Term
         
         @shell   = new Shell @
         @history = new History @
+        @autocomplete = @editor.autocomplete
                         
         post.on 'fontSize' @onFontSize
                                 
@@ -169,9 +170,11 @@ class Term
     onEnter: ->
         
         if @editor.isInputCursor()
-            if @editor.autocomplete.selectedCompletion()
-                completionFallback = @editor.lastLine() + @editor.autocomplete.selectedCompletion()
-            @shell.execute fallback:completionFallback
+            if @autocomplete.isListItemSelected()
+                @autocomplete.complete()
+            else if @autocomplete.selectedCompletion()
+                return @shell.execute fallback:@editor.lastLine() + @autocomplete.selectedCompletion()
+            @shell.execute {}
         else
             @editor.singleCursorAtEnd()
         
@@ -188,8 +191,7 @@ class Term
         switch combo
             when 'enter' then return @onEnter()
         
-        if @editor.autocomplete?
-            return if 'unhandled' != @editor.autocomplete.handleModKeyComboEvent mod, key, combo, event
+        return if 'unhandled' != @autocomplete.handleModKeyComboEvent mod, key, combo, event
             
         if @editor.isInputCursor()
             switch combo

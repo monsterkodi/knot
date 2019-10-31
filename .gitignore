@@ -6,6 +6,4 @@ bin/*.json
 *-x64
 inno
 css
-js
-term.js
 *.html

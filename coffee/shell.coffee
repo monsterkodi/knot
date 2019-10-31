@@ -162,7 +162,7 @@ class Shell
             # 000        000 000   000       000       
             # 00000000  000   000  00000000   0000000  
             
-            @child = childp.exec @cmd, shell:true#, -> klog 'child terminated'
+            @child = childp.exec @cmd, shell:true #, -> klog 'child terminated'
             # klog 'exec' @cmd, @child.pid
             
             @child.stdout.on 'data'  @onStdOut

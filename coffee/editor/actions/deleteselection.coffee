@@ -17,9 +17,10 @@ module.exports =
         @deleteSelection deleteLines:not @isInputCursor()
         @do.end()
 
-    deleteSelection: (opt = deleteLines:true) ->
+    deleteSelection: (opt = deleteLines:not @isInputCursor()) ->
 
         @do.start()
+        
         if @do.numSelections()
                     
             newCursors = @do.cursors()

@@ -63,7 +63,7 @@ module.exports =
             for c in reversed newCursors
             
                 if @isCursorAtEndOfLine c # cursor at end of line
-                    if not @isCursorInLastLine c # cursor not in first line
+                    if not @isCursorInLastLine c
                     
                         ll = @line(c[1]).length
                     

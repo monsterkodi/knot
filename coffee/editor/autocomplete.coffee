@@ -24,11 +24,61 @@ class Autocomplete
         
         @notSpecialRegExp  = new RegExp "[^#{@especial}]"
         @specialWordRegExp = new RegExp "(\\s+|[\\w#{@especial}]+|[^\\s])" 'g'
-        @splitRegExp       = new RegExp "[^\\w\\d#{@especial}]+" 'g'        
+        # @splitRegExp       = new RegExp "[^\\w\\d#{@especial}]+" 'g'
+        @splitRegExp       = new RegExp "\\s+" 'g'
     
+        @dirCommands = ['ls' 'cd' 'rm' 'cp' 'mv' 'krep' 'cat']
+        
         @editor.on 'insert' @onInsert
         @editor.on 'cursor' @close
         @editor.on 'blur'   @close
+        
+    # 00     00   0000000   000000000   0000000  000   000  00000000   0000000  
+    # 000   000  000   000     000     000       000   000  000       000       
+    # 000000000  000000000     000     000       000000000  0000000   0000000   
+    # 000 0 000  000   000     000     000       000   000  000            000  
+    # 000   000  000   000     000      0000000  000   000  00000000  0000000   
+    
+    dirMatches: (dir) ->
+        
+        []
+        
+    wordMatches: (word) ->
+        
+        wordMatches = _.pickBy window.brain.words, (c,w) => w.startsWith(word) and w.length > word.length
+        wordMatches = _.toPairs wordMatches
+
+        cmdMatches = _.pickBy window.brain.cmds, (c,w) => w.startsWith(word) and w.length > word.length
+        cmdMatches = _.toPairs cmdMatches
+        
+        wordMatches.concat cmdMatches
+        
+    #  0000000   000   000  000000000   0000000   0000000    
+    # 000   000  0000  000     000     000   000  000   000  
+    # 000   000  000 0 000     000     000000000  0000000    
+    # 000   000  000  0000     000     000   000  000   000  
+    #  0000000   000   000     000     000   000  0000000    
+    
+    onTab: ->
+        
+        mc   = @editor.mainCursor()
+        line = @editor.line mc[1]
+        
+        return if empty line.trim()
+        
+        info =
+            line:   line
+            before: line[0...mc[0]]
+            after:  line[mc[0]..]
+            cursor: mc
+            
+        klog 'tab' @isListItemSelected() and 'item' or @span and 'span' or 'none',  info
+        
+        if @span
+            klog 'complete'
+            @complete()
+        else
+            @onInsert info
         
     #  0000000   000   000  000  000   000   0000000  00000000  00000000   000000000  
     # 000   000  0000  000  000  0000  000  000       000       000   000     000     
@@ -38,32 +88,25 @@ class Autocomplete
 
     onInsert: (info) =>
         
-        klog "Autocomplete.onInsert info:#{kstr info}"
-        
         @close()
         
         @word = _.last info.before.split @splitRegExp
-        @word = info.before if @word?.length == 0
         
-        # klog 'info' info
-        # klog '@word' @word
-        
-        # klog "@word.length >#{@word}<" @word?.length
-        return if not @word?.length
-        
-        candidates = window.brain.words.con
-        
-        # return if empty window.brain.words
-        
-        # klog window.brain.words
-        
-        wordMatches = _.pickBy window.brain.words, (c,w) => w.startsWith(@word) and w.length > @word.length
-        wordMatches = _.toPairs wordMatches
+        klog "@word #{@word}"
+        klog "insert #{@word} #{kstr info}"
 
-        cmdMatches = _.pickBy window.brain.cmds, (c,w) => w.startsWith(@word) and w.length > @word.length
-        cmdMatches = _.toPairs cmdMatches
+        # klog "@word.length >#{@word}<" @word?.length
+        if not @word?.length
+            if info.before.split(' ')[0] in @dirCommands
+                klog 'dirCommand' info.before.split(' ')[0]
+                matches = @dirMatches()
+            if empty matches
+                @word = info.before
+                matches = @wordMatches(@word)
+        else  
+            matches = @dirMatches(@word) ? @wordMatches(@word)
         
-        matches = wordMatches.concat cmdMatches
+        return if empty matches # unlikely
         
         matches.sort (a,b) -> (b[1].count+1/b[0].length) - (a[1].count+1/a[0].length)
             
@@ -205,14 +248,16 @@ class Autocomplete
         index = elem.upAttr event.target, 'index'
         if index            
             @select index
-            @onEnter()
+            @complete()
         stopEvent event
 
-    onEnter: ->
+    complete: ->
         
         @editor.pasteText @selectedCompletion()
         @close()
 
+    isListItemSelected: -> @list and @selected >= 0
+        
     selectedCompletion: ->
         
         if @selected >= 0
@@ -296,22 +341,16 @@ class Autocomplete
 
     handleModKeyComboEvent: (mod, key, combo, event) ->
         
+        if combo == 'tab'
+            @onTab()
+            stopEvent event # prevent focus change
+            return
+            
         return 'unhandled' if not @span?
         
-        # klog 'combo' combo, @list?, @selected
-
-        switch combo
-            when 'right' 'tab'
-                @onEnter()
-                stopEvent event
-                return
-            when 'enter'
-                if @list? and @selected >= 0
-                    @onEnter()
-                    return
-                else
-                    @close()
-                    return 'unhandled'
+        if combo == 'right'
+            @complete()
+            return
             
         if @list? 
             switch combo
