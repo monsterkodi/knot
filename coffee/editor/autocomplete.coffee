@@ -6,7 +6,7 @@
 000   000   0000000      000      0000000    0000000   0000000   000   000  000        0000000  00000000     000     00000000
 ###
 
-{ stopEvent, kerror, empty, clamp, elem, klog, $, _ } = require 'kxk'
+{ stopEvent, kerror, empty, clamp, kstr, elem, klog, $, _ } = require 'kxk'
 
 class Autocomplete
 
@@ -38,6 +38,8 @@ class Autocomplete
 
     onInsert: (info) =>
         
+        klog "Autocomplete.onInsert info:#{kstr info}"
+        
         @close()
         
         @word = _.last info.before.split @splitRegExp
@@ -48,13 +50,21 @@ class Autocomplete
         
         # klog "@word.length >#{@word}<" @word?.length
         return if not @word?.length
-        return if empty window.brain.words
+        
+        candidates = window.brain.words.con
+        
+        # return if empty window.brain.words
         
         # klog window.brain.words
         
-        matches = _.pickBy window.brain.words, (c,w) => w.startsWith(@word) and w.length > @word.length
-        matches = _.toPairs matches
-            
+        wordMatches = _.pickBy window.brain.words, (c,w) => w.startsWith(@word) and w.length > @word.length
+        wordMatches = _.toPairs wordMatches
+
+        cmdMatches = _.pickBy window.brain.cmds, (c,w) => w.startsWith(@word) and w.length > @word.length
+        cmdMatches = _.toPairs cmdMatches
+        
+        matches = wordMatches.concat cmdMatches
+        
         matches.sort (a,b) -> (b[1].count+1/b[0].length) - (a[1].count+1/a[0].length)
             
         words = matches.map (m) -> m[0]
@@ -198,7 +208,7 @@ class Autocomplete
             @onEnter()
         stopEvent event
 
-    onEnter: ->  
+    onEnter: ->
         
         @editor.pasteText @selectedCompletion()
         @close()
@@ -293,6 +303,7 @@ class Autocomplete
         switch combo
             when 'right' 'tab'
                 @onEnter()
+                stopEvent event
                 return
             when 'enter'
                 if @list? and @selected >= 0

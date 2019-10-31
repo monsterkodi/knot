@@ -113,6 +113,9 @@ class Meta
 
     update: (meta) ->
         
+        if not meta[2].no_x and meta.fallback
+            meta[1][1] = meta[1][0] + meta.fallback.length+1
+        
         @editor.numbers.updateColor meta.line
         
     # 0000000    000  00000000  00000000

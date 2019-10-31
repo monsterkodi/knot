@@ -83,7 +83,6 @@ class Tab
     
     activate: ->
         
-        # post.emit 'tab' @
         @setActive()
 
     isActive: -> @div.classList.contains 'active'
@@ -100,7 +99,8 @@ class Tab
             prefs.set 'cwd' @text
             process.chdir slash.untilde @text
             
-    clearActive: -> 
+    clearActive: ->
+        
         @div.classList.remove 'active'
         @term.div.style.zIndex = '0'
         

@@ -38,18 +38,6 @@ module.exports =
         @do.setCursors newCursors
         @do.end()
         @emitInsert()
-
-    insertSingleLine: (text) ->
-        
-        text = text.split('\n')[0]
-        text ?= ''
-        
-        li = @numLines()-1
-        @do.start()
-        @deleteCursorLines()
-        @do.change li, text
-        @do.setCursors [[text.length, li]]
-        @do.end()
         
     twiggleSubstitute: (line:,cursor:,char:) ->
         

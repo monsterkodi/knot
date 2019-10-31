@@ -19,10 +19,10 @@ class Brain
         
         @defaultWords = 
             history:count:999
-            clear:count:999
+            cd:count:999
             alias:count:666
+            clear:count:0
             help:count:0
-            'cd ':count:0
             
         @words = prefs.get 'brain▸words' _.cloneDeep @defaultWords
         @cmds  = prefs.get 'brain▸cmds' {}

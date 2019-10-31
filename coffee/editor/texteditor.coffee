@@ -180,6 +180,24 @@ class TextEditor extends Editor
         @layersHeight = @layerScroll.offsetHeight
 
         @updateLayers()
+       
+    setInputText: (text) ->
+        
+        text = text.split('\n')[0]
+        text ?= ''
+        
+        li = @numLines()-1
+        @do.start()
+        @deleteCursorLines()
+        @do.change li, text
+        @do.setCursors [[text.length, li]]
+        @do.end()
+        
+    replaceTextInLine: (li, text='') ->
+        
+        @do.start()
+        @do.change li, text
+        @do.end()
         
     #  0000000   00000000   00000000   00000000  000   000  0000000    
     # 000   000  000   000  000   000  000       0000  000  000   000  
@@ -810,11 +828,8 @@ class TextEditor extends Editor
         return if not combo
         return if key == 'right click' # weird right command key
 
-        if @autocomplete?
-            return if 'unhandled' != @autocomplete.handleModKeyComboEvent mod, key, combo, event
-        
         return if 'unhandled' != @term.handleKey mod, key, combo, char, event 
-        
+                                
         result = @handleModKeyComboCharEvent mod, key, combo, char, event
 
         if 'unhandled' != result

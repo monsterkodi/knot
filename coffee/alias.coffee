@@ -63,7 +63,7 @@ class Alias extends Cmmd
         
         for a in Object.keys @alias
             if cmd == a or cmd.startsWith a + ' '
-                return @shell.enqueue @alias[a] + cmd[a.length..], front:true
+                return @shell.enqueue cmd:@alias[a] + cmd[a.length..], front:true
         
         if cmd == 'history' or cmd.startsWith 'history ' then return @histCmd  cmd
         if cmd == 'brain'   or cmd.startsWith 'brain '   then return @brainCmd cmd

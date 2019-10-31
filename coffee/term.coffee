@@ -76,8 +76,8 @@ class Term
             end: cmd.length+1
             click: (meta, event) =>
                 @editor.singleCursorAtEnd()
-                @editor.insertSingleLine @editor.line meta[0]
-                @shell.execute @editor.line meta[0]
+                @editor.setInputText @editor.line meta[0]
+                @shell.execute cmd:@editor.line meta[0]
     
     moveInputMeta: ->
         
@@ -169,13 +169,11 @@ class Term
     onEnter: ->
         
         if @editor.isInputCursor()
-            @shell.execute()
+            if @editor.autocomplete.selectedCompletion()
+                completionFallback = @editor.lastLine() + @editor.autocomplete.selectedCompletion()
+            @shell.execute fallback:completionFallback
         else
             @editor.singleCursorAtEnd()
-            # @do.start()
-            # @do.setCursors @restoreInputCursor()
-            # @do.select []
-            # @do.end()
         
     # 000   000  00000000  000   000  
     # 000  000   000        000 000   
@@ -190,6 +188,9 @@ class Term
         switch combo
             when 'enter' then return @onEnter()
         
+        if @editor.autocomplete?
+            return if 'unhandled' != @editor.autocomplete.handleModKeyComboEvent mod, key, combo, event
+            
         if @editor.isInputCursor()
             switch combo
                 when 'alt+up' then return @editor.moveCursorsUp()

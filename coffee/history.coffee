@@ -104,7 +104,7 @@ class History
             return
         if @index+1 >= History.list.length
             @index = -1 
-            @editor.insertSingleLine ''
+            @editor.setInputText ''
             return
         @show +1
         
@@ -112,6 +112,6 @@ class History
         
         ll = History.list.length
         @index = (@index+ll+d) % ll
-        @editor.insertSingleLine History.list[@index]
+        @editor.setInputText History.list[@index]
         
 module.exports = History

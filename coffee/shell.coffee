@@ -42,21 +42,21 @@ class Shell
     # 000        000 000   000       000       000   000     000     000       
     # 00000000  000   000  00000000   0000000   0000000      000     00000000  
     
-    execute: (@cmd) =>
+    execute: (@cmd:, fallback:) =>
     
+        @cmd ?= @editor.lastLine()
+        @cmd = @cmd.trim()
+        
         if @child
-            cmd = @cmd ? @editor.lastLine()
-            @inputQueue.push cmd
-            @editor.insertSingleLine ''
+            @inputQueue.push @cmd
+            @editor.setInputText ''
             return
         
         @errorText = ''
-        @cmd ?= @editor.lastLine()
-        @cmd  = @cmd.trim()
-
+        
         if @cmd != hsub = History.substitute @cmd
             @cmd = hsub
-            @editor.insertSingleLine @cmd
+            @editor.setInputText @cmd
         
         @editor.appendText ''
         @editor.singleCursorAtEnd()
@@ -69,6 +69,7 @@ class Shell
         @lastMeta = @term.insertCmdMeta @editor.numLines()-2 @cmd
         @lastMeta.cmd = @cmd
         @lastMeta.cwd = process.cwd()
+        @lastMeta.fallback = fallback
         
         @executeCmd @substitute @cmd
                 
@@ -218,12 +219,10 @@ class Shell
     fallback: ->
         
         if @lastMeta.fallback
-            klog 'lastMeta.fallback' @lastMeta.fallback
-            @enqueue @lastMeta.fallback
+            @enqueue cmd:@lastMeta.fallback, updateMeta:true, updateInput:true
             delete @lastMeta.fallback
             return true
         
-        # klog 'chdir fallback' @cmd
         @chdir.onFallback @cmd
             
     # 0000000     0000000   000   000  00000000  
@@ -248,12 +247,18 @@ class Shell
     # 000       000  0000  000 0000   000   000  000       000   000  000       
     # 00000000  000   000   00000 00   0000000   00000000   0000000   00000000  
     
-    enqueue: (cmd, opt) -> 
+    enqueue: (cmd:'' front:false updateMeta:false updateInput:false) -> 
     
-        if opt?.updateMetaCmd
+        if updateMeta
             @lastMeta.cmd = cmd
+            
+        if updateInput and @lastMeta
+            @editor.replaceTextInLine @lastMeta[0], cmd
+            @editor.meta.update @lastMeta
+            
         cmd = cmd.replace /\~/g, slash.home()
-        if opt?.front
+        
+        if front
             @queue.unshift cmd
         else
             @queue.push cmd
@@ -271,7 +276,7 @@ class Shell
             @executeCmd @queue.shift()
         else if @inputQueue.length
             cmd = @inputQueue.shift()
-            @editor.insertSingleLine cmd
+            @editor.setInputText cmd
             @execute cmd
         else
             @onDone lastCode
