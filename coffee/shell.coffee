@@ -6,11 +6,13 @@
 0000000   000   000  00000000  0000000  0000000
 ###
 
-{ empty, slash, childp, post, kstr, klog } = require 'kxk'
+{ post, history, childp, kerror, slash, empty, args, klog } = require 'kxk'
 
 History = require './history'
 Alias   = require './alias'
 Chdir   = require './chdir'
+psTree  = require 'ps-tree'
+wxw     = require 'wxw'
 
 class Shell
 
@@ -28,6 +30,12 @@ class Shell
             @executeCmd 'cd ' + dir
             @editor.focus()
         
+    substitute: (cmd) ->
+        
+        cmd = @alias.substitute cmd
+        cmd = cmd.replace /\~/g, slash.home()
+        cmd
+            
     # 00000000  000   000  00000000   0000000  000   000  000000000  00000000  
     # 000        000 000   000       000       000   000     000     000       
     # 0000000     00000    0000000   000       000   000     000     0000000   
@@ -64,6 +72,12 @@ class Shell
         
         @executeCmd @substitute @cmd
                 
+    # 00000000  000   000  00000000   0000000        0000000  00     00  0000000    
+    # 000        000 000   000       000            000       000   000  000   000  
+    # 0000000     00000    0000000   000            000       000000000  000   000  
+    # 000        000 000   000       000            000       000 0 000  000   000  
+    # 00000000  000   000  00000000   0000000        0000000  000   000  0000000    
+    
     executeCmd: (@cmd) =>
         
         split = @cmd.split '&&'
@@ -86,29 +100,12 @@ class Shell
             return true
             
         @shellCmd @cmd
-            
-    enqueue: (cmd, opt) -> 
-    
-        if opt?.updateMetaCmd
-            @lastMeta.cmd = cmd
-        cmd = cmd.replace /\~/g, slash.home()
-        if opt?.front
-            @queue.unshift cmd
-        else
-            @queue.push cmd
-        cmd
-        
-    substitute: (cmd) ->
-        
-        cmd = @alias.substitute cmd
-        cmd = cmd.replace /\~/g, slash.home()
-        cmd
-        
-    #  0000000  000   000  00000000  000      000       0000000  00     00  0000000    
-    # 000       000   000  000       000      000      000       000   000  000   000  
-    # 0000000   000000000  0000000   000      000      000       000000000  000   000  
-    #      000  000   000  000       000      000      000       000 0 000  000   000  
-    # 0000000   000   000  00000000  0000000  0000000   0000000  000   000  0000000    
+                    
+    #  0000000  000   000  00000000  000      000           0000000  00     00  0000000    
+    # 000       000   000  000       000      000          000       000   000  000   000  
+    # 0000000   000000000  0000000   000      000          000       000000000  000   000  
+    #      000  000   000  000       000      000          000       000 0 000  000   000  
+    # 0000000   000   000  00000000  0000000  0000000       0000000  000   000  0000000    
     
     shellCmd: (@cmd) =>
             
@@ -164,7 +161,8 @@ class Shell
             # 000        000 000   000       000       
             # 00000000  000   000  00000000   0000000  
             
-            @child = childp.exec @cmd, shell:true
+            @child = childp.exec @cmd, shell:true#, -> klog 'child terminated'
+            klog 'exec' @cmd, @child.pid
             
             @child.stdout.on 'data'  @onStdOut
             @child.stderr.on 'data'  @onStdErr
@@ -181,7 +179,15 @@ class Shell
     handleCancel: ->
         
         return 'unhandled' if not @child
-        @child.kill()
+        
+        psTree @child.pid, (err, children) =>
+            
+            args = children.map (p) -> p.PID
+            args.unshift @child.pid
+            args.reverse()
+            @child.kill()
+            for arg in args
+                klog arg, wxw 'terminate' arg
         true
         
     # 00000000  000   000  000  000000000  
@@ -189,18 +195,36 @@ class Shell
     # 0000000     00000    000     000     
     # 000        000 000   000     000     
     # 00000000  000   000  000     000     
-    
+        
     onExit: (code) =>
 
         killed = @child.killed
+        klog 'onExit' @child.pid, killed and 'killed' or code
         delete @child
-        if code == 0 or killed or @chdir.onFallback @cmd
+        if code == 0 or killed or @fallback()
             setImmediate @onDone
         else
             @term.failMeta @lastMeta
             if not /is not recognized/.test @errorText
                 @editor.appendOutput '\n'+@errorText
             @dequeue 'fail'
+          
+    # 00000000   0000000   000      000      0000000     0000000    0000000  000   000  
+    # 000       000   000  000      000      000   000  000   000  000       000  000   
+    # 000000    000000000  000      000      0000000    000000000  000       0000000    
+    # 000       000   000  000      000      000   000  000   000  000       000  000   
+    # 000       000   000  0000000  0000000  0000000    000   000   0000000  000   000  
+    
+    fallback: ->
+        
+        if @lastMeta.fallback
+            klog 'lastMeta.fallback' @lastMeta.fallback
+            @enqueue @lastMeta.fallback
+            delete @lastMeta.fallback
+            return true
+        
+        klog 'chdir fallback' @cmd
+        @chdir.onFallback @cmd
             
     # 0000000     0000000   000   000  00000000  
     # 000   000  000   000  0000  000  000       
@@ -217,7 +241,24 @@ class Shell
             @term.pwd()
         else
             @dequeue()
-            
+           
+    # 00000000  000   000   0000000   000   000  00000000  000   000  00000000  
+    # 000       0000  000  000   000  000   000  000       000   000  000       
+    # 0000000   000 0 000  000 00 00  000   000  0000000   000   000  0000000   
+    # 000       000  0000  000 0000   000   000  000       000   000  000       
+    # 00000000  000   000   00000 00   0000000   00000000   0000000   00000000  
+    
+    enqueue: (cmd, opt) -> 
+    
+        if opt?.updateMetaCmd
+            @lastMeta.cmd = cmd
+        cmd = cmd.replace /\~/g, slash.home()
+        if opt?.front
+            @queue.unshift cmd
+        else
+            @queue.push cmd
+        cmd
+                    
     # 0000000    00000000   0000000   000   000  00000000  000   000  00000000  
     # 000   000  000       000   000  000   000  000       000   000  000       
     # 000   000  0000000   000 00 00  000   000  0000000   000   000  0000000   

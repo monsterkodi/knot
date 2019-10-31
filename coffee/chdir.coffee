@@ -42,9 +42,7 @@ class Chdir extends Cmmd
                 
     onFallback: (cmd) ->
         
-        dir = slash.join process.cwd(), cmd
-        if slash.isDir dir
+        if slash.isDir slash.join process.cwd(), cmd
             @onCommand 'cd ' + cmd
-            return true
         
 module.exports = Chdir

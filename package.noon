@@ -16,7 +16,9 @@ bugs
 dependencies
                 fuzzy           ^0.1.3
                 kxk             ^0.345.0
+                ps-tree         ^1.2.0
                 seamless-immutable  ^7.1.4
+                wxw             ^1.87.0
 devDependencies
                 assert          ^2.0.0
                 chai            ^4.2.0

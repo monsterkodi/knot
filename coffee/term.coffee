@@ -159,7 +159,24 @@ class Term
                     @shell.cd @editor.line meta[0]
                     
         true
-                     
+               
+    # 00000000  000   000  000000000  00000000  00000000   
+    # 000       0000  000     000     000       000   000  
+    # 0000000   000 0 000     000     0000000   0000000    
+    # 000       000  0000     000     000       000   000  
+    # 00000000  000   000     000     00000000  000   000  
+    
+    onEnter: ->
+        
+        if @editor.isInputCursor()
+            @shell.execute()
+        else
+            @editor.singleCursorAtEnd()
+            # @do.start()
+            # @do.setCursors @restoreInputCursor()
+            # @do.select []
+            # @do.end()
+        
     # 000   000  00000000  000   000  
     # 000  000   000        000 000   
     # 0000000    0000000     00000    
@@ -169,6 +186,9 @@ class Term
     handleKey: (mod, key, combo, char, event) ->        
         
         # klog 'term.handleKey' mod, key, combo
+        
+        switch combo
+            when 'enter' then return @onEnter()
         
         if @editor.isInputCursor()
             switch combo

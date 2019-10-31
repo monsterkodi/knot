@@ -26,9 +26,9 @@ class Alias extends Cmmd
             nl:     'npm ls --depth 0 | node ~/s/colorcat/bin/colorcat -sP ~/s/konrad/cc/npm.noon'
             ng:     'npm ls --depth 0 -g | node ~/s/colorcat/bin/colorcat -sP ~/s/konrad/cc/npm.noon'
             ni:     'npm install && nl'
-            na:     'npm install --save $$ | node ~/s/colocat/bin/colorcat -sP ~/s/konrad/cc/npm.noon'
-            nd:     'npm install --save-dev $$ | node ~/s/colocat/bin/colorcat -sP ~/s/konrad/cc/npm.noon'
-            nr:     'npm uninstall --save $$ | node ~/s/colocat/bin/colorcat -sP ~/s/konrad/cc/npm.noon'
+            na:     'npm install --save $$ | node ~/s/colorcat/bin/colorcat -sP ~/s/konrad/cc/npm.noon'
+            nd:     'npm install --save-dev $$ | node ~/s/colorcat/bin/colorcat -sP ~/s/konrad/cc/npm.noon'
+            nr:     'npm uninstall --save $$ | node ~/s/colorcat/bin/colorcat -sP ~/s/konrad/cc/npm.noon'
             ks:     'k -s'
             kd:     'k -d'
             kc:     'k -c'
@@ -47,6 +47,7 @@ class Alias extends Cmmd
             lla:    'l -la'
             e:      'electron .'
             ed:     'e -D'
+            ps:     'wmic PROCESS GET Name,ProcessId,ParentProcessId'
         super
 
     substitute: (cmd) ->

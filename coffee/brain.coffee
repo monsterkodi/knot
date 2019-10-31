@@ -35,7 +35,7 @@ class Brain
         @cmds  = []
         
     onCmd: (cmd, cwd) =>
-        
+                
         if not cmd?.split? then return kerror "Brain.onCmd -- no split? #{cmd}"
             
         @addCmd cmd
@@ -74,12 +74,11 @@ class Brain
         
     dump: (editor) ->
         
-        s = []
-        s = s.concat "words"
-        s = s.concat Object.keys(@words).sort().map (w) => "     #{kstr.rpad w, 20} #{@words[w].count}"
-        s = s.concat "cmds"
-        s = s.concat Object.keys(@cmds).sort().map (w) => "     #{kstr.rpad w, 20} #{@cmds[w].count}"
-        klog s
-        editor?.appendOutput s.join '\n'
+        s  = '\nwords\n'
+        Object.keys(@words).sort().map (w) => s+="     #{kstr.rpad w, 20} #{@words[w].count}\n"
+        s += '\ncmds\n'
+        Object.keys(@cmds).sort().map (w) => s+="     #{kstr.rpad w, 20} #{@cmds[w].count}\n"
+
+        editor?.appendOutput s
 
 module.exports = Brain
