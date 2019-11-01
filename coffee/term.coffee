@@ -170,8 +170,12 @@ class Term
     onEnter: ->
         
         if @editor.isInputCursor()
+            if @shell.child and @shell.lastMeta.cmd == 'koffee'
+                @shell.child.stdin.write '\n'
+                @editor.setInputText ''
+                return
             if @autocomplete.isListItemSelected()
-                @autocomplete.complete()
+                @autocomplete.complete {}
             else if @autocomplete.selectedCompletion()
                 return @shell.execute fallback:@editor.lastLine() + @autocomplete.selectedCompletion()
             @shell.execute {}
@@ -187,18 +191,28 @@ class Term
     handleKey: (mod, key, combo, char, event) ->        
         
         # klog 'term.handleKey' mod, key, combo
-        
+                
         switch combo
             when 'enter' then return @onEnter()
         
-        return if 'unhandled' != @autocomplete.handleModKeyComboEvent mod, key, combo, event
+        if @shell.child and @shell.lastMeta.cmd == 'koffee'
+            if char
+                switch key
+                    when 'backspace'
+                        @shell.child.stdin.write '\x08'
+                    else
+                        @shell.child.stdin.write char
+            else
+                klog 'pipe key' key, combo
+        else            
+            return if 'unhandled' != @autocomplete.handleModKeyComboEvent mod, key, combo, event
             
-        if @editor.isInputCursor()
-            switch combo
-                when 'alt+up' then return @editor.moveCursorsUp()
-                when 'up'     then return @history.prev()
-                when 'down'   then return @history.next()
-                when 'ctrl+c' then return @shell.handleCancel()
+            if @editor.isInputCursor()
+                switch combo
+                    when 'alt+up' then return @editor.moveCursorsUp()
+                    when 'up'     then return @history.prev()
+                    when 'down'   then return @history.next()
+                    when 'ctrl+c' then return @shell.handleCancel()
         
         'unhandled'
         

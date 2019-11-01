@@ -12,6 +12,8 @@ knot
     --
     About                   cmdctrl+alt+/
     ---
+    Preferences             cmdctrl+,
+    ----
     Quit                    cmdctrl+q
 
 Edit

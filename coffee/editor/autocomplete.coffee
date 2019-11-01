@@ -6,7 +6,7 @@
 000   000   0000000      000      0000000    0000000   0000000   000   000  000        0000000  00000000     000     00000000
 ###
 
-{ stopEvent, kerror, empty, clamp, kstr, elem, klog, $, _ } = require 'kxk'
+{ stopEvent, kerror, slash, valid, empty, clamp, klog, kstr, elem, $, _ } = require 'kxk'
 
 class Autocomplete
 
@@ -33,21 +33,62 @@ class Autocomplete
         @editor.on 'cursor' @close
         @editor.on 'blur'   @close
         
-    # 00     00   0000000   000000000   0000000  000   000  00000000   0000000  
-    # 000   000  000   000     000     000       000   000  000       000       
-    # 000000000  000000000     000     000       000000000  0000000   0000000   
-    # 000 0 000  000   000     000     000       000   000  000            000  
-    # 000   000  000   000     000      0000000  000   000  00000000  0000000   
+    # 0000000    000  00000000   00     00   0000000   000000000   0000000  000   000  00000000   0000000  
+    # 000   000  000  000   000  000   000  000   000     000     000       000   000  000       000       
+    # 000   000  000  0000000    000000000  000000000     000     000       000000000  0000000   0000000   
+    # 000   000  000  000   000  000 0 000  000   000     000     000       000   000  000            000  
+    # 0000000    000  000   000  000   000  000   000     000      0000000  000   000  00000000  0000000   
     
     dirMatches: (dir) ->
         
-        []
+        # klog 'dirMatches' dir
+        if not slash.isDir dir
+            noDir = slash.file dir
+            dir = slash.dir dir
+            # klog "noDir |#{noDir}|"
+            if not dir or not slash.isDir dir
+                noParent = dir  
+                noParent += '/' if dir
+                noParent += noDir
+                dir = ''
+                # klog "noParent |#{noParent}|"
+        items = slash.list dir
+        # klog items.map (i) -> i.name
+        if valid items
+            result = items.map (i) -> 
+                if noParent
+                    # klog noParent, i.name, i.name.startsWith noParent
+                    if i.name.startsWith noParent
+                        [i.name, count:0]
+                else if noDir
+                    if i.name.startsWith noDir
+                        [i.name, count:0]
+                else
+                    if dir[-1] == '/' or empty dir
+                        [i.name, count:0]
+                    else
+                        ['/'+i.name, count:0]
+            result = result.filter (f) -> f
+            if dir == '.'
+                result.unshift ['..' count:999]
+            else if not noDir and valid dir and not dir.endsWith '/'
+                result.unshift ['/' count:999]
+            # klog 'result' result.map (r) -> r[0]
+            result
         
+    # 000   000   0000000   00000000   0000000    00     00   0000000   000000000   0000000  000   000  00000000   0000000  
+    # 000 0 000  000   000  000   000  000   000  000   000  000   000     000     000       000   000  000       000       
+    # 000000000  000   000  0000000    000   000  000000000  000000000     000     000       000000000  0000000   0000000   
+    # 000   000  000   000  000   000  000   000  000 0 000  000   000     000     000       000   000  000            000  
+    # 00     00   0000000   000   000  0000000    000   000  000   000     000      0000000  000   000  00000000  0000000   
+    
     wordMatches: (word) ->
         
         wordMatches = _.pickBy window.brain.words, (c,w) => w.startsWith(word) and w.length > word.length
         wordMatches = _.toPairs wordMatches
 
+        # klog wordMatches
+        
         cmdMatches = _.pickBy window.brain.cmds, (c,w) => w.startsWith(word) and w.length > word.length
         cmdMatches = _.toPairs cmdMatches
         
@@ -72,11 +113,11 @@ class Autocomplete
             after:  line[mc[0]..]
             cursor: mc
             
-        klog 'tab' @isListItemSelected() and 'item' or @span and 'span' or 'none',  info
+        # klog 'tab' @isListItemSelected() and 'item' or @span and 'span' or 'none' info
         
         if @span
-            klog 'complete'
-            @complete()
+            @complete suffix:(slash.isDir(@selectedWord()) and not @completion.endsWith '/') and '/' or ''
+            @onTab()
         else
             @onInsert info
         
@@ -92,10 +133,9 @@ class Autocomplete
         
         @word = _.last info.before.split @splitRegExp
         
-        klog "@word #{@word}"
-        klog "insert #{@word} #{kstr info}"
+        # klog "@word #{@word}"
+        # klog "insert #{@word} #{kstr info}"
 
-        # klog "@word.length >#{@word}<" @word?.length
         if not @word?.length
             if info.before.split(' ')[0] in @dirCommands
                 klog 'dirCommand' info.before.split(' ')[0]
@@ -104,22 +144,26 @@ class Autocomplete
                 @word = info.before
                 matches = @wordMatches(@word)
         else  
-            matches = @dirMatches(@word) ? @wordMatches(@word)
+            matches = @dirMatches(@word) #? @wordMatches(@word)
         
-        return if empty matches # unlikely
+        return if empty matches
         
-        matches.sort (a,b) -> (b[1].count+1/b[0].length) - (a[1].count+1/a[0].length)
+        # matches.sort (a,b) -> (b[1].count+1/b[0].length) - (a[1].count+1/a[0].length)
+        matches.sort (a,b) -> b[1].count - a[1].count
             
         words = matches.map (m) -> m[0]
-        for w in words
-            if not @firstMatch
-                @firstMatch = w 
-            else
-                @matchList.push w
-                    
-        return if not @firstMatch?
-        @completion = @firstMatch.slice @word.length
+        return if empty words
+        @matchList = words[1..]
         
+        if words[0].startsWith @word
+            @completion = words[0].slice @word.length
+        else
+            if words[0].startsWith slash.file @word
+                @completion = words[0].slice slash.file(@word).length
+            else
+                @completion = words[0]
+        
+        # klog 'open' @word, words[0], @completion, info
         @open info
             
     #  0000000   00000000   00000000  000   000
@@ -129,6 +173,8 @@ class Autocomplete
     #  0000000   000        00000000  000   000
     
     open: (info) ->
+        
+        # klog "#{info.before}|#{@completion}|#{info.after}"
         
         cursor = $('.main' @editor.view)
         if not cursor?
@@ -140,52 +186,24 @@ class Autocomplete
         @span.style.opacity    = 1
         @span.style.background = "#44a"
         @span.style.color      = "#fff"
+        @span.style.transform  = "translatex(#{@editor.size.charWidth*@editor.mainCursor()[0]}px)"
 
         cr = cursor.getBoundingClientRect()
-        spanInfo = @editor.lineSpanAtXY cr.left, cr.top+2
-        if not spanInfo?
-            klog 'no spanInfo'
-            p = @editor.posAtXY cr.left, cr.top
-            if firstSpan = @editor.lineSpanAtXY 2, cr.top+2
-                fakeSpan = elem 'span'
-                fakeSpan.parentElement = firstSpan.parentElement
-                spanInfo = offsetChar:0 pos:p, span:fakeSpan
-                klog 'fakespan' spanInfo
-            else
-                ci = p[1]-@editor.scroll.top
-                return kerror "no span for autocomplete? cursor topleft: #{parseInt cr.left} #{parseInt cr.top}" info
-        
-        pos = @editor.clampPos spanInfo.pos
-        # klog pos, @editor.numLines(), '\n', @editor.scroll.bot
 
-        sp = spanInfo.span
-        inner = sp.innerHTML
-        @clones.push sp.cloneNode true
-        @clones.push sp.cloneNode true
-        @cloned.push sp
+        if not spanInfo = @editor.lineSpanAtXY cr.left+2, cr.top+2
+            return kerror 'no spanInfo'
         
-        ws = @word.slice @word.search /\w/
-        wi = ws.length
-        
-        @clones[0].innerHTML = inner.slice 0 spanInfo.offsetChar + 1 
-        @clones[1].innerHTML = inner.slice   spanInfo.offsetChar + 1
-                    
-        sibling = sp
+        sibling = spanInfo.span
         while sibling = sibling.nextSibling
             @clones.push sibling.cloneNode true
             @cloned.push sibling
             
-        sp.parentElement.appendChild @span
+        spanInfo.span.parentElement.appendChild @span
         
-        for c in @cloned
-            c.style.display = 'none'
-
-        for c in @clones
-            @span.insertAdjacentElement 'afterend' c
+        for c in @cloned then c.style.display = 'none'
+        for c in @clones then @span.insertAdjacentElement 'afterend' c
             
-        # klog "move clones by" @completion.length, @completion
-            
-        @moveClonesBy @completion.length            
+        @moveClonesBy @completion.length         
         
         if @matchList.length
                             
@@ -199,6 +217,7 @@ class Autocomplete
                 item.textContent = m
                 @list.appendChild item
                 
+            pos = @editor.clampPos spanInfo.pos
             above = pos[1] + @matchList.length - @editor.scroll.top >= @editor.scroll.fullLines
             if above
                 @list.classList.add 'above'
@@ -225,7 +244,6 @@ class Autocomplete
         @list       = null
         @span       = null
         @completion = null
-        @firstMatch = null
         
         for c in @clones
             c.remove()
@@ -248,16 +266,18 @@ class Autocomplete
         index = elem.upAttr event.target, 'index'
         if index            
             @select index
-            @complete()
+            @complete {}
         stopEvent event
 
-    complete: ->
+    complete: (suffix:'') ->
         
-        @editor.pasteText @selectedCompletion()
+        @editor.pasteText @selectedCompletion() + suffix
         @close()
 
     isListItemSelected: -> @list and @selected >= 0
         
+    selectedWord: -> @word+@selectedCompletion()
+    
     selectedCompletion: ->
         
         if @selected >= 0
@@ -290,6 +310,9 @@ class Autocomplete
     prev: -> @navigate -1    
     next: -> @navigate 1
     last: -> @navigate @matchList.length - @selected
+    first: -> 
+        @select -1
+        @list?.children[0]?.scrollIntoViewIfNeeded()
 
     # 00     00   0000000   000   000  00000000   0000000  000       0000000   000   000  00000000   0000000
     # 000   000  000   000  000   000  000       000       000      000   000  0000  000  000       000     
@@ -299,25 +322,15 @@ class Autocomplete
 
     moveClonesBy: (numChars) ->
         
-        return if empty @clones
-        beforeLength = @clones[0].innerHTML.length
-        
-        # klog 'moveClonesBy' @clones[0].innerHTML, beforeLength, @completion
-        
-        for ci in [1...@clones.length]
-            c = @clones[ci]
-            offset = parseFloat @cloned[ci-1].style.transform.split('translateX(')[1]
-            charOffset = numChars
-            charOffset += beforeLength if ci == 1
-            # klog 'moveClonesBy' ci, offset, numChars, beforeLength, charOffset
-            c.style.transform = "translatex(#{offset+@editor.size.charWidth*charOffset}px)"
-        # spanOffset = parseFloat @cloned[0].style.transform.split('translateX(')[1]
-        # spanOffset += @editor.size.charWidth*beforeLength
-        
-        spanOffset = @editor.size.charWidth*@editor.mainCursor()[0]
-        # klog 'moveClonesBy' spanOffset
-        @span.style.transform = "translatex(#{spanOffset}px)"
-        
+        if valid @clones
+            beforeLength = @clones[0].innerHTML.length
+            for ci in [1...@clones.length]
+                c = @clones[ci]
+                offset = parseFloat @cloned[ci-1].style.transform.split('translateX(')[1]
+                charOffset = numChars
+                charOffset += beforeLength if ci == 1
+                c.style.transform = "translatex(#{offset+@editor.size.charWidth*charOffset}px)"
+                
     #  0000000  000   000  00000000    0000000   0000000   00000000   000   000   0000000   00000000   0000000  
     # 000       000   000  000   000  000       000   000  000   000  000 0 000  000   000  000   000  000   000
     # 000       000   000  0000000    0000000   000   000  0000000    000000000  000   000  0000000    000   000
@@ -349,21 +362,19 @@ class Autocomplete
         return 'unhandled' if not @span?
         
         if combo == 'right'
-            @complete()
+            @complete {}
             return
             
         if @list? 
             switch combo
-                when 'down'
-                    @next()
-                    return
+                when 'page down' then return @navigate 9
+                when 'page up'   then return @navigate -9
+                when 'end'       then return @last()
+                when 'home'      then return @first()
+                when 'down'      then return @next()
                 when 'up'
-                    if @selected >= 0
-                        @prev()
-                        return
-                    else 
-                        @last()
-                        return
+                    if @selected >= 0 then return @prev()
+                    else return @last()
         @close()   
         'unhandled'
         

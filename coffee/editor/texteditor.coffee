@@ -654,7 +654,8 @@ class TextEditor extends Editor
     lineSpanAtXY:(x,y) ->
         
         if lineElem = @lineElemAtXY x,y
-            for e in lineElem.firstChild.children
+            e = lineElem.firstChild.lastChild
+            while e
                 br = e.getBoundingClientRect()
                 if br.left <= x <= br.left+br.width
                     offset = x-br.left
@@ -662,6 +663,7 @@ class TextEditor extends Editor
                 else if x > br.left+br.width
                     offset = br.width
                     return span:e, offsetLeft:offset, offsetChar:parseInt(offset/@size.charWidth), pos:@posAtXY x,y 
+                e = e.previousSibling
         null
 
     numFullLines: -> @scroll.fullLines

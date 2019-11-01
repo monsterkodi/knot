@@ -214,7 +214,6 @@ post.on 'menuAction' (action) ->
         when 'Clear'            then term().clear(); term().pwd()
         when 'Copy'             then term().editor.copy()
         when 'Paste'            then term().editor.paste()
-            
         when 'Visual Studio' 'VS Code' 'Atom' 'ko'
             setEditor action
 
