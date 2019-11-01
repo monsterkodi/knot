@@ -100,6 +100,7 @@ class Shell
             @dequeue()
             return true
             
+        # klog 'shellCmd' @cmd    
         @shellCmd @cmd
                     
     #  0000000  000   000  00000000  000      000           0000000  00     00  0000000    
@@ -149,8 +150,6 @@ class Shell
             @child.stdout.on 'data' @onStdOut
             @child.stderr.on 'data' @onStdErr
         
-            # process.stdin.pipe firstChild.stdin
-            
             @child.on 'close' (code) =>
                 firstChild.kill()
                 @onExit code
@@ -162,8 +161,7 @@ class Shell
             # 000        000 000   000       000       
             # 00000000  000   000  00000000   0000000  
             
-            @child = childp.exec @cmd, shell:true #, -> klog 'child terminated'
-            # klog 'exec' @cmd, @child.pid
+            @child = childp.exec @cmd, shell:true
             
             @child.stdout.on 'data'  @onStdOut
             @child.stderr.on 'data'  @onStdErr
@@ -219,6 +217,7 @@ class Shell
     fallback: ->
         
         if @lastMeta.fallback
+            klog 'fallback' @lastMeta.fallback
             @enqueue cmd:@lastMeta.fallback, updateMeta:true, updateInput:true
             delete @lastMeta.fallback
             return true

@@ -123,6 +123,8 @@ class Term
     
     scrollBy: (delta) =>
         
+        if @autocomplete.list
+            @autocomplete.close()
         @editor.scroll.by delta
         if not (0 < @editor.scroll.scroll < @editor.scroll.scrollMax-1)
             post.emit 'stopWheel'
