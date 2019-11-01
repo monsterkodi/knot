@@ -21,7 +21,9 @@ class Brain
         post.on 'cmd' @onCmd
             
     onCmd: (info) =>
-             
+        
+        return if info.chdir
+        
         @addCmd info
         @addArg info
             
@@ -73,6 +75,8 @@ class Brain
         
         @args = {}
         @cmds = {}
+        @dirs = {}
+        true
         
     list: (editor, key) ->
         
@@ -80,9 +84,9 @@ class Brain
             @list editor, 'args'
             @list editor, 'cmds'
             @list editor, 'dirs'
-            return    
-        
-        editor?.appendOutput "\n------- #{key}"
-        editor?.appendOutput kstr @[key]
+        else        
+            editor?.appendOutput "\n------- #{key}"
+            editor?.appendOutput kstr @[key]
+        true
 
 module.exports = Brain

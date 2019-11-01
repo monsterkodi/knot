@@ -6,7 +6,7 @@
    000     00000000  000   000     000           00000000  0000000    000     000      0000000   000   000
 ###
 
-{ post, stopEvent, keyinfo, kerror, prefs, clamp, empty, elem, kstr, drag, os, $, _ } = require 'kxk'
+{ post, stopEvent, keyinfo, kerror, prefs, clamp, empty, elem, kstr, klog, drag, os, $, _ } = require 'kxk'
   
 render       = require './render'
 EditorScroll = require './editorscroll'
@@ -666,6 +666,23 @@ class TextEditor extends Editor
                 e = e.previousSibling
         null
 
+    spanBeforeMain: ->
+        
+        mc = @mainCursor()
+        x = mc[0]
+        if lineElem = @lineDivs[mc[1]]
+            e = lineElem.firstChild.lastChild
+            while e
+                start = e.start
+                right = e.start+e.textContent.length 
+                klog 'start' start, right
+                if start <= x <= right
+                    return e
+                else if x > right
+                    return e
+                e = e.previousSibling
+        null
+        
     numFullLines: -> @scroll.fullLines
     
     viewHeight: -> 

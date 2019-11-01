@@ -81,7 +81,7 @@ class Shell
     # 00000000  000   000  00000000   0000000        0000000  000   000  0000000    
     
     executeCmd: (@cmd) =>
-        
+        klog 'executeCmd' @cmd
         split = @cmd.split '&&'
         if split.length > 1
             @cmd = split[0].trim()
@@ -98,10 +98,12 @@ class Shell
             return true
 
         if @chdir.onCommand @cmd
+            
+            klog 'chdir' @cmd
             @dequeue()
             return true
             
-        # klog 'shellCmd' @cmd    
+        klog 'shellCmd' @cmd    
         @shellCmd @cmd
                     
     #  0000000  000   000  00000000  000      000           0000000  00     00  0000000    
@@ -201,9 +203,12 @@ class Shell
         killed = @child.killed
         # klog 'onExit' @child.pid, killed and 'killed' or code
         delete @child
-        if code == 0 or killed or @fallback()
+        if code == 0 or killed 
             setImmediate @onDone
+        else if @fallback()
+            @dequeue()
         else
+            klog 'exit fail' @last
             @term.failMeta @last.meta
             if not /is not recognized/.test @errorText
                 @editor.appendOutput '\n'+@errorText
@@ -223,8 +228,6 @@ class Shell
             delete @last.fallback
             return true
         
-        @chdir.onFallback @cmd
-            
     # 0000000     0000000   000   000  00000000  
     # 000   000  000   000  0000  000  000       
     # 000   000  000   000  000 0 000  0000000   
@@ -233,11 +236,12 @@ class Shell
     
     onDone: (lastCode) =>
 
-        if lastCode != 'fail' and @last.meta?
-            info = _.clone @last
-            delete info.meta
-            post.emit 'cmd' info # insert into global history and brain
-            @term.succMeta @last.meta
+        if lastCode != 'fail' 
+            if @last.meta?
+                info = _.clone @last
+                delete info.meta
+                post.emit 'cmd' info # insert into global history and brain
+                @term.succMeta @last.meta
         if empty(@queue) and empty(@inputQueue)
             @term.pwd()
         else

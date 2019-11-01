@@ -56,12 +56,14 @@ class Term
     
     failMeta: (meta) ->
 
+        klog 'fail' @editor.line meta[0]
         meta[2].number = text:'✖' clss:'fail'
         meta[2].clss = 'fail'
         @editor.meta.update meta
         
     succMeta: (meta) ->
 
+        # klog 'succ' @editor.line meta[0]
         meta[2].number = text:'▶' clss:'succ'
         meta[2].clss = 'succ'
         @editor.meta.update meta
@@ -96,6 +98,7 @@ class Term
     
     clear: -> 
     
+        delete @shell.last?.meta
         @editor.clear()
         @inputMeta = @editor.meta.add
             line: 0
@@ -107,6 +110,7 @@ class Term
                     klog 'input number'
                 else
                     klog 'input text?'
+        true
                 
     # 00000000   0000000   000   000  000000000       0000000  000  0000000  00000000  
     # 000       000   000  0000  000     000         000       000     000   000       

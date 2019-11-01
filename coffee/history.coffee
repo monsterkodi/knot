@@ -23,7 +23,7 @@ class History
         @list = prefs.get 'history' []
         post.on 'cmd' @onCmd
         
-    @onCmd: (cmd) => # cmd did succeed
+    @onCmd: (cmd:) => # cmd did succeed
         
         return if cmd in ['h''history''c''clear']
         return if cmd[0] == '!'

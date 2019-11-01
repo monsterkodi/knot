@@ -32,6 +32,7 @@ class Render
         div = elem class: 'linespans'
         for d in diss ? []
             span = elem 'span'
+            span.start = d.start
             span.style.transform = "translatex(#{d.start * size.charWidth}px)"
             span.className = d.value if d.value?
             text = d.match.replace /\x1b/g, '▪'

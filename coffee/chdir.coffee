@@ -19,27 +19,33 @@ class Chdir extends Cmmd
 
     onCommand: (cmd) ->
                 
-        if cmd in ['cd' '~']
+        if cmd in ['cd']
             cmd = 'cd ~'
-        else if cmd in ['cd..' '..']
+        else if cmd in ['cd..']
             cmd = 'cd ..'
-        else if cmd in ['cd.' '.']
+        else if cmd in ['cd.']
             cmd = 'cd .'
         else if cmd in ['cd -' 'cd-' '-']
             cmd = "cd #{@lastDir}"
             
-        if cmd.startsWith 'cd '
-            dir = slash.resolve cmd.slice(3).trim()
-            try 
-                cwd = process.cwd()
-                # klog 'chdir' dir
-                process.chdir dir
-                prefs.set 'cwd' dir
-                @term.tab.update slash.tilde dir
-                @lastDir = cwd if cwd != dir
-                return true
-            catch err
-                kerror "#{err}"
+        if not cmd.startsWith 'cd '
+            cmd = 'cd ' + cmd
+        
+        dir = slash.resolve cmd.slice(3).trim()
+        
+        return false if not slash.isDir dir
+        
+        try 
+            cwd = process.cwd()
+            # klog 'chdir' dir
+            process.chdir dir
+            prefs.set 'cwd' dir
+            @term.tab.update slash.tilde dir
+            @lastDir = cwd if cwd != dir
+            @shell.last.chdir = true # prevents brain handling
+            return true
+        catch err
+            kerror "#{err}"
                 
     onFallback: (cmd) ->
         
