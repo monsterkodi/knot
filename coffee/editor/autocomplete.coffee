@@ -12,10 +12,6 @@ class Autocomplete
 
     @: (@editor) ->
         
-        @matchList = []
-        @clones    = []
-        @cloned    = []
-        
         @close()
         
         @splitRegExp = /\s+/g
@@ -50,25 +46,25 @@ class Autocomplete
             result = items.map (i) -> 
                 if noParent
                     if i.name.startsWith noParent
-                        [i.name, count:0]
+                        [i.name, count:0, type:i.type]
                 else if noDir
                     if i.name.startsWith noDir
-                        [i.name, count:0]
+                        [i.name, count:0, type:i.type]
                 else
                     if dir[-1] == '/' or empty dir
-                        [i.name, count:0]
+                        [i.name, count:0, type:i.type]
                     else
-                        ['/'+i.name, count:0]
+                        ['/'+i.name, count:0, type:i.type]
 
             result = result.filter (f) -> f
 
             if dir == '.'
-                result.unshift ['..' count:999]
+                result.unshift ['..' count:999, type:'dir']
             else if not noDir and valid(dir) 
                 if not dir.endsWith '/'
-                    result.unshift ['/' count:999]
+                    result.unshift ['/' count:999, type:'dir']
                 else
-                    result.unshift ['' count:999]
+                    result.unshift ['' count:999, type:'dir']
 
             result
         
@@ -81,9 +77,9 @@ class Autocomplete
     cmdMatches: (word) ->
         
         pick = (obj,cmd) -> cmd.startsWith(word) and cmd.length > word.length
-        m = _.toPairs _.pickBy window.brain.cmds, pick
-        # klog 'cmdMatches' word, m
-        m
+        mtchs = _.toPairs _.pickBy window.brain.cmds, pick
+        m[1].type = 'cmd' for m in mtchs
+        mtchs
         
     #  0000000   000   000  000000000   0000000   0000000    
     # 000   000  0000  000     000     000   000  000   000  
@@ -106,14 +102,15 @@ class Autocomplete
             
         if @span
             
-            if @list and empty @completion
+            current = @selectedCompletion()
+            if @list and empty current
                 @navigate 1
             
             suffix = ''
-            if slash.isDir @selectedWord() 
-                if valid(@completion) and not @completion.endsWith '/'
+            if slash.isDir @selectedWord()
+                if valid(current) and not current.endsWith '/'
                     suffix = '/'
-            # klog "onTab complete span |#{@completion}| suffix #{suffix}"
+            klog "tab #{@selectedWord()} |#{current}| suffix #{suffix}"
             @complete suffix:suffix
             @onTab()
         else
@@ -133,28 +130,26 @@ class Autocomplete
         
         if not @word?.length
             if info.before.split(' ')[0] in @dirCommands
-                matches = @dirMatches()
+                @matches = @dirMatches()
         else  
-            matches = @dirMatches(@word).concat @cmdMatches(info.before)
+            @matches = @dirMatches(@word).concat @cmdMatches(info.before)
 
-        if empty matches
-            matches = @cmdMatches info.before
+        if empty @matches
+            @matches = @cmdMatches info.before
             
-        return if empty matches
+        return if empty @matches
         
-        matches.sort (a,b) -> b[1].count - a[1].count
+        @matches.sort (a,b) -> b[1].count - a[1].count
             
-        words = matches.map (m) -> m[0]
-        return if empty words
-        @matchList = words[1..]
+        first = @matches.shift()
         
-        if words[0].startsWith @word
-            @completion = words[0].slice @word.length
+        if first[0].startsWith @word
+            @completion = first[0].slice @word.length
         else
-            if words[0].startsWith slash.file @word
-                @completion = words[0].slice slash.file(@word).length
+            if first[0].startsWith slash.file @word
+                @completion = first[0].slice slash.file(@word).length
             else
-                @completion = words[0]
+                @completion = first[0]
         
         @open info
             
@@ -190,7 +185,7 @@ class Autocomplete
             
         @moveClonesBy @completion.length         
         
-        if @matchList.length
+        if @matches.length
                             
             @showList()
             
@@ -202,24 +197,26 @@ class Autocomplete
     
     showList: ->
         
+        # klog @matches
+        
         @list = elem class: 'autocomplete-list'
-        # @list.addEventListener 'wheel'     @onWheel
         @list.addEventListener 'mousedown' @onMouseDown
         @listOffset = 0
         if slash.dir(@word) and not @word.endsWith '/'
             @listOffset = slash.file(@word).length
-        else if @matchList[0].startsWith @word
+        else if @matches[0][0].startsWith @word
             @listOffset = @word.length
         @list.style.transform = "translatex(#{-@editor.size.charWidth*@listOffset}px)"
         index = 0
         
-        for m in @matchList
+        for match in @matches
             item = elem class:'autocomplete-item' index:index++
-            item.textContent = m
+            item.textContent = match[0]
+            item.classList.add match[1].type
             @list.appendChild item
                     
         mc = @editor.mainCursor()
-        above = mc[1] + @matchList.length >= @editor.scroll.fullLines
+        above = mc[1] + @matches.length >= @editor.scroll.fullLines
         if above
             @list.classList.add 'above'
         else
@@ -237,14 +234,13 @@ class Autocomplete
     close: =>
         
         if @list?
-            @list.removeEventListener 'wheel' @onWheel
             @list.removeEventListener 'click' @onClick
             @list.remove()
             
-        for c in @clones
+        for c in @clones ? []
             c.remove()
 
-        for c in @cloned
+        for c in @cloned ? []
             c.style.display = 'initial'
             
         @span?.remove()
@@ -253,16 +249,11 @@ class Autocomplete
         @list       = null
         @span       = null
         @completion = null
-        @matchList  = []
+        @matches    = []
         @clones     = []
         @cloned     = []
         @
 
-    onWheel: (event) =>
-        
-        @list.scrollTop += event.deltaY
-        stopEvent event
-    
     onMouseDown: (event) =>
         
         index = elem.upAttr event.target, 'index'
@@ -281,9 +272,9 @@ class Autocomplete
     selectedWord: -> @word+@selectedCompletion()
     
     selectedCompletion: ->
-        
         if @selected >= 0
-            @matchList[@selected].slice @listOffset
+            # klog 'completion' @selected , @matches[@selected][0], @listOffset
+            @matches[@selected][0].slice @listOffset
         else
             @completion
 
@@ -296,7 +287,7 @@ class Autocomplete
     navigate: (delta) ->
         
         return if not @list
-        @select clamp -1, @matchList.length-1, @selected+delta
+        @select clamp -1, @matches.length-1, @selected+delta
         
     select: (index) ->
         
@@ -314,7 +305,7 @@ class Autocomplete
         
     prev:  -> @navigate -1    
     next:  -> @navigate 1
-    last:  -> @navigate @matchList.length - @selected
+    last:  -> @navigate @matches.length - @selected
     first: -> @navigate -Infinity
 
     # 00     00   0000000   000   000  00000000   0000000  000       0000000   000   000  00000000   0000000

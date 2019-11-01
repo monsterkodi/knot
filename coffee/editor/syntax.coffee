@@ -6,14 +6,17 @@
 0000000      000     000   000     000     000   000  000   000
 ###
 
-{ kerror, matchr, empty, style, klor, elem, last, kstr, _ } = require 'kxk'
+{ kerror, matchr, empty, style, klog, klor, elem, last, kstr, _ } = require 'kxk'
+
+chroma = require 'chroma-js'
 
 class Syntax
     
-    @: (@name, @getLine, @getLines) ->
+    @: (@name, @getLine, @getAnsi) ->
 
-        @diss     = []
-        @colors   = {}
+        @diss   = []
+        @colors = {}
+        @ansi   = new kstr.ansi
 
     # 0000000    000   0000000   0000000
     # 000   000  000  000       000
@@ -30,11 +33,11 @@ class Syntax
             
         return [start:0 length:0 match:''] if empty text
 
-        # if text != kstr.stripAnsi text
-            # ansi = new kstr.ansi
-            # diss = ansi.dissect(text)[1]
-        # else
-        diss = klor.dissect([text], 'sh')[0]
+        if ansi = @getAnsi li
+            diss = @ansi.dissect(ansi)[1]
+            # klog 'newDiss' li, diss
+        else
+            diss = klor.dissect([text], 'sh')[0]
             
         diss
 
@@ -137,7 +140,14 @@ class Syntax
             div = elem 'div'
             div.style = styl
             document.body.appendChild div
-            @colors[styl] = window.getComputedStyle(div).color
+            bgcol = kstr window.getComputedStyle(div).backgroundColor
+            if styl.startsWith 'back' 
+                @colors[styl] = bgcol
+            else
+                @colors[styl] = kstr window.getComputedStyle(div).color
+                if bgcol != 'rgba(0, 0, 0, 0)'
+                    @colors[styl] = chroma.mix(bgcol, @colors[styl], 0.5, 'hsl').css()
+                    # klog 'color' @colors[styl]
             div.remove()
 
         return @colors[styl]

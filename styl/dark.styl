@@ -718,9 +718,19 @@ titleColor = #222222
 .autocomplete-item
     color                   #ccc
     &.selected
-        background          #44f
         color               #ff0
-
+        
+    &.dir
+        background          #101060
+        &.selected
+            background      #181868
+    &.file
+        background          #000
+        &.selected
+            background      #111
+    &.cmd
+        &.selected
+            background      #222
 /*
  0000000  000   000  000   000  000000000   0000000   000   000
 000        000 000   0000  000     000     000   000   000 000

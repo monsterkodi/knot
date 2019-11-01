@@ -20,6 +20,7 @@ class TextEditor extends Editor
         @view = elem class:'editor' tabindex:'0'
         @term.div.appendChild @view
 
+                
         super 'editor' config
 
         @clickCount  = 0
@@ -165,6 +166,7 @@ class TextEditor extends Editor
 
         @spanCache = []
         @lineDivs  = {}
+        klog 'setLines'
         @ansiLines = []
         
         @scroll.reset()
@@ -291,6 +293,8 @@ class TextEditor extends Editor
             text += '\n'
         text[..text.length-2]
         
+    ansiLine: (li) => @ansiLines[li]
+        
     #  0000000  000   000   0000000   000   000   0000000   00000000  0000000
     # 000       000   000  000   000  0000  000  000        000       000   000
     # 000       000000000  000000000  000 0 000  000  0000  0000000   000   000
@@ -306,11 +310,14 @@ class TextEditor extends Editor
             switch ch
                 
                 when 'changed'
+                    # klog 'changed' li
+                    @ansiLines[li] = null
                     @updateLine li, di
                     @emit 'lineChanged' li
                     
                 when 'deleted'
                     @spanCache = @spanCache.slice 0, di
+                    # klog 'deleted' di
                     @ansiLines.splice di, 1
                     @emit 'lineDeleted' di
                     
@@ -646,25 +653,25 @@ class TextEditor extends Editor
 
     posForEvent: (event) -> @posAtXY event.clientX, event.clientY
 
-    lineElemAtXY:(x,y) ->
+    # lineElemAtXY:(x,y) ->
 
-        p = @posAtXY x,y
-        @lineDivs[p[1]]
+        # p = @posAtXY x,y
+        # @lineDivs[p[1]]
 
-    lineSpanAtXY:(x,y) ->
-        
-        if lineElem = @lineElemAtXY x,y
-            e = lineElem.firstChild.lastChild
-            while e
-                br = e.getBoundingClientRect()
-                if br.left <= x <= br.left+br.width
-                    offset = x-br.left
-                    return span:e, offsetLeft:offset, offsetChar:parseInt(offset/@size.charWidth), pos:@posAtXY x,y 
-                else if x > br.left+br.width
-                    offset = br.width
-                    return span:e, offsetLeft:offset, offsetChar:parseInt(offset/@size.charWidth), pos:@posAtXY x,y 
-                e = e.previousSibling
-        null
+    # lineSpanAtXY:(x,y) ->
+#         
+        # if lineElem = @lineElemAtXY x,y
+            # e = lineElem.firstChild.lastChild
+            # while e
+                # br = e.getBoundingClientRect()
+                # if br.left <= x <= br.left+br.width
+                    # offset = x-br.left
+                    # return span:e, offsetLeft:offset, offsetChar:parseInt(offset/@size.charWidth), pos:@posAtXY x,y 
+                # else if x > br.left+br.width
+                    # offset = br.width
+                    # return span:e, offsetLeft:offset, offsetChar:parseInt(offset/@size.charWidth), pos:@posAtXY x,y 
+                # e = e.previousSibling
+        # null
 
     spanBeforeMain: ->
         
@@ -675,7 +682,6 @@ class TextEditor extends Editor
             while e
                 start = e.start
                 right = e.start+e.textContent.length 
-                klog 'start' start, right
                 if start <= x <= right
                     return e
                 else if x > right

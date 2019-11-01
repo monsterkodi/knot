@@ -28,7 +28,7 @@ class Editor extends Buffer
 
         @indentString    = _.padStart '' 4
         @stickySelection = false
-        @syntax          = new Syntax @config.syntaxName, @line, @lines
+        @syntax          = new Syntax @config.syntaxName, @line, @ansiLine
         @do              = new Do @
         
         @setupFileType()
