@@ -172,7 +172,7 @@ class Term
     onEnter: ->
         
         if @editor.isInputCursor()
-            if @shell.child and @shell.lastMeta.cmd == 'koffee'
+            if @shell.child and @shell.last.cmd == 'koffee'
                 @shell.child.stdin.write '\n'
                 @editor.setInputText ''
                 return
@@ -197,7 +197,7 @@ class Term
         switch combo
             when 'enter' then return @onEnter()
         
-        if @shell.child and @shell.lastMeta.cmd == 'koffee'
+        if @shell.child and @shell.last.cmd == 'koffee'
             if char
                 switch key
                     when 'backspace'

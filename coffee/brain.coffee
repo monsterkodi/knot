@@ -6,79 +6,83 @@
 0000000    000   000  000   000  000  000   000
 ###
 
-{ post, kerror, prefs, kstr, klog, $, _ } = require 'kxk'
+{ post, kerror, prefs, valid, klog, kstr } = require 'kxk'
 
 class Brain
 
     @: ->
         
-        @especial          = ("\\"+c for c in "_-@#").join ''
-        @splitRegExp       = new RegExp "[^\\w\\d#{@especial}]+" 'g'   
-        @headerRegExp      = new RegExp "^[0#{@especial}]+$"
-        @notSpecialRegExp  = new RegExp "[^#{@especial}]"
+        @splitRegExp = /\s+/g
         
-        @defaultWords = 
-            history:count:999
-            cd:count:999
-            alias:count:666
-            clear:count:0
-            help:count:0
-            
-        @words = prefs.get 'brain▸words' _.cloneDeep @defaultWords
-        @cmds  = prefs.get 'brain▸cmds' {}
+        @args = prefs.get 'brain▸args' {}
+        @cmds = prefs.get 'brain▸cmds' {}
+        @dirs = prefs.get 'brain▸dirs' {}
         
         post.on 'cmd' @onCmd
-    
-    clear: => 
-        
-        @words = _.cloneDeep @defaultWords
-        @cmds  = []
-        
-    onCmd: (cmd, cwd) =>
-                
-        if not cmd?.split? then return kerror "Brain.onCmd -- no split? #{cmd}"
             
-        @addCmd cmd
-        
-        words = cmd.split @splitRegExp
-        
-        words = words.filter (w) => 
-            return false if @headerRegExp.test w
-            true
+    onCmd: (info) =>
+             
+        @addCmd info
+        @addArg info
             
-        for w in words # append words without leading special character
-            i = w.search @notSpecialRegExp
-            if i > 0 and w[0] != "#"
-                w = w.slice i
-                words.push w if not /^[\-]?[\d]+$/.test w
-    
-        for w in words
-            @addWord w
+    addCmd: (cmd:, cwd:) ->
         
-        prefs.set 'brain▸words' @words
-        prefs.set 'brain▸cmds'  @cmds
-    
-    addCmd: (cmd) ->
+        if cmd[-1] == '/' then cmd = cmd[..cmd.length-2]
         
         return if cmd?.length < 2
+        
         info       = @cmds[cmd] ? {}
         info.count = (info.count ? 0) + 1
+        info.dirs ?= {}
+        info.dirs[cwd] = (info.dirs[cwd] ? 0) + 1
         @cmds[cmd] = info
-            
-    addWord: (word) ->
         
-        return if word?.length < 2
-        info         = @words[word] ? {}
-        info.count   = (info.count ? 0) + 1
-        @words[word] = info
-        
-    dump: (editor) ->
-        
-        s  = '\nwords\n'
-        Object.keys(@words).sort().map (w) => s+="     #{kstr.rpad w, 20} #{@words[w].count}\n"
-        s += '\ncmds\n'
-        Object.keys(@cmds).sort().map (w) => s+="     #{kstr.rpad w, 20} #{@cmds[w].count}\n"
+        @dirs[cwd] ?= {}
+        @dirs[cwd][cmd] = (@dirs[cwd][cmd] ? 0) + 1
 
-        editor?.appendOutput s
+        prefs.set 'brain▸cmds' @cmds
+        prefs.set 'brain▸dirs' @dirs
+        
+    addArg: (cmd:) ->
+        
+        argl = cmd.split @splitRegExp
+        key = argl[0]
+        argl.shift()
+
+        info       = @args[key] ? {}
+        info.count = (info.count ? 0) + 1
+        info.args ?= {}
+        
+        for arg in argl
+            argi = info.args[arg] ? {}
+            argi.count = (argi.count ? 0) + 1
+            info.args[arg] = argi
+            
+        @args[key] = info
+       
+        prefs.set 'brain▸args' @args if valid @args
+        
+    cmd: (editor, cmd) ->
+            
+        switch cmd
+            when 'list'  then @list editor
+            when 'clear' then @clear()
+            when 'cmds' 'args' 'dirs' then @list editor, cmd
+        
+    clear: => 
+        
+        @args = {}
+        @cmds = {}
+        
+    list: (editor, key) ->
+        
+        if not key
+            @list editor, 'args'
+            @list editor, 'cmds'
+            @list editor, 'dirs'
+            return    
+        
+        editor?.appendOutput "\n------- #{key}"
+        editor?.appendOutput kstr @[key]
 
 module.exports = Brain

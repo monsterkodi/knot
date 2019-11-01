@@ -10,7 +10,7 @@
 
 class Autocomplete
 
-    @: (@editor) -> 
+    @: (@editor) ->
         
         @matchList = []
         @clones    = []
@@ -18,14 +18,7 @@ class Autocomplete
         
         @close()
         
-        specials = "_-@#"
-        @especial = ("\\"+c for c in specials.split '').join ''
-        @headerRegExp      = new RegExp "^[0#{@especial}]+$"
-        
-        @notSpecialRegExp  = new RegExp "[^#{@especial}]"
-        @specialWordRegExp = new RegExp "(\\s+|[\\w#{@especial}]+|[^\\s])" 'g'
-        # @splitRegExp       = new RegExp "[^\\w\\d#{@especial}]+" 'g'
-        @splitRegExp       = new RegExp "\\s+" 'g'
+        @splitRegExp = /\s+/g
     
         @dirCommands = ['ls' 'cd' 'rm' 'cp' 'mv' 'krep' 'cat']
         
@@ -79,23 +72,18 @@ class Autocomplete
 
             result
         
-    # 000   000   0000000   00000000   0000000    00     00   0000000   000000000   0000000  000   000  00000000   0000000  
-    # 000 0 000  000   000  000   000  000   000  000   000  000   000     000     000       000   000  000       000       
-    # 000000000  000   000  0000000    000   000  000000000  000000000     000     000       000000000  0000000   0000000   
-    # 000   000  000   000  000   000  000   000  000 0 000  000   000     000     000       000   000  000            000  
-    # 00     00   0000000   000   000  0000000    000   000  000   000     000      0000000  000   000  00000000  0000000   
+    #  0000000  00     00  0000000    00     00   0000000   000000000   0000000  000   000  00000000   0000000  
+    # 000       000   000  000   000  000   000  000   000     000     000       000   000  000       000       
+    # 000       000000000  000   000  000000000  000000000     000     000       000000000  0000000   0000000   
+    # 000       000 0 000  000   000  000 0 000  000   000     000     000       000   000  000            000  
+    #  0000000  000   000  0000000    000   000  000   000     000      0000000  000   000  00000000  0000000   
     
-    wordMatches: (word) ->
+    cmdMatches: (word) ->
         
-        wordMatches = _.pickBy window.brain.words, (c,w) => w.startsWith(word) and w.length > word.length
-        wordMatches = _.toPairs wordMatches
-
-        # klog wordMatches
-        
-        cmdMatches = _.pickBy window.brain.cmds, (c,w) => w.startsWith(word) and w.length > word.length
-        cmdMatches = _.toPairs cmdMatches
-        
-        wordMatches.concat cmdMatches
+        pick = (obj,cmd) -> cmd.startsWith(word) and cmd.length > word.length
+        m = _.toPairs _.pickBy window.brain.cmds, pick
+        klog 'cmdMatches' word, m
+        m
         
     #  0000000   000   000  000000000   0000000   0000000    
     # 000   000  0000  000     000     000   000  000   000  
@@ -117,7 +105,16 @@ class Autocomplete
             cursor: mc
             
         if @span
-            @complete suffix:(slash.isDir(@selectedWord()) and not @completion.endsWith '/') and '/' or ''
+            
+            if @list and empty @completion
+                @navigate 1
+            
+            suffix = ''
+            if slash.isDir @selectedWord() 
+                if valid(@completion) and not @completion.endsWith '/'
+                    suffix = '/'
+            # klog "onTab complete span |#{@completion}| suffix #{suffix}"
+            @complete suffix:suffix
             @onTab()
         else
             @onInsert info
@@ -138,11 +135,10 @@ class Autocomplete
             if info.before.split(' ')[0] in @dirCommands
                 matches = @dirMatches()
         else  
-            matches = @dirMatches(@word) #? @wordMatches(@word)
+            matches = @dirMatches(@word).concat @cmdMatches(info.before)
 
         if empty matches
-            if not @word?.length then @word = info.before
-            matches = @wordMatches(@word)
+            matches = @cmdMatches info.before
             
         return if empty matches
         
@@ -170,7 +166,7 @@ class Autocomplete
     
     open: (info) ->
         
-        klog "#{info.before}|#{@completion}|#{info.after} #{@word}"
+        # klog "#{info.before}|#{@completion}|#{info.after} #{@word}"
         
         cursor = $('.main' @editor.view)
         if not cursor?
@@ -204,7 +200,7 @@ class Autocomplete
         if @matchList.length
                             
             @list = elem class: 'autocomplete-list'
-            @list.addEventListener 'wheel'     @onWheel
+            # @list.addEventListener 'wheel'     @onWheel
             @list.addEventListener 'mousedown' @onMouseDown
             @listOffset = 0
             if slash.dir(@word) and not @word.endsWith '/'
@@ -334,21 +330,6 @@ class Autocomplete
                 charOffset += beforeLength if ci == 1
                 c.style.transform = "translatex(#{offset+@editor.size.charWidth*charOffset}px)"
                 
-    #  0000000  000   000  00000000    0000000   0000000   00000000   000   000   0000000   00000000   0000000  
-    # 000       000   000  000   000  000       000   000  000   000  000 0 000  000   000  000   000  000   000
-    # 000       000   000  0000000    0000000   000   000  0000000    000000000  000   000  0000000    000   000
-    # 000       000   000  000   000       000  000   000  000   000  000   000  000   000  000   000  000   000
-    #  0000000   0000000   000   000  0000000    0000000   000   000  00     00   0000000   000   000  0000000  
-    
-    cursorWords: -> 
-        
-        cp = @editor.cursorPos()
-        words = @editor.wordRangesInLineAtIndex cp[1], regExp: @specialWordRegExp        
-        [befor, cursr, after] = rangesSplitAtPosInRanges cp, words
-        [@editor.textsInRanges(befor), @editor.textInRange(cursr), @editor.textsInRanges(after)]
-        
-    cursorWord: -> @cursorWords()[1]
-    
     # 000   000  00000000  000   000
     # 000  000   000        000 000 
     # 0000000    0000000     00000  

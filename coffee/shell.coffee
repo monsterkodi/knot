@@ -6,7 +6,7 @@
 0000000   000   000  00000000  0000000  0000000
 ###
 
-{ post, history, childp, kerror, slash, empty, args, klog } = require 'kxk'
+{ post, history, childp, slash, empty, args, klog, _ } = require 'kxk'
 
 History = require './history'
 Alias   = require './alias'
@@ -61,15 +61,16 @@ class Shell
         @editor.appendText ''
         @editor.singleCursorAtEnd()
             
-        if empty @cmd
-            return
+        if empty @cmd then return
         
         @term.history.shellCmd @cmd # might reset history pointer to last
 
-        @lastMeta = @term.insertCmdMeta @editor.numLines()-2 @cmd
-        @lastMeta.cmd = @cmd
-        @lastMeta.cwd = process.cwd()
-        @lastMeta.fallback = fallback
+        @last =
+            cmd:      @cmd
+            cwd:      process.cwd()
+            meta:     @term.insertCmdMeta @editor.numLines()-2 @cmd
+            
+        @last.fallback = fallback if fallback
         
         @executeCmd @substitute @cmd
                 
@@ -203,7 +204,7 @@ class Shell
         if code == 0 or killed or @fallback()
             setImmediate @onDone
         else
-            @term.failMeta @lastMeta
+            @term.failMeta @last.meta
             if not /is not recognized/.test @errorText
                 @editor.appendOutput '\n'+@errorText
             @dequeue 'fail'
@@ -216,10 +217,10 @@ class Shell
     
     fallback: ->
         
-        if @lastMeta.fallback
-            klog 'fallback' @lastMeta.fallback
-            @enqueue cmd:@lastMeta.fallback, updateMeta:true, updateInput:true
-            delete @lastMeta.fallback
+        if @last.fallback
+            klog 'fallback' @last.fallback
+            @enqueue cmd:@last.fallback, update:true
+            delete @last.fallback
             return true
         
         @chdir.onFallback @cmd
@@ -232,9 +233,11 @@ class Shell
     
     onDone: (lastCode) =>
 
-        if lastCode != 'fail' and @lastMeta?
-            post.emit 'cmd' @lastMeta.cmd, @lastMeta.cwd # insert into global history
-            @term.succMeta @lastMeta
+        if lastCode != 'fail' and @last.meta?
+            info = _.clone @last
+            delete info.meta
+            post.emit 'cmd' info # insert into global history and brain
+            @term.succMeta @last.meta
         if empty(@queue) and empty(@inputQueue)
             @term.pwd()
         else
@@ -246,14 +249,13 @@ class Shell
     # 000       000  0000  000 0000   000   000  000       000   000  000       
     # 00000000  000   000   00000 00   0000000   00000000   0000000   00000000  
     
-    enqueue: (cmd:'' front:false updateMeta:false updateInput:false) -> 
+    enqueue: (cmd:'' front:false update:false) -> 
     
-        if updateMeta
-            @lastMeta.cmd = cmd
-            
-        if updateInput and @lastMeta
-            @editor.replaceTextInLine @lastMeta[0], cmd
-            @editor.meta.update @lastMeta
+        if update
+            @last.cmd = cmd
+            if @last.meta
+                @editor.replaceTextInLine @last.meta[0], cmd
+                @editor.meta.update @last.meta
             
         cmd = cmd.replace /\~/g, slash.home()
         

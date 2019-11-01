@@ -17,12 +17,13 @@ class Alias extends Cmmd
         
         @alias = 
             a:      'alias'
+            b:      'brain'
             c:      'clear'
+            h:      'history'
+            k:      'konrad'
             cls:    'clear'
             cl:     'c&&l'
             cdl:    'cd $$ && clear && l'
-            h:      'history'
-            k:      'konrad'
             nl:     'npm ls --depth 0 | node ~/s/colorcat/bin/colorcat -sP ~/s/konrad/cc/npm.noon'
             ng:     'npm ls --depth 0 -g | node ~/s/colorcat/bin/colorcat -sP ~/s/konrad/cc/npm.noon'
             ni:     'npm install && nl'
@@ -83,12 +84,9 @@ class Alias extends Cmmd
 
     brainCmd: (cmd) ->
         
-        if cmd == 'brain'
-            window.brain.dump @editor            
-        else
-            switch arg = cmd[6..].trim()
-                when 'clear' then window.brain.clear()
-        true
+        arg = cmd[6..].trim()
+        arg = 'list' if empty arg
+        window.brain.cmd @editor, arg
         
     histCmd: (cmd) ->
         
