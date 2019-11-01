@@ -174,7 +174,7 @@ class Autocomplete
     
     open: (info) ->
         
-        # klog "#{info.before}|#{@completion}|#{info.after}"
+        klog "#{info.before}|#{@completion}|#{info.after} #{@word}"
         
         cursor = $('.main' @editor.view)
         if not cursor?
@@ -210,6 +210,12 @@ class Autocomplete
             @list = elem class: 'autocomplete-list'
             @list.addEventListener 'wheel'     @onWheel
             @list.addEventListener 'mousedown' @onMouseDown
+            offset = 0
+            if slash.dir(@word) and not @word.endsWith '/'
+                offset = slash.file(@word).length
+            else if @matchList[0].startsWith @word
+                offset = @word.length
+            @list.style.transform = "translatex(#{-@editor.size.charWidth*offset}px)"
             index = 0
             
             for m in @matchList
@@ -302,17 +308,17 @@ class Autocomplete
         if @selected >= 0
             @list.children[@selected]?.classList.add 'selected'
             @list.children[@selected]?.scrollIntoViewIfNeeded()
+        else
+            @list?.children[0]?.scrollIntoViewIfNeeded()
         @span.innerHTML = @selectedCompletion()
         @moveClonesBy @span.innerHTML.length
         @span.classList.remove 'selected' if @selected < 0
         @span.classList.add    'selected' if @selected >= 0
         
-    prev: -> @navigate -1    
-    next: -> @navigate 1
-    last: -> @navigate @matchList.length - @selected
-    first: -> 
-        @select -1
-        @list?.children[0]?.scrollIntoViewIfNeeded()
+    prev:  -> @navigate -1    
+    next:  -> @navigate 1
+    last:  -> @navigate @matchList.length - @selected
+    first: -> @navigate -Infinity
 
     # 00     00   0000000   000   000  00000000   0000000  000       0000000   000   000  00000000   0000000
     # 000   000  000   000  000   000  000       000       000      000   000  0000  000  000       000     
