@@ -195,6 +195,7 @@ class Meta
             meta[1][1] = e.text.length if meta[1][1] is 0
 
     metasAtLineIndex: (li) -> @lineMetas[li] ? []
+    metaAtLineIndex:  (li) -> @lineMetas[li]?[0]
         
     hrefAtLineIndex:  (li) ->
 

@@ -67,7 +67,7 @@ class Shell
 
         @last =
             cmd:      @cmd
-            cwd:      process.cwd()
+            cwd:      slash.tilde process.cwd()
             meta:     @term.insertCmdMeta @editor.numLines()-2 @cmd
             
         @last.fallback = fallback if fallback

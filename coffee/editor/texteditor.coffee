@@ -72,8 +72,6 @@ class TextEditor extends Editor
 
     del: ->
 
-        post.removeListener 'schemeChanged' @onSchemeChanged
-        
         @scrollbar?.del()
 
         @view.removeEventListener 'keydown' @onKeyDown
@@ -118,13 +116,6 @@ class TextEditor extends Editor
         @stopBlink()
         @emit 'blur' @
 
-    onSchemeChanged: =>
-
-        @syntax?.schemeChanged()
-        if @minimap
-            updateMinimap = => @minimap?.drawLines()
-            setTimeout updateMinimap, 10
-
     # 000       0000000   000   000  00000000  00000000    0000000
     # 000      000   000   000 000   000       000   000  000
     # 000      000000000    00000    0000000   0000000    0000000
@@ -166,7 +157,6 @@ class TextEditor extends Editor
 
         @spanCache = []
         @lineDivs  = {}
-        klog 'setLines'
         @ansiLines = []
         
         @scroll.reset()

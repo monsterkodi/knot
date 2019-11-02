@@ -108,7 +108,7 @@ class Autocomplete
             
             suffix = ''
             if slash.isDir @selectedWord()
-                if valid(current) and not current.endsWith '/'
+                if not current.endsWith '/' # valid(current)
                     suffix = '/'
             klog "tab #{@selectedWord()} |#{current}| suffix #{suffix}"
             @complete suffix:suffix

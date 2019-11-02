@@ -65,6 +65,7 @@ class Minimap
         @scroll.on 'exposeLine'  @exposeLine
 
         @onScroll()
+        klog 'minimap'
         @drawLines()
         @drawTopBot()
 
@@ -89,6 +90,7 @@ class Minimap
 
     drawLines: (top=@scroll.exposeTop, bot=@scroll.exposeBot) =>
 
+        # klog top, bot
         ctx = @lines.getContext '2d'
         y = parseInt((top-@scroll.exposeTop)*@scroll.lineHeight)
         ctx.clearRect 0, y, @width, ((bot-@scroll.exposeTop)-(top-@scroll.exposeTop)+1)*@scroll.lineHeight
@@ -107,6 +109,12 @@ class Minimap
                 else
                     ctx.fillStyle = colors[15]
                 ctx.fillRect @offsetLeft+2*r.start, y, 2*r.match.length, @scroll.lineHeight
+                
+            if meta = @editor.meta.metaAtLineIndex li
+                # klog meta[2].clss
+                if meta[2].clss == 'succ'
+                    ctx.fillStyle = colors[233]
+                    ctx.fillRect @offsetLeft+2, y, 260, 1
 
     drawHighlights: =>
 
@@ -164,8 +172,12 @@ class Minimap
     # 000        000 000   000        000   000       000  000
     # 00000000  000   000  000         0000000   0000000   00000000
 
-    exposeLine:   (li) => @drawLines li, li
-    onExposeLines: (e) => @drawLines @scroll.exposeTop, @scroll.exposeBot
+    exposeLine:   (li) => 
+        # klog 'expose' li, li
+        @drawLines li, li
+    onExposeLines: (e) => 
+        # klog 'expose' @scroll.exposeTop, @scroll.exposeBot
+        @drawLines @scroll.exposeTop, @scroll.exposeBot
 
     onVanishLines: (e) =>
         if e.top?
@@ -189,11 +201,13 @@ class Minimap
         @scroll.setNumLines @editor.numLines()
 
         for change in changeInfo.changes
-            li = change.oldIndex
             break if not change.change in ['deleted' 'inserted']
+            li = change.doIndex
+            # klog 'changes' li, li#, change
             @drawLines li, li
 
         if li <= @scroll.exposeBot
+            # klog 'onChanged' li, @scroll.exposeBot
             @drawLines li, @scroll.exposeBot
 
     # 00     00   0000000   000   000   0000000  00000000
