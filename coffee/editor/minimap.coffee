@@ -111,11 +111,13 @@ class Minimap
                 ctx.fillRect @offsetLeft+2*r.start, y, 2*r.match.length, @scroll.lineHeight
                 
             if meta = @editor.meta.metaAtLineIndex li
-                # klog meta[2].clss
                 if meta[2].clss == 'succ'
-                    ctx.fillStyle = colors[233]
-                    ctx.fillRect @offsetLeft+2, y, 260, 1
-
+                    ctx.fillStyle = colors[234]
+                    ctx.fillRect 0, y, 260, 1
+                if meta[2].clss == 'fail'
+                    ctx.fillStyle = colors[1]
+                    ctx.fillRect 0, y, 260, 1
+                    
     drawHighlights: =>
 
         @highlig.height = @height

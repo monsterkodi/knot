@@ -59,6 +59,7 @@ class Term
         klog 'fail' @editor.line meta[0]
         meta[2].number = text:'✖' clss:'fail'
         meta[2].clss = 'fail'
+        @editor.minimap.drawLines meta[0], meta[0]
         @editor.meta.update meta
         
     succMeta: (meta) ->
@@ -66,6 +67,7 @@ class Term
         # klog 'succ' @editor.line meta[0]
         meta[2].number = text:'▶' clss:'succ'
         meta[2].clss = 'succ'
+        @editor.minimap.drawLines meta[0], meta[0]
         @editor.meta.update meta
         
     insertCmdMeta: (li, cmd) ->
