@@ -65,7 +65,13 @@ class Autocomplete
                         else                   name = '/'+i.name
                             
                 if name
-                    count = i.type=='dir' and 666 or 0
+                    if i.type == 'file'
+                        count = 0
+                    else
+                        if dir[-1] == '.'
+                            count = (i.name[0] == '.' and 666 or 333)
+                        else
+                            count = (i.name[0] == '.' and 333 or 666)
                     return [name, count:count, type:i.type]
 
             result = result.filter (f) -> f
