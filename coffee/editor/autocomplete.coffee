@@ -49,28 +49,24 @@ class Autocomplete
             result = items.map (i) ->
                 
                 return if dirsOnly and i.type == 'file'
-                    
-                count = i.type=='dir' and 666 or 0
-                
+                                    
+                name = null
                 if noParent
-                    if i.name.startsWith noParent
-                        [i.name, count:count, type:i.type]
+                    if i.name.startsWith(noParent) then name = i.name
                 else if noDir
-                    if i.name.startsWith noDir
-                        [i.name, count:count, type:i.type]
+                    if i.name.startsWith(noDir) then name = i.name
                 else
-                    if dir[-1] == '/' or empty(dir)
-                        [i.name, count:count, type:i.type]
+                    if dir[-1] == '/' or empty(dir) then name = i.name
                     else if i.name[0] == '.'
-                        if dir[-1] == '.'
-                            [i.name, count:count, type:i.type]
-                        else
-                            ['/'+i.name, count:count, type:i.type]
+                        if dir[-1] == '.' then name = i.name
+                        else                   name = '/'+i.name
                     else
-                        if dir[-1] == '.'
-                            ['./'+i.name, count:count, type:i.type]
-                        else
-                            ['/'+i.name, count:count, type:i.type]
+                        if dir[-1] == '.' then name = './'+i.name
+                        else                   name = '/'+i.name
+                            
+                if name
+                    count = i.type=='dir' and 666 or 0
+                    return [name, count:count, type:i.type]
 
             result = result.filter (f) -> f
 
