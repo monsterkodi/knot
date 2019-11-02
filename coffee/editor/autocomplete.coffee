@@ -47,9 +47,11 @@ class Autocomplete
         if valid items
 
             result = items.map (i) ->
-                if dirsOnly and i.type == 'file'
-                    return
+                
+                return if dirsOnly and i.type == 'file'
+                    
                 count = i.type=='dir' and 666 or 0
+                
                 if noParent
                     if i.name.startsWith noParent
                         [i.name, count:count, type:i.type]
@@ -57,22 +59,33 @@ class Autocomplete
                     if i.name.startsWith noDir
                         [i.name, count:count, type:i.type]
                 else
-                    if dir[-1] == '/' or empty dir
+                    if dir[-1] == '/' or empty(dir)
                         [i.name, count:count, type:i.type]
+                    else if i.name[0] == '.'
+                        if dir[-1] == '.'
+                            [i.name, count:count, type:i.type]
+                        else
+                            ['/'+i.name, count:count, type:i.type]
                     else
-                        ['/'+i.name, count:count, type:i.type]
+                        if dir[-1] == '.'
+                            ['./'+i.name, count:count, type:i.type]
+                        else
+                            ['/'+i.name, count:count, type:i.type]
 
             result = result.filter (f) -> f
 
-            if dir == '.'
-                result.unshift ['..' count:999, type:'dir']
+            if dir.endsWith '../'
+                if not slash.isRoot slash.join process.cwd(), dir
+                    result.unshift ['..' count:999 type:'dir']
+                result.unshift ['' count:999 type:'dir']
+            else if dir == '.' or dir.endsWith('/.')
+                result.unshift ['..' count:999 type:'dir']
             else if not noDir and valid(dir) 
                 if not dir.endsWith '/'
-                    result.unshift ['/' count:999, type:'dir']
+                    result.unshift ['/' count:999 type:'dir']
                 else
-                    result.unshift ['' count:999, type:'dir']
-
-            result
+                    result.unshift ['' count:999 type:'dir']
+        result ? []
         
     #  0000000  00     00  0000000    00     00   0000000   000000000   0000000  000   000  00000000   0000000  
     # 000       000   000  000   000  000   000  000   000     000     000       000   000  000       000       
@@ -142,15 +155,10 @@ class Autocomplete
         if not @word?.length
             if firstCmd in @fileCommands
                 @matches = @dirMatches null dirsOnly:dirsOnly
-                klog 'first dir matches' @matches
             if empty @matches
                 includesCmds = true
                 @matches = @cmdMatches @info.before
-        else  
-            @info.split = @info.before.length - @word.length
-            if 0 <= s = @word.lastIndexOf '/'
-                @info.split += s + 1
-                  
+        else                    
             includesCmds = true
             @matches = @dirMatches(@word, dirsOnly:dirsOnly).concat @cmdMatches @info.before
             
@@ -159,6 +167,13 @@ class Autocomplete
         @matches.sort (a,b) -> b[1].count - a[1].count
             
         first = @matches.shift() # seperate first match
+        
+        if first[0] == '/'
+            @info.split = @info.before.length
+        else
+            @info.split = @info.before.length - @word.length
+            if 0 <= s = @word.lastIndexOf '/'
+                @info.split += s + 1
         
         if includesCmds # shorten command completions
             
@@ -241,17 +256,15 @@ class Autocomplete
         @list = elem class: 'autocomplete-list'
         @list.addEventListener 'mousedown' @onMouseDown
         @listOffset = 0
-        if slash.dir(@word) and not @word.endsWith '/'
-            @listOffset = slash.file(@word).length
-            klog 'fileOffset' @listOffset, @word
+        
+        # klog @word, slash.dir(@word)
+        
+        splt = @word.split '/'
+        
+        if splt.length>1 and not @word.endsWith('/') and @completion != '/'
+            @listOffset = splt[-1].length
         else if @matches[0][0].startsWith @word
             @listOffset = @word.length
-            klog 'listOffset' @listOffset
-        else if @matches[0][0].startsWith @info.before
-            @listOffset = @info.before.length
-            klog 'beforeOffset' @listOffset
-        # else
-            # klog 'noOffset?' 
             
         @list.style.transform = "translatex(#{-@editor.size.charWidth*@listOffset}px)"
         index = 0
