@@ -44,6 +44,8 @@ class Autocomplete
 
         items = slash.list dir, ignoreHidden:false
 
+        # klog 'dirMatches' dir, items.length
+        
         if valid items
 
             result = items.map (i) ->
@@ -87,6 +89,9 @@ class Autocomplete
                     result.unshift ['/' count:999 type:'dir']
                 else
                     result.unshift ['' count:999 type:'dir']
+        else
+            if (not noDir) and dir[-1] != '/'
+                result = [['/' count:999 type:'dir']]
         result ? []
         
     #  0000000  00     00  0000000    00     00   0000000   000000000   0000000  000   000  00000000   0000000  
@@ -129,7 +134,7 @@ class Autocomplete
             
             suffix = ''
             if slash.isDir @selectedWord()
-                if not current.endsWith('/') and not @selectedWord().endsWith '/'
+                if not current.endsWith('/') and not @selectedWord().endsWith('/')
                     suffix = '/'
             # klog "tab #{@selectedWord()} |#{current}| suffix #{suffix}"
             @complete suffix:suffix
@@ -163,6 +168,8 @@ class Autocomplete
         else                    
             includesCmds = true
             @matches = @dirMatches(@word, dirsOnly:dirsOnly).concat @cmdMatches @info.before
+            
+        # klog @info, @word, @matches
             
         return if empty @matches
         

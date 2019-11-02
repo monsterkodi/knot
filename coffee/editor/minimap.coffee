@@ -65,7 +65,6 @@ class Minimap
         @scroll.on 'exposeLine'  @exposeLine
 
         @onScroll()
-        klog 'minimap'
         @drawLines()
         @drawTopBot()
 
