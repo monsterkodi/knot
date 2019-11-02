@@ -16,7 +16,7 @@ class Autocomplete
         
         @close()
         
-        @splitRegExp = /\s+/g
+        @splitRegExp = /[\s\"]+/g
     
         @fileCommands = ['cd' 'ls' 'rm' 'cp' 'mv' 'krep' 'cat']
         @dirCommands  = ['cd']
@@ -131,7 +131,7 @@ class Autocomplete
             if slash.isDir @selectedWord()
                 if not current.endsWith('/') and not @selectedWord().endsWith '/'
                     suffix = '/'
-            klog "tab #{@selectedWord()} |#{current}| suffix #{suffix}"
+            # klog "tab #{@selectedWord()} |#{current}| suffix #{suffix}"
             @complete suffix:suffix
             @onTab()
             
@@ -177,18 +177,17 @@ class Autocomplete
             if 0 <= s = @word.lastIndexOf '/'
                 @info.split += s + 1
         
-        if includesCmds # shorten command completions
+        if includesCmds
             
-            seen = [first[0]]
-            if first[1].type == 'cmd'
+            seen = [first[0]] 
+            if first[1].type == 'cmd' # shorten command completions
                 seen = [first[0][@info.split..]]
                 first[0] = first[0][@info.before.length..]
     
             for m in @matches
-                if m[1].type == 'cmd'
+                if m[1].type == 'cmd' # shorten command list items
                     if @info.split
                         m[0] = m[0][@info.split..]
-                    
             mi = 0
             while mi < @matches.length # crappy duplicate filter
                 if @matches[mi][0] in seen
@@ -253,13 +252,9 @@ class Autocomplete
     
     showList: ->
         
-        # klog @matches
-        
         @list = elem class: 'autocomplete-list'
         @list.addEventListener 'mousedown' @onMouseDown
         @listOffset = 0
-        
-        # klog @word, slash.dir(@word)
         
         splt = @word.split '/'
         
@@ -268,7 +263,7 @@ class Autocomplete
         else if @matches[0][0].startsWith @word
             @listOffset = @word.length
             
-        @list.style.transform = "translatex(#{-@editor.size.charWidth*@listOffset}px)"
+        @list.style.transform = "translatex(#{-@editor.size.charWidth*@listOffset-10}px)"
         index = 0
         
         for match in @matches
@@ -278,12 +273,15 @@ class Autocomplete
             @list.appendChild item
                     
         mc = @editor.mainCursor()
-        above = mc[1] + @matches.length >= @editor.scroll.fullLines
-        if above
-            @list.classList.add 'above'
-        else
-            @list.classList.add 'below'
-            
+        
+        linesBelow = Math.max(@editor.scroll.bot, @editor.scroll.viewLines) - mc[1] - 3
+        linesAbove = mc[1] - @editor.scroll.top  - 3
+        
+        above = linesAbove > linesBelow and linesBelow < Math.min 7, @matches.length
+        @list.classList.add above and 'above' or 'below'
+
+        @list.style.maxHeight = "#{@editor.scroll.lineHeight*(above and linesAbove or linesBelow)}px"
+        
         cursor =$ '.main' @editor.view
         cursor.appendChild @list
 
@@ -324,7 +322,16 @@ class Autocomplete
             @complete {}
         stopEvent event
 
+    #  0000000   0000000   00     00  00000000   000      00000000  000000000  00000000  
+    # 000       000   000  000   000  000   000  000      000          000     000       
+    # 000       000   000  000000000  00000000   000      0000000      000     0000000   
+    # 000       000   000  000 0 000  000        000      000          000     000       
+    #  0000000   0000000   000   000  000        0000000  00000000     000     00000000  
+    
     complete: (suffix:'') ->
+        
+        if @selectedCompletion().indexOf(' ') >= 0
+            klog "complete |#{@selectedCompletion() + suffix}|"
         
         @editor.pasteText @selectedCompletion() + suffix
         @close()

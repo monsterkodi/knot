@@ -450,7 +450,6 @@ body
 .autocomplete-list
     pointer-events      auto
     position            absolute
-    max-height          200px
     width               auto
     overflow-x          hidden
     overflow-y          auto
@@ -460,10 +459,18 @@ body
     &::-webkit-scrollbar-thumb
         width            2px
 
+    border-style        solid
+    border-left-width   frameWidth
+    border-right-width  frameWidth
+        
     &.above
-        bottom          100%
+        border-top-width        frameWidth
+        border-bottom-width     0
+        bottom                  100%
     &.below
-        top             100%    
+        border-bottom-width     frameWidth
+        border-top-width        0
+        top                     100%    
         
 .autocomplete-item
     pointer-events      auto
