@@ -8,6 +8,8 @@
 
 { stopEvent, kerror, slash, valid, empty, clamp, klog, kstr, elem, $, _ } = require 'kxk'
 
+Syntax = require './syntax'
+
 class Autocomplete
 
     @: (@editor) ->
@@ -16,7 +18,8 @@ class Autocomplete
         
         @splitRegExp = /\s+/g
     
-        @dirCommands = ['ls' 'cd' 'rm' 'cp' 'mv' 'krep' 'cat']
+        @fileCommands = ['cd' 'ls' 'rm' 'cp' 'mv' 'krep' 'cat']
+        @dirCommands  = ['cd']
         
         @editor.on 'insert' @onInsert
         @editor.on 'cursor' @close
@@ -28,7 +31,7 @@ class Autocomplete
     # 000   000  000  000   000  000 0 000  000   000     000     000       000   000  000            000  
     # 0000000    000  000   000  000   000  000   000     000      0000000  000   000  00000000  0000000   
     
-    dirMatches: (dir) ->
+    dirMatches: (dir, dirsOnly:false) ->
         
         if not slash.isDir dir
             noDir = slash.file dir
@@ -39,22 +42,25 @@ class Autocomplete
                 noParent += noDir
                 dir = ''
 
-        items = slash.list dir
+        items = slash.list dir, ignoreHidden:false
 
         if valid items
 
-            result = items.map (i) -> 
+            result = items.map (i) ->
+                if dirsOnly and i.type == 'file'
+                    return
+                count = i.type=='dir' and 666 or 0
                 if noParent
                     if i.name.startsWith noParent
-                        [i.name, count:0, type:i.type]
+                        [i.name, count:count, type:i.type]
                 else if noDir
                     if i.name.startsWith noDir
-                        [i.name, count:0, type:i.type]
+                        [i.name, count:count, type:i.type]
                 else
                     if dir[-1] == '/' or empty dir
-                        [i.name, count:0, type:i.type]
+                        [i.name, count:count, type:i.type]
                     else
-                        ['/'+i.name, count:0, type:i.type]
+                        ['/'+i.name, count:count, type:i.type]
 
             result = result.filter (f) -> f
 
@@ -108,12 +114,14 @@ class Autocomplete
             
             suffix = ''
             if slash.isDir @selectedWord()
-                if not current.endsWith '/' # valid(current)
+                if not current.endsWith('/') and not @selectedWord().endsWith '/'
                     suffix = '/'
             klog "tab #{@selectedWord()} |#{current}| suffix #{suffix}"
             @complete suffix:suffix
             @onTab()
+            
         else
+            
             @onInsert info
         
     #  0000000   000   000  000  000   000   0000000  00000000  00000000   000000000  
@@ -122,36 +130,67 @@ class Autocomplete
     # 000   000  000  0000  000  000  0000       000  000       000   000     000     
     #  0000000   000   000  000  000   000  0000000   00000000  000   000     000     
 
-    onInsert: (info) =>
+    onInsert: (@info) =>
         
         @close()
         
-        @word = _.last info.before.split @splitRegExp
+        @word = _.last @info.before.split @splitRegExp
         
+        @info.split = @info.before.length
+        firstCmd = @info.before.split(' ')[0]
+        dirsOnly = firstCmd in @dirCommands
         if not @word?.length
-            if info.before.split(' ')[0] in @dirCommands
-                @matches = @dirMatches()
+            if firstCmd in @fileCommands
+                @matches = @dirMatches null dirsOnly:dirsOnly
+                klog 'first dir matches' @matches
+            if empty @matches
+                includesCmds = true
+                @matches = @cmdMatches @info.before
         else  
-            @matches = @dirMatches(@word).concat @cmdMatches(info.before)
-
-        if empty @matches
-            @matches = @cmdMatches info.before
+            @info.split = @info.before.length - @word.length
+            if 0 <= s = @word.lastIndexOf '/'
+                @info.split += s + 1
+                  
+            includesCmds = true
+            @matches = @dirMatches(@word, dirsOnly:dirsOnly).concat @cmdMatches @info.before
             
         return if empty @matches
         
         @matches.sort (a,b) -> b[1].count - a[1].count
             
-        first = @matches.shift()
+        first = @matches.shift() # seperate first match
         
+        if includesCmds # shorten command completions
+            
+            seen = [first[0]]
+            if first[1].type == 'cmd'
+                seen = [first[0][@info.split..]]
+                first[0] = first[0][@info.before.length..]
+    
+            for m in @matches
+                if m[1].type == 'cmd'
+                    if @info.split
+                        m[0] = m[0][@info.split..]
+                    
+            mi = 0
+            while mi < @matches.length # crappy duplicate filter
+                if @matches[mi][0] in seen
+                    @matches.splice mi, 1
+                else
+                    seen.push @matches[mi][0]
+                    mi++
+                        
         if first[0].startsWith @word
             @completion = first[0].slice @word.length
+        else if first[0].startsWith @info.before
+            @completion = first[0].slice @info.before.length
         else
             if first[0].startsWith slash.file @word
                 @completion = first[0].slice slash.file(@word).length
             else
                 @completion = first[0]
         
-        @open info
+        @open()
             
     #  0000000   00000000   00000000  000   000
     # 000   000  000   000  000       0000  000
@@ -159,9 +198,9 @@ class Autocomplete
     # 000   000  000        000       000  0000
     #  0000000   000        00000000  000   000
     
-    open: (info) ->
+    open: ->
         
-        # klog "#{info.before}|#{@completion}|#{info.after} #{@word}"
+        # klog "#{@info.before}|#{@completion}|#{@info.after} #{@word}"
         
         @span = elem 'span' class:'autocomplete-span'
         @span.textContent      = @completion
@@ -204,14 +243,22 @@ class Autocomplete
         @listOffset = 0
         if slash.dir(@word) and not @word.endsWith '/'
             @listOffset = slash.file(@word).length
+            klog 'fileOffset' @listOffset, @word
         else if @matches[0][0].startsWith @word
             @listOffset = @word.length
+            klog 'listOffset' @listOffset
+        else if @matches[0][0].startsWith @info.before
+            @listOffset = @info.before.length
+            klog 'beforeOffset' @listOffset
+        # else
+            # klog 'noOffset?' 
+            
         @list.style.transform = "translatex(#{-@editor.size.charWidth*@listOffset}px)"
         index = 0
         
         for match in @matches
             item = elem class:'autocomplete-item' index:index++
-            item.textContent = match[0]
+            item.innerHTML = Syntax.spanForTextAndSyntax match[0], 'sh'
             item.classList.add match[1].type
             @list.appendChild item
                     
@@ -340,9 +387,9 @@ class Autocomplete
             
         return 'unhandled' if not @span?
         
-        if combo == 'right'
-            @complete {}
-            return
+        switch combo 
+            when 'right'     then return @complete {}
+            # when 'backspace' then klog 'backspace!'
             
         if @list? 
             switch combo
