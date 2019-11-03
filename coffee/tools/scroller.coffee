@@ -6,7 +6,7 @@
 0000000    0000000  000   000   0000000   0000000  0000000  00000000  000   000
 ###
 
-{ stopEvent, clamp, drag, elem, klog, _ } = require 'kxk'
+{ stopEvent, clamp, elem, drag, _ } = require 'kxk'
 
 class Scroller
 

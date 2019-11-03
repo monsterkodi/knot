@@ -6,7 +6,7 @@
 000   000  000  0000000      000      0000000   000   000     000   
 ###
 
-{ post, matchr, prefs, empty, klog, kstr } = require 'kxk'
+{ post, matchr, prefs, empty, kstr } = require 'kxk'
 
 class History
 

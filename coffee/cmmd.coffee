@@ -6,7 +6,7 @@
  0000000  000   000  000   000  0000000    
 ###
 
-{ post, klog } = require 'kxk'
+{ klog } = require 'kxk'
 
 class Cmmd
 

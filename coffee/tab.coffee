@@ -6,7 +6,7 @@
    000     000   000  0000000  
 ###
 
-{ slash, prefs, post, klog, kpos, elem } = require 'kxk'
+{ slash, prefs, elem, kpos } = require 'kxk'
 
 class Tab
     

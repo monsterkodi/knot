@@ -6,7 +6,7 @@
 0000000    000   000  000   000  000  000   000
 ###
 
-{ post, kerror, prefs, valid, klog, kstr } = require 'kxk'
+{ post, prefs, valid, kstr } = require 'kxk'
 
 class Brain
 
@@ -15,7 +15,6 @@ class Brain
         @splitRegExp = /\s+/g
         
         @args = prefs.get 'brain▸args' {}
-        @cmds = prefs.get 'brain▸cmds' {}
         @dirs = prefs.get 'brain▸dirs' {}
         
         post.on 'cmd' @onCmd
@@ -23,6 +22,10 @@ class Brain
     onCmd: (info) =>
         
         return if info.chdir
+        
+        for c in ['ls' 'lso' 'dir' 'pwd' 'cwd']
+            return if info.cmd == c
+            return if info.cmd.startsWith c+' '
         
         @addCmd info
         @addArg info
@@ -33,16 +36,9 @@ class Brain
         
         return if cmd?.length < 2
         
-        info       = @cmds[cmd] ? {}
-        info.count = (info.count ? 0) + 1
-        info.dirs ?= {}
-        info.dirs[cwd] = (info.dirs[cwd] ? 0) + 1
-        @cmds[cmd] = info
-        
         @dirs[cwd] ?= {}
         @dirs[cwd][cmd] = (@dirs[cwd][cmd] ? 0) + 1
 
-        prefs.set 'brain▸cmds' @cmds
         prefs.set 'brain▸dirs' @dirs
         
     addArg: (cmd:) ->
@@ -69,12 +65,11 @@ class Brain
         switch cmd
             when 'list'  then @list editor
             when 'clear' then @clear()
-            when 'cmds' 'args' 'dirs' then @list editor, cmd
+            when 'args' 'dirs' then @list editor, cmd
         
     clear: => 
         
         @args = {}
-        @cmds = {}
         @dirs = {}
         true
         
@@ -82,7 +77,6 @@ class Brain
         
         if not key
             @list editor, 'args'
-            @list editor, 'cmds'
             @list editor, 'dirs'
         else        
             editor?.appendOutput "\n------- #{key}"

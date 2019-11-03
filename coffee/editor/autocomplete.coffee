@@ -6,7 +6,7 @@
 000   000   0000000      000      0000000    0000000   0000000   000   000  000        0000000  00000000     000     00000000
 ###
 
-{ stopEvent, kerror, slash, valid, empty, first, clamp, klog, elem, last, $, _ } = require 'kxk'
+{ stopEvent, slash, valid, empty, first, clamp, elem, last, kerror, klog, $, _ } = require 'kxk'
 
 Syntax = require './syntax'
 

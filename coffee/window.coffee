@@ -6,7 +6,7 @@
 00     00  000  000   000  0000000     0000000   00     00  
 ###
 
-{ post, stopEvent, keyinfo, childp, slash, prefs, clamp, stash, empty, open, udp, win, os, kerror, klog, $, _ } = require 'kxk'
+{ post, stopEvent, keyinfo, childp, stash, slash, prefs, empty, clamp, open, win, udp, os, kerror, klog, $, _ } = require 'kxk'
 
 Tabs     = require './tabs'
 Brain    = require './brain'

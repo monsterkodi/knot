@@ -6,7 +6,7 @@
    000     000   000  0000000    0000000 
 ###
 
-{ post, stopEvent, empty, valid, slash, popup, elem, drag, kpos, $, _ } = require 'kxk'
+{ post, stopEvent, empty, slash, popup, elem, drag, kpos, $, _ } = require 'kxk'
 
 Tab  = require './tab'
 Term = require './term'

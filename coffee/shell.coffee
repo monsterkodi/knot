@@ -81,7 +81,7 @@ class Shell
     # 00000000  000   000  00000000   0000000        0000000  000   000  0000000    
     
     executeCmd: (@cmd) =>
-        klog 'executeCmd' @cmd
+
         split = @cmd.split '&&'
         if split.length > 1
             @cmd = split[0].trim()
@@ -99,7 +99,6 @@ class Shell
 
         if @chdir.onCommand @cmd
             
-            klog 'chdir' @cmd
             @dequeue()
             return true
             

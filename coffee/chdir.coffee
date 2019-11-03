@@ -6,15 +6,9 @@
  0000000  000   000  0000000    000  000   000  
 ###
 
-{ slash, post, prefs, kerror, klog } = require 'kxk'
+{ slash, prefs, kstr, kerror } = require 'kxk'
 
 Cmmd = require './cmmd'
-
-strip = (s, cs) ->
-    
-    s = s[1..] while s[0] in cs
-    s = s[0..s.length-2] while s[-1] in cs
-    s
 
 class Chdir extends Cmmd
     
@@ -38,12 +32,11 @@ class Chdir extends Cmmd
             cmd = 'cd ' + cmd
 
         cwd = process.cwd()
-        dir = slash.join cwd, strip cmd.slice(3), ' "'
-        klog "dir |#{dir}|"
+        dir = slash.join cwd, kstr.strip cmd.slice(3), ' "'
+
         return false if not slash.isDir dir
         
         try 
-            # klog 'chdir' dir
             process.chdir dir
             prefs.set 'cwd' dir
             @term.tab.update slash.tilde dir

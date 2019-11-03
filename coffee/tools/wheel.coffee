@@ -6,7 +6,7 @@
 00     00  000   000  00000000  00000000  0000000
 ###
 
-{ keyinfo, klog, post, absMax, clamp } = require 'kxk'
+{ post, keyinfo, clamp } = require 'kxk'
 
 class Wheel
 

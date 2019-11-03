@@ -6,7 +6,7 @@
 000       000  0000000  00000000
 ###
 
-{ slash, valid, klog, fs, kerror } = require 'kxk'
+{ slash, valid } = require 'kxk'
 
 class File
     
