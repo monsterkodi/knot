@@ -46,6 +46,7 @@ class Alias extends Cmmd
             la:     'l -a'
             ll:     'l -l'
             lla:    'l -la'
+            lso:    'c:/msys64/usr/bin/ls.EXE'
             e:      'electron .'
             ed:     'e -D'
             ps:     'wmic PROCESS GET Name,ProcessId,ParentProcessId'

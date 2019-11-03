@@ -6,7 +6,7 @@
 000   000   0000000      000      0000000    0000000   0000000   000   000  000        0000000  00000000     000     00000000
 ###
 
-{ stopEvent, kerror, slash, valid, empty, clamp, klog, kstr, elem, $, _ } = require 'kxk'
+{ stopEvent, kerror, slash, valid, empty, first, clamp, klog, elem, last, $, _ } = require 'kxk'
 
 Syntax = require './syntax'
 
@@ -31,8 +31,8 @@ class Autocomplete
     # 000   000  000  000   000  000 0 000  000   000     000     000       000   000  000            000  
     # 0000000    000  000   000  000   000  000   000     000      0000000  000   000  00000000  0000000   
     
-    dirMatches: (dir, dirsOnly:false) ->
-        
+    itemsForDir: (dir) ->
+    
         if not slash.isDir dir
             noDir = slash.file dir
             dir = slash.dir dir
@@ -42,9 +42,14 @@ class Autocomplete
                 noParent += noDir
                 dir = ''
 
-        items = slash.list dir, ignoreHidden:false
-
-        # klog 'dirMatches' dir, items.length
+        items: slash.list dir, ignoreHidden:false
+        dir:dir 
+        noDir:noDir 
+        noParent:noParent
+    
+    dirMatches: (dir, dirsOnly:false) ->
+        
+        {items, dir, noDir, noParent} = @itemsForDir dir
         
         if valid items
 
@@ -112,20 +117,13 @@ class Autocomplete
     # 000   000  000 0 000     000     000000000  0000000    
     # 000   000  000  0000     000     000   000  000   000  
     #  0000000   000   000     000     000   000  0000000    
-    
+        
     onTab: ->
         
-        mc   = @editor.mainCursor()
-        line = @editor.line mc[1]
+        [line, before, after] = @lineBeforeAfter()
         
         return if empty line.trim()
-        
-        info =
-            line:   line
-            before: line[0...mc[0]]
-            after:  line[mc[0]..]
-            cursor: mc
-            
+                    
         if @span
             
             current = @selectedCompletion()
@@ -141,8 +139,12 @@ class Autocomplete
             @onTab()
             
         else
-            
-            @onInsert info
+            @onInsert
+                tab:    true
+                line:   line
+                before: before
+                after:  after
+                cursor: @editor.mainCursor()
         
     #  0000000   000   000  000  000   000   0000000  00000000  00000000   000000000  
     # 000   000  0000  000  000  0000  000  000       000       000   000     000     
@@ -150,11 +152,23 @@ class Autocomplete
     # 000   000  000  0000  000  000  0000       000  000       000   000     000     
     #  0000000   000   000  000  000   000  0000000   00000000  000   000     000     
 
-    onInsert: (@info) =>
-        
+    onInsert: (info) =>
+                
         @close()
         
-        @word = _.last @info.before.split @splitRegExp
+        return if info.before[-1] in '"\''
+        return if info.after[0] and info.after[0] not in '"'
+        
+        if info.before[-1] == ' ' and info.before[-2] not in ['"\' ']
+            @handleSpace()
+        
+        @info = info
+        
+        stringOpen = @stringOpenCol @info.before
+        if stringOpen >= 0
+            @word = @info.before.slice stringOpen+1
+        else
+            @word = _.last @info.before.split @splitRegExp
         
         @info.split = @info.before.length
         firstCmd = @info.before.split(' ')[0]
@@ -169,9 +183,9 @@ class Autocomplete
             includesCmds = true
             @matches = @dirMatches(@word, dirsOnly:dirsOnly).concat @cmdMatches @info.before
             
-        # klog @info, @word, @matches
-            
-        return if empty @matches
+        if empty @matches 
+            if @info.tab then @closeString stringOpen
+            return
         
         @matches.sort (a,b) -> b[1].count - a[1].count
             
@@ -183,7 +197,7 @@ class Autocomplete
             @info.split = @info.before.length - @word.length
             if 0 <= s = @word.lastIndexOf '/'
                 @info.split += s + 1
-        
+                
         if includesCmds
             
             seen = [first[0]] 
@@ -213,6 +227,10 @@ class Autocomplete
             else
                 @completion = first[0]
         
+        if @matches.length == 0 and empty @completion
+            if info.tab then @closeString stringOpen
+            return
+                
         @open()
             
     #  0000000   00000000   00000000  000   000
@@ -313,6 +331,7 @@ class Autocomplete
         @span?.remove()
         @selected   = -1
         @listOffset = 0
+        @info       = null
         @list       = null
         @span       = null
         @completion = null
@@ -329,6 +348,69 @@ class Autocomplete
             @complete {}
         stopEvent event
 
+    # 000   000   0000000   000   000  0000000    000      00000000   0000000  00000000    0000000    0000000  00000000  
+    # 000   000  000   000  0000  000  000   000  000      000       000       000   000  000   000  000       000       
+    # 000000000  000000000  000 0 000  000   000  000      0000000   0000000   00000000   000000000  000       0000000   
+    # 000   000  000   000  000  0000  000   000  000      000            000  000        000   000  000       000       
+    # 000   000  000   000  000   000  0000000    0000000  00000000  0000000   000        000   000   0000000  00000000  
+
+    closeString: (stringOpen) ->
+        
+        if stringOpen >= 0
+            if empty @info.after
+                @editor.setInputText @info.line + '"'
+            else if @info.after[0] == '"'
+                @editor.moveCursorsRight()  
+    
+    handleSpace: ->
+        
+        [line, before, after] = @lineBeforeAfter()
+        
+        mcCol = before.length
+        
+        while before[-1] != ' '
+            after  = before[-1] + after
+            before = before[0..before.length-2]
+        
+        index = @stringOpenCol before
+        if index < 0
+
+            wrd = last before[..before.length-2].split /[\s\"]/
+            prt = slash.dir wrd
+            {items, dir, noDir, noParent} = @itemsForDir prt
+
+            pth = slash.resolve wrd+' '
+            for item in items ? []
+                if item.file.startsWith pth
+                    # klog "INSERT string delimiters around |#{wrd+' '}| matching" item.file
+                    newLine = "#{before.slice(0,before.length-wrd.length-1)}\"#{wrd} #{after}"
+                    newLine += '"' if mcCol == line.length
+                    @editor.setInputText newLine
+                    mc = @editor.mainCursor()
+                    @editor.singleCursorAtPos [mcCol+1,mc[1]]
+                    return
+                # else
+                    # klog item.file
+
+            klog "no items match in dir |#{dir}|"
+
+    stringOpenCol: (text) ->
+
+        lastCol = text.lastIndexOf '"'
+        if lastCol > 0
+            before = text[...lastCol]
+            count = before.split('"').length - 1
+            if count % 2 != 0
+                return -1
+        lastCol
+        
+    lineBeforeAfter: -> 
+
+        mc   = @editor.mainCursor()
+        line = @editor.line mc[1]
+        
+        [line, line[0...mc[0]], line[mc[0]..]]
+        
     #  0000000   0000000   00     00  00000000   000      00000000  000000000  00000000  
     # 000       000   000  000   000  000   000  000      000          000     000       
     # 000       000   000  000000000  00000000   000      0000000      000     0000000   
@@ -337,11 +419,13 @@ class Autocomplete
     
     complete: (suffix:'') ->
         
-        if @selectedCompletion().indexOf(' ') >= 0
-            klog "complete |#{@selectedCompletion() + suffix}|"
+        compl = @selectedCompletion()
         
-        @editor.pasteText @selectedCompletion() + suffix
+        @editor.pasteText compl + suffix
         @close()
+        
+        if compl.indexOf(' ') >= 0
+            @handleSpace()
 
     isListItemSelected: -> @list and @selected >= 0
         
@@ -418,7 +502,6 @@ class Autocomplete
         
         switch combo 
             when 'right'     then return @complete {}
-            # when 'backspace' then klog 'backspace!'
             
         if @list? 
             switch combo
