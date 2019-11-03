@@ -236,7 +236,7 @@ class Shell
     onDone: (lastCode) =>
 
         if lastCode != 'fail' 
-            if @last.meta?
+            if @last?.meta?
                 info = _.clone @last
                 delete info.meta
                 post.emit 'cmd' info # insert into global history and brain

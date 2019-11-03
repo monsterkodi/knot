@@ -31,17 +31,16 @@ class Chdir extends Cmmd
         if not cmd.startsWith 'cd '
             cmd = 'cd ' + cmd
 
-        cwd = process.cwd()
-        dir = slash.join cwd, kstr.strip cmd.slice(3), ' "'
-
+        dir = slash.resolve kstr.strip cmd.slice(3), ' "'
         return false if not slash.isDir dir
         
         try 
+            cwd = process.cwd()
             process.chdir dir
             prefs.set 'cwd' dir
             @term.tab.update slash.tilde dir
             @lastDir = cwd if cwd != dir
-            @shell.last.chdir = true # prevents brain handling
+            @shell.last?.chdir = true # prevents brain handling
             return true
         catch err
             kerror "#{err}"
