@@ -6,7 +6,7 @@
 0000000   000   000  00000000  0000000  0000000
 ###
 
-{ post, history, childp, slash, empty, args, klog, _ } = require 'kxk'
+{ post, history, childp, slash, valid, empty, args, klog, _ } = require 'kxk'
 
 History = require './history'
 Alias   = require './alias'
@@ -46,6 +46,10 @@ class Shell
     
         @cmd ?= @editor.lastLine()
         @cmd = @cmd.trim()
+    
+        if @cmd == '.' and valid fallback
+            klog '@cmd fallback' @cmd, fallback
+            @cmd = fallback
         
         if @child
             @inputQueue.push @cmd
@@ -98,11 +102,10 @@ class Shell
             return true
 
         if @chdir.onCommand @cmd
-            
             @dequeue()
             return true
             
-        klog 'shellCmd' @cmd    
+        # klog 'shellCmd' @cmd
         @shellCmd @cmd
                     
     #  0000000  000   000  00000000  000      000           0000000  00     00  0000000    
@@ -200,14 +203,13 @@ class Shell
     onExit: (code) =>
 
         killed = @child.killed
-        # klog 'onExit' @child.pid, killed and 'killed' or code
         delete @child
+        
         if code == 0 or killed 
             setImmediate @onDone
         else if @fallback()
             @dequeue()
         else
-            klog 'exit fail' @last
             @term.failMeta @last.meta
             if not /is not recognized/.test @errorText
                 @editor.appendOutput '\n'+@errorText
@@ -252,14 +254,18 @@ class Shell
     # 000       000  0000  000 0000   000   000  000       000   000  000       
     # 00000000  000   000   00000 00   0000000   00000000   0000000   00000000  
     
-    enqueue: (cmd:'' front:false update:false) -> 
+    enqueue: (cmd:'' front:false update:false alias:false) -> 
     
         if update
+            @last.orig = @last.cmd
             @last.cmd = cmd
             if @last.meta
                 @editor.replaceTextInLine @last.meta[0], cmd
                 @editor.meta.update @last.meta
             
+        if alias
+            @last.alias = cmd
+                
         cmd = cmd.replace /\~/g, slash.home()
         
         if front

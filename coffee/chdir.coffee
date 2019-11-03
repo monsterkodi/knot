@@ -37,10 +37,11 @@ class Chdir extends Cmmd
         try 
             cwd = process.cwd()
             process.chdir dir
-            prefs.set 'cwd' dir
-            @term.tab.update slash.tilde dir
-            @lastDir = cwd if cwd != dir
-            @shell.last?.chdir = true # prevents brain handling
+            tld = slash.tilde dir
+            prefs.set 'cwd' tld
+            @term.tab.update tld
+            @lastDir = tld if cwd != tld
+            @shell.last?.chdir = tld # special brain handling
             return true
         catch err
             kerror "#{err}"

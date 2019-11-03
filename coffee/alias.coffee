@@ -47,6 +47,9 @@ class Alias extends Cmmd
             ll:     'l -l'
             lla:    'l -la'
             lso:    'c:/msys64/usr/bin/ls.EXE'
+            sl:     'ls'
+            al:     'la'
+            all:    'lla'
             e:      'electron .'
             ed:     'e -D'
             ps:     'wmic PROCESS GET Name,ProcessId,ParentProcessId'
@@ -65,7 +68,7 @@ class Alias extends Cmmd
         
         for a in Object.keys @alias
             if cmd == a or cmd.startsWith a + ' '
-                return @shell.enqueue cmd:@alias[a] + cmd[a.length..], front:true
+                return @shell.enqueue cmd:@alias[a] + cmd[a.length..], front:true, alias:true
         
         if cmd == 'history' or cmd.startsWith 'history ' then return @histCmd  cmd
         if cmd == 'brain'   or cmd.startsWith 'brain '   then return @brainCmd cmd

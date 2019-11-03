@@ -6,7 +6,7 @@
    000     00000000  000   000  000   000  
 ###
 
-{ post, kerror, slash, elem, klog, kpos, $ } = require 'kxk'
+{ post, slash, elem, kpos, kerror, klog, $ } = require 'kxk'
 
 BaseEditor = require './editor/editor'
 TextEditor = require './editor/texteditor'
@@ -56,7 +56,6 @@ class Term
     
     failMeta: (meta) ->
 
-        klog 'fail' @editor.line meta[0]
         meta[2].number = text:'✖' clss:'fail'
         meta[2].clss = 'fail'
         @editor.minimap.drawLines meta[0], meta[0]
@@ -64,7 +63,6 @@ class Term
         
     succMeta: (meta) ->
 
-        # klog 'succ' @editor.line meta[0]
         meta[2].number = text:'▶' clss:'succ'
         meta[2].clss = 'succ'
         @editor.minimap.drawLines meta[0], meta[0]

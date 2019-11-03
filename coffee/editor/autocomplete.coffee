@@ -105,11 +105,33 @@ class Autocomplete
     # 000       000 0 000  000   000  000 0 000  000   000     000     000       000   000  000            000  
     #  0000000  000   000  0000000    000   000  000   000     000      0000000  000   000  00000000  0000000   
     
-    cmdMatches: (word) ->
+    cmdMatches: ->
         
-        pick = (obj,cmd) -> cmd.startsWith(word) and cmd.length > word.length
-        mtchs = _.toPairs _.pickBy window.brain.cmds, pick
-        m[1].type = 'cmd' for m in mtchs
+        mtchs = []
+
+        if cmds = window.brain.dirs[slash.tilde process.cwd()]
+            for cmd,count of cmds
+                if cmd.startsWith(@info.before) and cmd.length > @info.before.length
+                    mtchs.push [cmd, type:'cmd' count:count]
+        mtchs
+        
+    #  0000000  0000000    00     00   0000000   000000000   0000000  000   000  00000000   0000000  
+    # 000       000   000  000   000  000   000     000     000       000   000  000       000       
+    # 000       000   000  000000000  000000000     000     000       000000000  0000000   0000000   
+    # 000       000   000  000 0 000  000   000     000     000       000   000  000            000  
+    #  0000000  0000000    000   000  000   000     000      0000000  000   000  00000000  0000000   
+    
+    cdMatches: ->
+        
+        mtchs = []
+
+        tld = slash.tilde process.cwd()
+        if cds = window.brain.cd[tld]
+            for dir,count of cds
+                rel = slash.relative dir, tld
+                if rel[0]!='.' then rel = './' + rel
+                if rel not in ['..' '.']
+                    mtchs.push [rel, type:'chdir' count:count]
         mtchs
         
     #  0000000   000   000  000000000   0000000   0000000    
@@ -178,10 +200,13 @@ class Autocomplete
                 @matches = @dirMatches null dirsOnly:dirsOnly
             if empty @matches
                 includesCmds = true
-                @matches = @cmdMatches @info.before
+                @matches = @cmdMatches()
         else                    
             includesCmds = true
-            @matches = @dirMatches(@word, dirsOnly:dirsOnly).concat @cmdMatches @info.before
+            if @info.before == '.'
+                @matches = @cdMatches().concat @cmdMatches()
+            else
+                @matches = @dirMatches(@word, dirsOnly:dirsOnly).concat @cmdMatches()
             
         if empty @matches 
             if @info.tab then @closeString stringOpen
