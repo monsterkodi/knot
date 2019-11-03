@@ -66,11 +66,9 @@ class History
         @editor = @term.editor
         @index = -1
        
-    shellCmd: (cmd) -> # cmd will exeute in shell
+    shellCmd: (cmd) -> # cmd will execute in shell
         
-        if @index >= 0
-            if cmd != History.list[@index]
-                @index = -1
+        @index = -1
         
     cmd: (arg) -> # history command
     

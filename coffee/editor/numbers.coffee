@@ -6,7 +6,7 @@
 000   000   0000000   000   000  0000000    00000000  000   000  0000000
 ###
 
-{ setStyle, elem, klog, $, _ } = require 'kxk'
+{ elem, $ } = require 'kxk'
 
 event = require 'events'
 
@@ -25,12 +25,23 @@ class Numbers extends event
         @editor.on 'linesShifted'     @onLinesShifted
 
         @editor.on 'fontSizeChanged'  @onFontSizeChange
+        @editor.on 'changed'          @onChanged
         @editor.on 'highlight'        @updateColors
-        @editor.on 'changed'          @updateColors
-        @editor.on 'linesSet'         @updateColors
+        # @editor.on 'linesSet'         => klog 'linesSet' #; @updateColors()
 
         @onFontSizeChange()
 
+    onChanged: (changeInfo) =>
+        
+        if changeInfo.cursors or changeInfo.selects
+            @updateColors()
+            return
+        
+        for change in changeInfo.changes
+            li = change.doIndex
+            if change.change == 'changed'
+                @updateColor li
+        
     #  0000000  000   000   0000000   000   000  000   000
     # 000       000   000  000   000  000 0 000  0000  000
     # 0000000   000000000  000   000  000000000  000 0 000
@@ -39,7 +50,6 @@ class Numbers extends event
 
     onLinesShown: (top, bot, num) =>
 
-        # klog 'onLinesShown' top, bot, num
         @elem.innerHTML = ''
         @lineDivs = {}
 
@@ -107,8 +117,6 @@ class Numbers extends event
     addLine: (li) ->
 
         text = '▶'
-        # text = @editor.meta.lineMetas[li] and ' ' or '▶'
-        # klog 'addLine' li, text, @editor.meta.lineMetas[li]
         div = elem class:'linenumber' child: elem 'span' text:text
         div.style.height = "#{@editor.size.lineHeight}px"
         @lineDivs[li] = div
@@ -134,9 +142,8 @@ class Numbers extends event
 
     onFontSizeChange: =>
 
-        fs = Math.min 22, @editor.size.fontSize-4
-        @elem.style.fontSize = "#{fs}px"
-        # setStyle '.linenumber' 'padding-top' "#{parseInt @editor.size.fontSize/10}px"
+        fsz = Math.min 22, @editor.size.fontSize-4
+        @elem.style.fontSize = "#{fsz}px"
 
     #  0000000   0000000   000       0000000   00000000    0000000
     # 000       000   000  000      000   000  000   000  000
@@ -147,11 +154,13 @@ class Numbers extends event
     updateColors: =>
 
         if @editor.scroll.bot > @editor.scroll.top
+            # klog "colors #{@editor.scroll.top} #{@editor.scroll.bot}"
             for li in [@editor.scroll.top..@editor.scroll.bot]
                 @updateColor li
 
     updateColor: (li) =>
 
+        # klog "color #{li}"
         return if not @lineDivs[li]? # ok: e.g. commandlist
 
         si = (s[0] for s in rangesFromTopToBotInRanges li, li, @editor.selections())
@@ -172,7 +181,7 @@ class Numbers extends event
         @updateMeta li
         
     updateMeta: (li) ->
-        
+
         m = @editor.meta.lineMetas[li]?[0]
         if m and m[2].number?.clss
             @lineDivs[li].classList.add m[2].number.clss

@@ -6,7 +6,7 @@
 0000000     0000000
 ###
 
-{ post, empty, clamp, last, kerror, _ } = require 'kxk'
+{ empty, clamp, last, kerror, _ } = require 'kxk'
 
 State = require './state'
 require '../tools/ranges'
@@ -82,7 +82,6 @@ class Do
         if @groupCount == 0
             @merge()
             changes = @calculateChanges @startState, @state
-            changes.foreign = opt?.foreign
             @editor.setState @state
             @editor.changed? changes
 

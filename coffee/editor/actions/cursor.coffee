@@ -6,7 +6,7 @@
  0000000   0000000   000   000  0000000    0000000   000   000
 ###
 
-{ reversed, stopEvent, first, last, _ } = require 'kxk'
+{ reversed, first, last, _ } = require 'kxk'
 
 module.exports =
 
@@ -95,6 +95,10 @@ module.exports =
             @do.end()
         p = @clampPos p
 
+        cs = @cursors()
+        if cs.length == 1 and p[0]==cs[0][0] and p[1]==cs[0][1]
+            return
+            
         @do.start()
         @startSelection opt
         @do.setCursors [[p[0], p[1]]]

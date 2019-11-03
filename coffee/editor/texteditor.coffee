@@ -6,7 +6,7 @@
    000     00000000  000   000     000           00000000  0000000    000     000      0000000   000   000
 ###
 
-{ post, stopEvent, keyinfo, kerror, prefs, clamp, empty, elem, kstr, klog, drag, os, $, _ } = require 'kxk'
+{ post, stopEvent, keyinfo, prefs, clamp, empty, elem, kstr, drag, os, kerror, $, _ } = require 'kxk'
   
 render       = require './render'
 EditorScroll = require './editorscroll'
@@ -300,14 +300,12 @@ class TextEditor extends Editor
             switch ch
                 
                 when 'changed'
-                    # klog 'changed' li
                     @ansiLines[li] = null
                     @updateLine li, di
                     @emit 'lineChanged' li
                     
                 when 'deleted'
                     @spanCache = @spanCache.slice 0, di
-                    # klog 'deleted' di
                     @ansiLines.splice di, 1
                     @emit 'lineDeleted' di
                     

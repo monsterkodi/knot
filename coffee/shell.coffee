@@ -48,7 +48,6 @@ class Shell
         @cmd = @cmd.trim()
     
         if @cmd == '.' and valid fallback
-            klog '@cmd fallback' @cmd, fallback
             @cmd = fallback
         
         if @child
@@ -65,9 +64,11 @@ class Shell
         @editor.appendText ''
         @editor.singleCursorAtEnd()
             
-        if empty @cmd then return
+        if empty @cmd 
+            @term.moveInputMeta()
+            return
         
-        @term.history.shellCmd @cmd # might reset history pointer to last
+        @term.history.shellCmd @cmd # reset history pointer to last
 
         @last =
             cmd:      @cmd

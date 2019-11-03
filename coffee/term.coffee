@@ -83,9 +83,10 @@ class Term
                 @shell.execute cmd:@editor.line meta[0]
     
     moveInputMeta: ->
-        
         if @editor.numLines()-1 > @inputMeta[0]
-            @editor.meta.moveLineMeta @inputMeta, @editor.numLines()-1-@inputMeta[0]
+            oldLine = @inputMeta[0]
+            @editor.meta.moveLineMeta @inputMeta, @editor.numLines()-1-@inputMeta[0]            
+            @editor.numbers.updateColor oldLine
         else
             if @inputMeta[0] != @editor.numLines()-1
                 kerror 'input meta not at end?' @inputMeta[0], @editor.numLines()-1

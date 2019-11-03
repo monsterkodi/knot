@@ -6,7 +6,7 @@
 000   000  00000000     000     000   000
 ###
 
-{ post, stopEvent, kerror, slash, empty, elem, kpos, klog, fs, $, _ } = require 'kxk'
+{ empty, elem, kpos, sw, kerror, $, _ } = require 'kxk'
 
 ranges = require '../tools/ranges'
 File   = require '../tools/file'
@@ -44,6 +44,12 @@ class Meta
         else
             meta[2].div?.style.transform = "translate(#{tx}px,#{ty}px)"
 
+    # 000   000  00000000   0000000     0000000   000000000  00000000         00000000    0000000    0000000  
+    # 000   000  000   000  000   000  000   000     000     000              000   000  000   000  000       
+    # 000   000  00000000   000   000  000000000     000     0000000          00000000   000   000  0000000   
+    # 000   000  000        000   000  000   000     000     000              000        000   000       000  
+    #  0000000   000        0000000    000   000     000     00000000         000         0000000   0000000   
+    
     updatePos: (meta) ->
         
         size = @editor.size
@@ -118,7 +124,7 @@ class Meta
             meta[1][1] = meta[1][0] + line.length+1
             meta[2].end = meta[1][1]
         
-        @editor.numbers.updateColor meta.line
+        @editor.numbers.updateColor meta[0]
         
     # 0000000    000  00000000  00000000
     # 000   000  000  000       000
@@ -188,6 +194,7 @@ class Meta
         @lineMetas[lineMeta[0]] ?= []
         @lineMetas[lineMeta[0]].push lineMeta
         @updatePos lineMeta
+        @editor.numbers.updateColor lineMeta[0]
         
     onLineAppended: (e) =>
 
