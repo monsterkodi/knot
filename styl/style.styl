@@ -288,15 +288,38 @@ body
         position        absolute
         margin          0
         top             50%
-        transform       translateY(-50%)
-        display         inline-block
+        left            50%
+        transform       translateX(-50%) translateY(-50%)
         width           (numbersWidth - 8px)
-        text-align      right
+        text-align      center
 
+    &.input
     &.main
     &.fail
         font-size       1.4em
         
+    &.cmd span
+        animation       cmdSpin 2s linear infinite
+    
+    &.input.busy span
+        animation       inputSpin 2s linear infinite
+
+@keyframes cmdSpin 
+    from    
+        transform        translateX(-50%) translateY(-50%) rotate(0deg) 
+        transform-origin 50% 50%
+    to      
+        transform        translateX(-50%) translateY(-50%) rotate(360deg) 
+        transform-origin 50% 50%
+        
+@keyframes inputSpin 
+    from    
+        transform        translateX(-50%) translateY(-50%) rotate(0deg) 
+        transform-origin 50% 50%
+    to      
+        transform        translateX(-50%) translateY(-50%) rotate(360deg) 
+        transform-origin 50% 50%
+
 // 00     00  00000000  000000000   0000000
 // 000   000  000          000     000   000
 // 000000000  0000000      000     000000000

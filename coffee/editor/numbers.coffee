@@ -184,7 +184,8 @@ class Numbers extends event
 
         m = @editor.meta.lineMetas[li]?[0]
         if m and m[2].number?.clss
-            @lineDivs[li].classList.add m[2].number.clss
+            for clss in m[2].number?.clss.split ' '
+                @lineDivs[li].classList.add clss
         @lineDivs[li].firstChild.innerHTML = m and (m[2].number?.text or '▪') or '●'
 
 module.exports = Numbers

@@ -194,7 +194,7 @@ module.exports =
         
         invertedRanges = []        
         sc = @selectedAndCursorLineIndices()
-        for li in [0...@numLines()]
+        for li in [0...@numLines()-1]
             if li not in sc
                 invertedRanges.push @rangeForLineAtIndex li
         if invertedRanges.length

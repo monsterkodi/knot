@@ -6,7 +6,7 @@
    000     00000000  000   000  000   000  
 ###
 
-{ post, slash, elem, kpos, kerror, klog, $ } = require 'kxk'
+{ post, slash, elem, kpos, klog, $ } = require 'kxk'
 
 BaseEditor = require './editor/editor'
 TextEditor = require './editor/texteditor'
@@ -42,6 +42,8 @@ class Term
                 
         @editor.setText ''
         
+        @editor.on 'changed' @onChanged
+        
         @shell   = new Shell @
         @history = new History @
         @autocomplete = @editor.autocomplete
@@ -53,9 +55,63 @@ class Term
     # 000000000  0000000      000     000000000  
     # 000 0 000  000          000     000   000  
     # 000   000  00000000     000     000   000  
+
+    addDirMeta: (dir) ->
+        @editor.meta.add
+            line: Math.max 0, @editor.numLines()-2
+            clss: 'pwd'
+            number: 
+                text: ' '
+                clss: 'pwd'
+            end: dir.length+1
+            click: (meta, event) =>
+                pos = kpos event
+                if pos.x < 40
+                    index = @editor.meta.metas.indexOf meta
+                    if index < @editor.meta.metas.length-1
+                        @editor.singleCursorAtPos [0,meta[0]]
+                        if next = @editor.meta.nextMetaOfSameClass meta
+                            for i in [meta[0]...next[0]]
+                                @editor.deleteSelectionOrCursorLines()
+                        @editor.moveCursorsDown()
+                else
+                    @editor.singleCursorAtEnd()
+                    @shell.cd @editor.line meta[0]
+
+    addInputMeta: ->
+        
+        @inputMeta = @editor.meta.add
+            line: 0
+            clss: 'input'
+            number: 
+                text: '▶'
+                clss: 'input'
+            click: (meta, event) =>
+                pos = kpos event
+                if pos.x < 40
+                    klog 'input number'
+                else
+                    klog 'input text?'
+  
+        if @shell.child
+            @busyInput()
+                    
+    busyInput: ->
+
+        @inputMeta[2]?.number.text = '\uf013'
+        @inputMeta[2]?.number.clss = 'input busy'
+        @editor.meta.update @inputMeta
+        
+    resetInput: ->
+        
+        @inputMeta[2]?.number.text = '▶'
+        @inputMeta[2]?.number.clss = 'input'
+        @editor.meta.update @inputMeta
     
     failMeta: (meta) ->
 
+        @resetInput()
+        
         meta[2].number = text:'✖' clss:'fail'
         meta[2].clss = 'fail'
         @editor.minimap.drawLines meta[0], meta[0]
@@ -63,18 +119,22 @@ class Term
         
     succMeta: (meta) ->
 
+        @resetInput()
+        
         meta[2].number = text:'▶' clss:'succ'
         meta[2].clss = 'succ'
         @editor.minimap.drawLines meta[0], meta[0]
         @editor.meta.update meta
         
     insertCmdMeta: (li, cmd) ->
+
+        @busyInput()
         
         @editor.meta.add 
             line: li
             clss: 'cmd'
             number: 
-                text: '▶'
+                text: '\uf013'
                 clss: 'cmd'
             end: cmd.length+1
             click: (meta, event) =>
@@ -83,42 +143,17 @@ class Term
                 @shell.execute cmd:@editor.line meta[0]
     
     moveInputMeta: ->
-        if @editor.numLines()-1 > @inputMeta[0]
+        
+        if @editor.numLines()-1 != @inputMeta[0]
             oldLine = @inputMeta[0]
             @editor.meta.moveLineMeta @inputMeta, @editor.numLines()-1-@inputMeta[0]            
             @editor.numbers.updateColor oldLine
-        else
-            if @inputMeta[0] != @editor.numLines()-1
-                kerror 'input meta not at end?' @inputMeta[0], @editor.numLines()-1
-
-    # output: (s) ->
-        # for l in s.split '\n'
-            # t = l.trim()
-            # if /ko_term_done/.test t
-                # if /^ko_term_done\s\d+$/.test t
-                    # cid = parseInt _.last t.split ' '
-                    # for meta in reversed @meta.metas
-                        # if meta[2].cmdID == cid
-                            # meta[2].span?.innerHTML = "■"
-                            # break
-                # continue
-            # skip = false
-            # for meta in reversed @meta.metas
-                # if meta[2].command == t 
-                    # if t != 'pwd'
-                        # spinningCog = '<i class="fa fa-cog fa-spin fa-1x fa-fw"></i>'
-                        # meta[2].span?.innerHTML = spinningCog
-                        # stopSpin = ->
-                            # if meta[2].span?.innerHTML == spinningCog
-                                # meta[2].span?.innerHTML = '<i class="fa fa-cog fa-1x fa-fw"></i>'
-                        # setTimeout stopSpin, 3000
-                    # skip = true
-                    # break
-            # continue if skip
-            # [text,diss] = @ansidiss.dissect l
-            # @syntax.setDiss @numLines(), diss if diss?.length
-            # @appendText text
-                
+            
+    onChanged: (changeInfo) =>
+        
+        if changeInfo.changes.length
+            @moveInputMeta()
+                                
     #  0000000  000      00000000   0000000   00000000   
     # 000       000      000       000   000  000   000  
     # 000       000      0000000   000000000  0000000    
@@ -129,16 +164,8 @@ class Term
     
         delete @shell.last?.meta
         @editor.clear()
-        @inputMeta = @editor.meta.add
-            line: 0
-            clss: 'input'
-            number: text: '▶'
-            click: (meta, event) =>
-                pos = kpos event
-                if pos.x < 40
-                    klog 'input number'
-                else
-                    klog 'input text?'
+                    
+        @addInputMeta()
         true
                 
     # 00000000   0000000   000   000  000000000       0000000  000  0000000  00000000  
@@ -173,26 +200,7 @@ class Term
         dir = slash.tilde process.cwd()
                 
         @editor.appendOutput dir
-        @editor.meta.add
-            line: Math.max 0, @editor.numLines()-2
-            clss: 'pwd'
-            number: 
-                text: ' '
-                clss: 'pwd'
-            end: dir.length+1
-            click: (meta, event) =>
-                pos = kpos event
-                if pos.x < 40
-                    index = @editor.meta.metas.indexOf meta
-                    if index < @editor.meta.metas.length-1
-                        @editor.singleCursorAtPos [0,meta[0]]
-                        if next = @editor.meta.nextMetaOfSameClass meta
-                            for i in [meta[0]...next[0]]
-                                @editor.deleteSelectionOrCursorLines()
-                        @editor.moveCursorsDown()
-                else
-                    @editor.singleCursorAtEnd()
-                    @shell.cd @editor.line meta[0]
+        @addDirMeta dir
                     
         true
                
@@ -228,7 +236,9 @@ class Term
         # klog 'term.handleKey' mod, key, combo
                 
         switch combo
-            when 'enter' then return @onEnter()
+            when 'enter'    then return @onEnter()
+            when 'alt+up'   then return @editor.moveCursorsUp()
+            when 'alt+down' then return @editor.moveCursorsDown()
         
         if @shell.child and @shell.last.cmd == 'koffee'
             if char
@@ -244,7 +254,6 @@ class Term
             
             if @editor.isInputCursor()
                 switch combo
-                    when 'alt+up' then return @editor.moveCursorsUp()
                     when 'up'     then return @history.prev()
                     when 'down'   then return @history.next()
                     when 'ctrl+c' then return @shell.handleCancel()

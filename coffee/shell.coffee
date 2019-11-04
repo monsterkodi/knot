@@ -183,6 +183,9 @@ class Shell
     
     handleCancel: ->
         
+        @queue = []
+        @inputQueue = []
+        
         return 'unhandled' if not @child
         
         psTree @child.pid, (err, children) =>

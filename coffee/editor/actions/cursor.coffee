@@ -182,7 +182,7 @@ module.exports =
     cursorInAllLines: ->       
 
         @do.start()
-        @do.setCursors ([0,i] for i in [0...@numLines()]), main:'closest'
+        @do.setCursors ([0,i] for i in [0...@numLines()-1]), main:'closest'
         @do.end()
 
     cursorColumns: (num, step=1) ->
