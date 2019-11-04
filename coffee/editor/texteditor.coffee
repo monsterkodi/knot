@@ -6,7 +6,7 @@
    000     00000000  000   000     000           00000000  0000000    000     000      0000000   000   000
 ###
 
-{ post, stopEvent, keyinfo, prefs, clamp, empty, elem, kstr, drag, os, kerror, $, _ } = require 'kxk'
+{ post, stopEvent, keyinfo, prefs, clamp, empty, elem, kstr, drag, os, kerror, klog, $, _ } = require 'kxk'
   
 render       = require './render'
 EditorScroll = require './editorscroll'
@@ -259,12 +259,13 @@ class TextEditor extends Editor
         @layers.style.fontSize = "#{fontSize}px"
         @size.numbersWidth = 'Numbers' in @config.features and 36 or 0
         @size.fontSize     = fontSize
-        @size.lineHeight   = fontSize * 1.25 # keep in sync with style line-heights
+        @size.lineHeight   = fontSize * 1.22
         @size.charWidth    = fontSize * 0.6
+        klog "fontSize #{fontSize} #{@size.charWidth} #{@size.lineHeight}"
         @size.offsetX      = Math.floor @size.charWidth + @size.numbersWidth
 
         @scroll?.setLineHeight @size.lineHeight
-        if @text()
+        if @text() # ???
             ansi = @ansiText()
             metas = @meta.metas
             @term.clear()
@@ -641,26 +642,6 @@ class TextEditor extends Editor
 
     posForEvent: (event) -> @posAtXY event.clientX, event.clientY
 
-    # lineElemAtXY:(x,y) ->
-
-        # p = @posAtXY x,y
-        # @lineDivs[p[1]]
-
-    # lineSpanAtXY:(x,y) ->
-#         
-        # if lineElem = @lineElemAtXY x,y
-            # e = lineElem.firstChild.lastChild
-            # while e
-                # br = e.getBoundingClientRect()
-                # if br.left <= x <= br.left+br.width
-                    # offset = x-br.left
-                    # return span:e, offsetLeft:offset, offsetChar:parseInt(offset/@size.charWidth), pos:@posAtXY x,y 
-                # else if x > br.left+br.width
-                    # offset = br.width
-                    # return span:e, offsetLeft:offset, offsetChar:parseInt(offset/@size.charWidth), pos:@posAtXY x,y 
-                # e = e.previousSibling
-        # null
-
     spanBeforeMain: ->
         
         mc = @mainCursor()
@@ -738,6 +719,7 @@ class TextEditor extends Editor
                 @clickAtPos p, event
 
             onMove: (drag, event) =>
+                
                 p = @posForEvent event
                 if event.metaKey
                     @addCursorAtPos [@mainCursor()[0], p[1]]
@@ -745,6 +727,7 @@ class TextEditor extends Editor
                     @singleCursorAtPos p, extend:true
 
             onStop: =>
+                
                 @selectNone() if @numSelections() and empty @textOfSelection()
                     
     startClickTimer: =>

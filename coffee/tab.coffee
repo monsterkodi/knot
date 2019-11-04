@@ -35,15 +35,14 @@ class Tab
         
         upPos = kpos window.win.getBounds()
         
-        if upPos.to(@downPos).length() > 0
-            delete @downPos
-            return
+        if upPos.to(@downPos).length() < 4
         
-        if event.target.id
-            @activate()
-            if not slash.samePath process.cwd(), event.target.id
-                @term.shell.cd event.target.id
-            
+            if event.target.id
+                @activate()
+                if not slash.samePath process.cwd(), event.target.id
+                    @term.shell.cd event.target.id
+                
+        @term.editor.focus()
         delete @downPos
         
     # 000   000  00000000   0000000     0000000   000000000  00000000  
