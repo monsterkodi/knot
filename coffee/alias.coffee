@@ -20,7 +20,7 @@ class Alias extends Cmmd
             b:      'brain'
             c:      'clear'
             h:      'history'
-            k:      'konrad'
+            k:      'node ~/s/konrad/js/konrad'
             cls:    'clear'
             cl:     'c&&l'
             cdl:    'cd $$ && clear && l'

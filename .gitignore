@@ -1,9 +1,3 @@
 node_modules
 Icon?
-package.json
-bin/*.json
-*.dmg
 *-x64
-inno
-css
-*.html
