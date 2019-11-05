@@ -213,10 +213,11 @@ class Term
     onEnter: ->
         
         if @editor.isInputCursor()
-            if @shell.child and @shell.last.cmd == 'koffee'
+            if @shell.child #and @shell.last.cmd == 'koffee'
                 @shell.child.stdin.write '\n'
-                @editor.setInputText ''
-                return
+                if @shell.last.cmd == 'koffee'
+                    @editor.setInputText ''
+                    return
             if @autocomplete.isListItemSelected()
                 @autocomplete.complete {}
             else if @autocomplete.selectedCompletion()
@@ -239,13 +240,15 @@ class Term
             when 'enter'    then return @onEnter()
             when 'alt+up'   then return @editor.moveCursorsUp()
             when 'alt+down' then return @editor.moveCursorsDown()
+            when 'ctrl+c'   then return @shell.handleCancel()
         
-        if @shell.child and @shell.last.cmd == 'koffee'
+        if @shell.child # and @shell.last.cmd == 'koffee'
             if char
                 switch key
                     when 'backspace'
                         @shell.child.stdin.write '\x08'
                     else
+                        klog 'pipe char' char
                         @shell.child.stdin.write char
             else
                 klog 'pipe key' key, combo
@@ -256,7 +259,6 @@ class Term
                 switch combo
                     when 'up'     then return @history.prev()
                     when 'down'   then return @history.next()
-                    when 'ctrl+c' then return @shell.handleCancel()
         
         'unhandled'
         

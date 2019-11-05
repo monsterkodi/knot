@@ -6,7 +6,7 @@
 000   000   0000000      000      0000000    0000000   0000000   000   000  000        0000000  00000000     000     00000000
 ###
 
-{ stopEvent, slash, valid, empty, first, clamp, elem, last, kerror, klog, $, _ } = require 'kxk'
+{ stopEvent, slash, valid, empty, first, clamp, elem, last, kerror, $, _ } = require 'kxk'
 
 Syntax = require './syntax'
 
@@ -131,7 +131,7 @@ class Autocomplete
                 rel = slash.relative dir, tld
                 if rel[0]!='.' then rel = './' + rel
                 if rel not in ['..' '.']
-                    mtchs.push [rel, type:'chdir' count:count]
+                    mtchs.push [rel, type:'dir' count:count]
         mtchs
         
     #  0000000   000   000  000000000   0000000   0000000    
@@ -416,8 +416,6 @@ class Autocomplete
                     return
                 # else
                     # klog item.file
-
-            klog "no items match in dir |#{dir}|"
 
     stringOpenCol: (text) ->
 
