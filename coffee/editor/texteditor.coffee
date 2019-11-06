@@ -20,7 +20,6 @@ class TextEditor extends Editor
         @view = elem class:'editor' tabindex:'0'
         @term.div.appendChild @view
 
-                
         super 'editor' config
 
         @clickCount  = 0
@@ -249,9 +248,19 @@ class TextEditor extends Editor
         if text != stripped 
             @ansiLines[@do.numLines()-1] = text
         @do.change li, stripped            
-        # @do.insert @do.numLines()-1, stripped
-        # @do.setCursors [[text.length, li]]
         @do.setCursors [[stripped.length, li]]
+        @do.end()
+        
+    appendInputText: (text) ->
+        
+        li = @numLines()-1
+        @do.start()
+        stripped = kstr.stripAnsi text
+        if text != stripped 
+            @ansiLines[li] = (@ansiLines[li] ? '') + text
+        newtxt = @line(li) + stripped
+        @do.change li, newtxt            
+        @do.setCursors [[newtxt.length, li]]
         @do.end()
         
     replaceTextInLine: (li, text='') ->

@@ -12,7 +12,7 @@ History = require './history'
 Alias   = require './alias'
 Chdir   = require './chdir'
 psTree  = require 'ps-tree'
-pty     = require 'node-pty'
+# pty     = require 'node-pty'
 wxw     = require 'wxw'
 
 class Shell
@@ -209,22 +209,22 @@ class Shell
             # 000        000 000   000       000       
             # 00000000  000   000  00000000   0000000  
             
-            shell = os.platform() == 'win32' and 'cmd' or 'bash'
-            @child = pty.spawn shell, [],
-                useConpty: true 
-                name: 'xterm-color'
-                cols: 80
-                rows: 30
-                cwd: process.cwd()
-                env: process.env
-            
-            @child.onData @onStdOut
-            @child.write "#{cmd}\r"
+            # shell = os.platform() == 'win32' and 'cmd' or 'bash'
+            # @child = pty.spawn shell, [],
+                # useConpty: true 
+                # name: 'xterm-color'
+                # cols: 80
+                # rows: 30
+                # cwd: process.cwd()
+                # env: process.env
+#             
+            # @child.onData @onStdOut
+            # @child.write "#{cmd}\r"
                 
-            # @child = childp.exec @cmd, shell:true, env:process.env          
-            # @child.stdout.on 'data'  @onStdOut
-            # @child.stderr.on 'data'  @onStdErr
-            # @child.on        'close' @onExit
+            @child = childp.exec @cmd, shell:true, env:process.env          
+            @child.stdout.on 'data'  @onStdOut
+            @child.stderr.on 'data'  @onStdErr
+            @child.on        'close' @onExit
             
         true
         
@@ -361,14 +361,14 @@ class Shell
         if data[-1] == '\n'
             data = data[0..data.length-2]
 
-        data = data.replace /(\x1B\[\?25[hl])|(\x0a)/g, ''
+        # data = data.replace /(\x1B\[\?25[hl])|(\x0a)/g, ''
             
-        buf = Buffer.from data, 'utf8'
-        for c in buf
-            klog "#{c} ##{c.toString(16)} '#{String.fromCharCode(c)}'"
+        # buf = Buffer.from data, 'utf8'
+        # for c in buf
+            # klog "#{c} ##{c.toString(16)} '#{String.fromCharCode(c)}'"
             
-        # @editor.appendOutput data
-        @editor.setInputText @editor.lastLine()+data
+        @editor.appendOutput data
+        # @editor.setInputText @editor.lastLine()+data
         @editor.singleCursorAtEnd()
 
     onStdErr: (data) =>
