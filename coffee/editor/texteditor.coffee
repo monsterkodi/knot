@@ -172,25 +172,7 @@ class TextEditor extends Editor
         @layersHeight = @layerScroll.offsetHeight
 
         @updateLayers()
-       
-    setInputText: (text) ->
-        
-        text = text.split('\n')[0]
-        text ?= ''
-        
-        li = @numLines()-1
-        @do.start()
-        @deleteCursorLines()
-        @do.change li, text
-        @do.setCursors [[text.length, li]]
-        @do.end()
-        
-    replaceTextInLine: (li, text='') ->
-        
-        @do.start()
-        @do.change li, text
-        @do.end()
-        
+               
     #  0000000   00000000   00000000   00000000  000   000  0000000    
     # 000   000  000   000  000   000  000       0000  000  000   000  
     # 000000000  00000000   00000000   0000000   000 0 000  000   000  
@@ -247,6 +229,36 @@ class TextEditor extends Editor
         
         @singleCursorAtEnd()
         @
+        
+    # 000  000   000  00000000   000   000  000000000  
+    # 000  0000  000  000   000  000   000     000     
+    # 000  000 0 000  00000000   000   000     000     
+    # 000  000  0000  000        000   000     000     
+    # 000  000   000  000         0000000      000     
+    
+    setInputText: (text) ->
+        
+        text = text.split('\n')[0]
+        text ?= ''
+        
+        li = @numLines()-1
+        @do.start()
+        @deleteCursorLines()
+            
+        stripped = kstr.stripAnsi text
+        if text != stripped 
+            @ansiLines[@do.numLines()-1] = text
+        @do.change li, stripped            
+        # @do.insert @do.numLines()-1, stripped
+        # @do.setCursors [[text.length, li]]
+        @do.setCursors [[stripped.length, li]]
+        @do.end()
+        
+    replaceTextInLine: (li, text='') ->
+        
+        @do.start()
+        @do.change li, text
+        @do.end()
         
     # 00000000   0000000   000   000  000000000
     # 000       000   000  0000  000     000

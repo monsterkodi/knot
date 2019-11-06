@@ -214,10 +214,12 @@ class Term
         
         if @editor.isInputCursor()
             if @shell.child #and @shell.last.cmd == 'koffee'
-                @shell.child.stdin.write '\n'
-                if @shell.last.cmd == 'koffee'
-                    @editor.setInputText ''
-                    return
+                klog 'enter'
+                # @shell.child.stdin.write '\n'
+                @shell.child.write '\r'
+                # if @shell.last.cmd == 'koffee'
+                @editor.setInputText ''
+                return
             if @autocomplete.isListItemSelected()
                 @autocomplete.complete {}
             else if @autocomplete.selectedCompletion()
@@ -246,10 +248,13 @@ class Term
             if char
                 switch key
                     when 'backspace'
-                        @shell.child.stdin.write '\x08'
+                        # @shell.child.stdin.write '\x08'
+                        @shell.child.write '\x08'
                     else
                         klog 'pipe char' char
-                        @shell.child.stdin.write char
+                        # @shell.child.stdin.write char
+                        @shell.child.write char
+                return
             else
                 klog 'pipe key' key, combo
         else            

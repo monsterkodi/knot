@@ -6,12 +6,13 @@
 0000000   000   000  00000000  0000000  0000000
 ###
 
-{ post, history, childp, slash, valid, empty, args, klog, _ } = require 'kxk'
+{ post, history, childp, slash, valid, empty, args, os, klog, _ } = require 'kxk'
 
 History = require './history'
 Alias   = require './alias'
 Chdir   = require './chdir'
 psTree  = require 'ps-tree'
+pty     = require 'node-pty'
 wxw     = require 'wxw'
 
 class Shell
@@ -23,6 +24,47 @@ class Shell
         @chdir = new Chdir @
         @queue = []
         @inputQueue = []
+    
+        @initPath()
+    
+    # 00000000    0000000   000000000  000   000  
+    # 000   000  000   000     000     000   000  
+    # 00000000   000000000     000     000000000  
+    # 000        000   000     000     000   000  
+    # 000        000   000     000     000   000  
+    
+    initPath: ->
+        
+        sep = ';'
+        
+        klog 'SHELL' process.env.SHELL
+        
+        if os.platform() != 'win32' #or process.env.SHELL
+            sep = ':'        
+            
+        pth = process.env.PATH.split(sep).map (s) -> slash.path s
+
+        for a in ['node_modules/.bin' 'bin' '.']
+            if a not in pth
+                # klog "add to PATH #{a}"
+                pth.unshift a
+                
+        if slash.isDir '~/s'
+            for f in slash.list '~/s'
+                if f.type == 'dir'
+                    exeDir = slash.join f.file, "#{f.name}-#{process.platform}-#{process.arch}"
+                    if slash.isDir exeDir
+                        # klog "add exe dir" exeDir
+                        pth.unshift exeDir
+                        continue
+                    binDir = slash.join f.file, "bin"
+                    if slash.isDir binDir
+                        # klog "add bin dir" binDir
+                        pth.unshift binDir
+                
+        process.env.PATH = pth.map((s) -> slash.unslash s).join sep
+        
+        klog 'PATH' process.env.PATH
         
     cd: (dir) =>
         
@@ -167,11 +209,22 @@ class Shell
             # 000        000 000   000       000       
             # 00000000  000   000  00000000   0000000  
             
-            @child = childp.exec @cmd, shell:true
+            shell = os.platform() == 'win32' and 'cmd' or 'bash'
+            @child = pty.spawn shell, [],
+                useConpty: true 
+                name: 'xterm-color'
+                cols: 80
+                rows: 30
+                cwd: process.cwd()
+                env: process.env
             
-            @child.stdout.on 'data'  @onStdOut
-            @child.stderr.on 'data'  @onStdErr
-            @child.on        'close' @onExit
+            @child.onData @onStdOut
+            @child.write "#{cmd}\r"
+                
+            # @child = childp.exec @cmd, shell:true, env:process.env          
+            # @child.stdout.on 'data'  @onStdOut
+            # @child.stderr.on 'data'  @onStdErr
+            # @child.on        'close' @onExit
             
         true
         
@@ -304,11 +357,18 @@ class Shell
     onStdOut: (data) =>
         
         if not data.replace?
-            data = data.toString 'utf8'
+            data = 'utf' + data.toString 'utf8'
         if data[-1] == '\n'
             data = data[0..data.length-2]
+
+        data = data.replace /(\x1B\[\?25[hl])|(\x0a)/g, ''
             
-        @editor.appendOutput data
+        buf = Buffer.from data, 'utf8'
+        for c in buf
+            klog "#{c} ##{c.toString(16)} '#{String.fromCharCode(c)}'"
+            
+        # @editor.appendOutput data
+        @editor.setInputText @editor.lastLine()+data
         @editor.singleCursorAtEnd()
 
     onStdErr: (data) =>
