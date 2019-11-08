@@ -12,7 +12,6 @@ History = require './history'
 Alias   = require './alias'
 Chdir   = require './chdir'
 psTree  = require 'ps-tree'
-# pty     = require 'node-pty'
 wxw     = require 'wxw'
 
 class Shell
