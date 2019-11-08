@@ -95,9 +95,10 @@ class Brain
         info.args ?= {}
         
         for arg in argl
-            argi = info.args[arg] ? {}
-            argi.count = (argi.count ? 0) + 1
-            info.args[arg] = argi
+            info.args[arg] = (info.args[arg] ? 0) + 1
+            # argi = info.args[arg] ? {}
+            # argi.count = (argi.count ? 0) + 1
+            # info.args[arg] = argi
             
         @args[key] = info
        

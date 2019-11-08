@@ -608,6 +608,7 @@
 .autocomplete-item.file.selected {
   background: #111;
 }
+.autocomplete-item.arg.selected,
 .autocomplete-item.cmd.selected {
   background: #222;
 }

@@ -113,6 +113,19 @@ class Autocomplete
             for cmd,count of cmds
                 if cmd.startsWith(@info.before) and cmd.length > @info.before.length
                     mtchs.push [cmd, type:'cmd' count:count]
+                    
+        if @info.before.indexOf(' ') > 0
+            splt = @info.before.split ' '
+            cmd = splt.shift()
+            if info = window.brain.args[cmd]
+                # klog @word, info.args
+                for arg,count of info.args
+                    if arg not in splt
+                        if @info.before.endsWith ' '
+                            mtchs.push [arg, type:'arg' count:count]
+                        else
+                            if arg.startsWith(@word) and arg.length > @word.length
+                                mtchs.push [arg[@word.length..], type:'arg' count:count]
         mtchs
         
     #  0000000  0000000    00     00   0000000   000000000   0000000  000   000  00000000   0000000  
