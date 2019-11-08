@@ -209,19 +209,10 @@ class Shell
             # 000        000 000   000       000       
             # 00000000  000   000  00000000   0000000  
             
-            # shell = os.platform() == 'win32' and 'cmd' or 'bash'
-            # @child = pty.spawn shell, [],
-                # useConpty: true 
-                # name: 'xterm-color'
-                # cols: 80
-                # rows: 30
-                # cwd: process.cwd()
-                # env: process.env
-#             
-            # @child.onData @onStdOut
-            # @child.write "#{cmd}\r"
-                
-            @child = childp.exec @cmd, shell:true, env:process.env          
+            process.env.LINES   = @editor.scroll.fullLines
+            process.env.COLUMNS = parseInt @editor.layersWidth / @editor.size.charWidth
+            
+            @child = childp.exec @cmd, shell:false, env:process.env, cwd:process.cwd()    
             @child.stdout.on 'data'  @onStdOut
             @child.stderr.on 'data'  @onStdErr
             @child.on        'close' @onExit
@@ -356,8 +347,6 @@ class Shell
     
     onStdOut: (data) =>
         
-        if not data.replace?
-            data = 'utf' + data.toString 'utf8'
         if data[-1] == '\n'
             data = data[0..data.length-2]
 
@@ -365,7 +354,9 @@ class Shell
             
         # buf = Buffer.from data, 'utf8'
         # for c in buf
-            # klog "#{c} ##{c.toString(16)} '#{String.fromCharCode(c)}'"
+            # klog "#{kstr.pad c, 3} 0x#{c.toString(16)} '#{String.fromCharCode(c)}'"
+            
+        klog '================' data
             
         @editor.appendOutput data
         # @editor.setInputText @editor.lastLine()+data
@@ -373,6 +364,24 @@ class Shell
 
     onStdErr: (data) =>
 
-        @errorText += data
+        klog '----------------' data
+        
+        # buf = Buffer.from data, 'utf8'
+        # for c in buf
+            # klog "#{kstr.pad c, 3} 0x#{c.toString(16)} '#{String.fromCharCode(c)}'"
+        
+        if data.startsWith '\x1b]0;'
+            klog 'bash prompt'
+            data = data[4..]
+            i = 0
+            c = data[0]
+            path = ''
+            while c != '\x07'
+                path += c
+                c = data[i++]
+            klog 'path' path
+            @editor.appendOutput data[i..]
+        else   
+            @errorText += data
         
 module.exports = Shell

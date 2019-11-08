@@ -13,7 +13,7 @@ TextEditor = require './editor/texteditor'
 render     = require './editor/render'
 History    = require './history'
 Shell      = require './shell'
-PTY        = require './pty'
+# PTY        = require './pty'
 
 class Term
 
@@ -46,7 +46,7 @@ class Term
         @editor.on 'changed' @onChanged
         
         @shell   = new Shell @
-        @pty     = new PTY @
+        # @pty     = new PTY @
         @history = new History @
         @autocomplete = @editor.autocomplete
                         
@@ -213,16 +213,16 @@ class Term
     # 000       000  0000     000     000       000   000  
     # 00000000  000   000     000     00000000  000   000  
     
+    isShell: -> @shell.child and @shell.last.cmd.split(' ')[0] in ['bash' 'cmd' 'powershell' 'fish']
+    
     onEnter: ->
         
         if @editor.isInputCursor()
-            # if @shell.child #and @shell.last.cmd == 'koffee'
-                # klog 'enter'
-                # # @shell.child.stdin.write '\n'
-                # @shell.child.write '\r'
-                # # if @shell.last.cmd == 'koffee'
-                # @editor.setInputText ''
-                # return
+            if @isShell()
+                klog 'enter'
+                @shell.child.stdin.write '\n'
+                @editor.setInputText ''
+                return
             if @autocomplete.isListItemSelected()
                 @autocomplete.complete {}
             else if @autocomplete.selectedCompletion()
@@ -241,8 +241,8 @@ class Term
         
         # klog 'term.handleKey' mod, key, combo
         
-        @pty.handleKey mod, key, combo, char, event
-        return
+        # @pty.handleKey mod, key, combo, char, event
+        # return
                 
         switch combo
             when 'enter'    then return @onEnter()
@@ -250,10 +250,17 @@ class Term
             when 'alt+down' then return @editor.moveCursorsDown()
             when 'ctrl+c'   then return @shell.handleCancel()
         
-        if 0 # @shell.child # and @shell.last.cmd == 'koffee'
-                # return
-            # else
-                # klog 'pipe key' key, combo
+        if @isShell()
+                if char
+                    if key not in ['backspace']
+                        klog 'pipe char' char, key, combo
+                        @shell.child.stdin.write char
+                    else
+                        @shell.child.stdin.write '\x08'
+                        klog 'backspace'
+                else
+                    klog 'pipe key' key, combo
+                    # return
         else            
             return if 'unhandled' != @autocomplete.handleModKeyComboEvent mod, key, combo, event
             

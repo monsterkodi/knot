@@ -72,7 +72,7 @@ class Alias extends Cmmd
         
         if cmd == 'history' or cmd.startsWith 'history ' then return @histCmd  cmd
         if cmd == 'brain'   or cmd.startsWith 'brain '   then return @brainCmd cmd
-        if cmd == 'alias'   or cmd.startsWith 'alias '   then return @aliasCmd cmd
+        # if cmd == 'alias'   or cmd.startsWith 'alias '   then return @aliasCmd cmd
                 
         switch cmd
             when 'clear'   then return @term.clear()
