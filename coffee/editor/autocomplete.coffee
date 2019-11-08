@@ -118,7 +118,6 @@ class Autocomplete
             splt = @info.before.split ' '
             cmd = splt.shift()
             if info = window.brain.args[cmd]
-                # klog @word, info.args
                 for arg,count of info.args
                     if arg not in splt
                         if @info.before.endsWith ' '

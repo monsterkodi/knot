@@ -34,7 +34,7 @@ class Wheel
             if @accum == 0
                 window.requestAnimationFrame @onAnimation
             @accum += delta
-            post.emit 'scrollBy' @accum/10
+            post.emit 'scrollBy' @accum/20
       
     onMouseDown: (event) =>
         
@@ -44,7 +44,7 @@ class Wheel
         
         @accum = clamp -100000, 100000, @accum * 0.99
             
-        delta = @accum/10
+        delta = @accum/20
         post.emit 'scrollBy' delta 
 
         if Math.abs(@accum) < 10 

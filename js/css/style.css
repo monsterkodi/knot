@@ -226,6 +226,7 @@ body {
   position: absolute;
   pointer-events: auto;
 }
+.meta.input,
 .meta.pwd,
 .meta.cmd,
 .meta.fail,

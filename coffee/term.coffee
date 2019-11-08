@@ -90,11 +90,8 @@ class Term
                 text: '▶'
                 clss: 'input'
             click: (meta, event) =>
-                pos = kpos event
-                if pos.x < 40
-                    klog 'input number'
-                else
-                    klog 'input text?'
+                if meta[2].number.clss == 'input busy'
+                    @shell.handleCancel()
   
         if @shell.child
             @busyInput()
@@ -126,6 +123,12 @@ class Term
         
         meta[2].number = text:'▶' clss:'succ'
         meta[2].clss = 'succ'
+        
+        meta[2].click = (meta, event) =>
+            @editor.singleCursorAtEnd()
+            @editor.setInputText @editor.line meta[0]
+            @shell.execute cmd:@editor.line meta[0]
+        
         @editor.minimap.drawLines meta[0], meta[0]
         @editor.meta.update meta
         
@@ -141,9 +144,11 @@ class Term
                 clss: 'cmd'
             end: cmd.length+1
             click: (meta, event) =>
-                @editor.singleCursorAtEnd()
-                @editor.setInputText @editor.line meta[0]
-                @shell.execute cmd:@editor.line meta[0]
+                pos = kpos event
+                if pos.x < 40
+                    @shell.handleCancel()
+                else
+                    klog 'cmd text?'                
     
     moveInputMeta: ->
         

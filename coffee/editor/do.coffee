@@ -196,7 +196,7 @@ class Do
             ol = oldLines[oi]
             nl = newLines[ni]
 
-            while oi < oldLines.length
+            while nl and oi < oldLines.length # not nl? a problem?
 
                 if not nl? # new state has not enough lines, mark remaining lines in oldState as deleted
                     deletions += 1

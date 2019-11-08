@@ -84,6 +84,8 @@ class Meta
 
         if not meta[2].no_x
             div.style.width = "#{sw}px"
+        else
+            div.style.width = "#{@editor.size.numbersWidth}px"
 
         @elem.appendChild div
 
@@ -126,25 +128,6 @@ class Meta
         
         @editor.numbers.updateColor meta[0]
         
-    # 0000000    000  00000000  00000000
-    # 000   000  000  000       000
-    # 000   000  000  000000    000000
-    # 000   000  000  000       000
-    # 0000000    000  000       000
-    
-    addDiffMeta: (meta) ->
-
-        meta.diff = true
-        @addNumberMeta meta
-        
-    addNumberMeta: (meta) ->
-
-        meta.no_x = true
-        lineMeta = @addLineMeta [meta.line, [0, 0], meta]
-
-        if @editor.scroll.top <= meta.line <= @editor.scroll.bot
-            @addDiv lineMeta
-
     #  0000000  000      000   0000000  000   000
     # 000       000      000  000       000  000
     # 000       000      000  000       0000000
@@ -184,6 +167,12 @@ class Meta
         @metas.push lineMeta
         lineMeta
 
+    # 00     00   0000000   000   000  00000000  
+    # 000   000  000   000  000   000  000       
+    # 000000000  000   000   000 000   0000000   
+    # 000 0 000  000   000     000     000       
+    # 000   000   0000000       0      00000000  
+    
     moveLineMeta: (lineMeta, d) ->
 
         return kerror 'invalid move?' lineMeta, d if not lineMeta? or d == 0
