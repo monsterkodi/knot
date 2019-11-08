@@ -6,7 +6,7 @@
 0000000    0000000  000   000   0000000   0000000  0000000  0000000    000   000  000   000
 ###
 
-{ stopEvent, elem, clamp, drag } = require 'kxk'
+{ stopEvent, clamp, elem, drag } = require 'kxk'
 
 Scroller = require '../tools/scroller'
 
@@ -24,7 +24,7 @@ class Scrollbar
         @handle = elem class: 'scrollhandle left'
         @elem.appendChild @handle
 
-        @scrollX  = 0
+        # @scrollX  = 0
         @scrollY  = 0
 
         @drag = new drag
@@ -63,7 +63,8 @@ class Scrollbar
 
     onDrag: (drag) =>
 
-        delta = (drag.delta.y / (@editor.scroll.viewLines * @editor.scroll.lineHeight)) * @editor.scroll.fullHeight
+        vh = @editor.scroll.viewLines * @editor.scroll.lineHeight
+        delta = (drag.delta.y / vh) * @editor.scroll.fullHeight
         @editor.scroll.by delta
 
     # 000   000  000   000  00000000  00000000  000
@@ -80,20 +81,22 @@ class Scrollbar
             f *= 1 + 3 * event.metaKey
             f *= 1 + 7 * event.altKey
 
-        if Math.abs(event.deltaX) >= 2*Math.abs(event.deltaY) or Math.abs(event.deltaY) == 0
-            @scrollX += event.deltaX
-        else
-            @scrollY += event.deltaY * scrollFactor()
+        # if Math.abs(event.deltaX) >= 2*Math.abs(event.deltaY) or Math.abs(event.deltaY) == 0
+            # @scrollX += event.deltaX
+        # else
+        @scrollY += event.deltaY * scrollFactor()
 
-        if @scrollX or @scrollY
+        # if @scrollX or @scrollY
+        if @scrollY
             window.requestAnimationFrame @wheelScroll
 
         stopEvent event
 
     wheelScroll: =>
 
-        @editor.scroll.by @scrollY, @scrollX
-        @scrollX = @scrollY = 0
+        @editor.scroll.by @scrollY #, @scrollX
+        # @scrollX = @scrollY = 0
+        @scrollY = 0
 
     # 000   000  00000000   0000000     0000000   000000000  00000000
     # 000   000  000   000  000   000  000   000     000     000

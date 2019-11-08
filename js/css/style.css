@@ -96,29 +96,32 @@ body {
 }
 .scrollbar {
   position: absolute;
-  top: 0;
-  cursor: ns-resize;
 }
 .scrollbar.left {
+  top: 0;
   bottom: 0;
   left: 0;
   width: 12px;
+  cursor: ns-resize;
 }
-.scrollbar.right {
-  right: 0;
-  width: 10%;
-  height: 100%;
+.scrollbar.bottom {
+  left: 0;
+  bottom: 0;
+  height: 12px;
+  width: 100%;
+  cursor: ew-resize;
 }
 .scrollhandle {
   position: absolute;
   width: 8px;
-  top: 0;
 }
 .scrollhandle.left {
+  top: 0;
   left: 0;
 }
-.scrollhandle.right {
-  right: 0;
+.scrollhandle.bottom {
+  left: 0;
+  bottom: 0;
 }
 #cursor {
   position: absolute;
@@ -144,11 +147,7 @@ body {
   right: 0;
   left: 0;
   top: 0;
-  overflow-x: visible;
-  overflow-y: hidden;
-}
-.layerScroll::-webkit-scrollbar {
-  height: 2px;
+  overflow: hidden;
 }
 .layers {
   position: relative;

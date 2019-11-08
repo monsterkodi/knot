@@ -6,7 +6,7 @@
 00000000  0000000    000     000      0000000   000   000        0000000    0000000  000   000   0000000   0000000  0000000  
 ###
 
-{ klog, clamp } = require 'kxk'
+{ clamp, kerror } = require 'kxk'
 
 events = require 'events'
 kxk    = require 'kxk'
@@ -66,20 +66,20 @@ class EditorScroll extends events
         
         # klog 'calc' @viewLines, @lineHeight
         
+    horizontal: (x=0) => @editor.layerScroll.scrollLeft += x
+        
     # 0000000    000   000
     # 000   000   000 000 
     # 0000000      00000  
     # 000   000     000   
     # 0000000       000   
-        
+                
     to: (p) => @by p-@scroll
     
-    by: (delta, x) =>
+    by: (delta) =>
         
         return if @viewLines < 0
-        
-        @editor.layerScroll.scrollLeft += x if x
-        
+                
         return if not delta and @top < @bot
         
         scroll = @scroll

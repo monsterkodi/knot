@@ -27,6 +27,7 @@ class TextEditor extends Editor
         @layers      = elem class: 'layers'
         @layerScroll = elem class: 'layerScroll' child:@layers
         @view.appendChild @layerScroll
+        @layerScroll.addEventListener 'scroll' @onHorizontalScroll
 
         layer = []
         layer.push 'selections'
@@ -72,6 +73,7 @@ class TextEditor extends Editor
     del: ->
 
         @scrollbar?.del()
+        @hrzntlbar?.del()
 
         @view.removeEventListener 'keydown' @onKeyDown
         @view.removeEventListener 'blur'    @onBlur
@@ -172,6 +174,19 @@ class TextEditor extends Editor
 
         @updateLayers()
                
+    #  0000000   0000000   000      000   000  00     00  000   000   0000000  
+    # 000       000   000  000      000   000  000   000  0000  000  000       
+    # 000       000   000  000      000   000  000000000  000 0 000  0000000   
+    # 000       000   000  000      000   000  000 0 000  000  0000       000  
+    #  0000000   0000000   0000000   0000000   000   000  000   000  0000000   
+    
+    numColumns: ->
+        cols = 0
+        for li in [@scroll.top..@scroll.bot]
+            line = @line li
+            cols = Math.max line.length, cols
+        cols
+        
     #  0000000   00000000   00000000   00000000  000   000  0000000    
     # 000   000  000   000  000   000  000       0000  000  000   000  
     # 000000000  00000000   00000000   0000000   000 0 000  000   000  
@@ -631,11 +646,14 @@ class TextEditor extends Editor
     resized: ->
 
         vh = @view.parentNode.clientHeight
+        
+        @layersWidth = @layerScroll.offsetWidth
+        
+        @hrzntlbar?.update()
 
         return if vh and vh == @scroll.viewHeight
 
         @numbers?.elem.style.height = "#{@scroll.exposeNum * @scroll.lineHeight}px"
-        @layersWidth = @layerScroll.offsetWidth
 
         @scroll.setViewHeight vh
 
@@ -643,6 +661,10 @@ class TextEditor extends Editor
 
     screenSize: -> electron.remote.screen.getPrimaryDisplay().workAreaSize
 
+    onHorizontalScroll: =>
+        
+        @hrzntlbar?.update()
+    
     # 00000000    0000000    0000000
     # 000   000  000   000  000
     # 00000000   000   000  0000000

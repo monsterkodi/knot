@@ -32,6 +32,7 @@ class Term
                 
         @editor = new TextEditor @, features:[
             'Scrollbar'
+            'Hrzntlbar'
             'Minimap'
             'Meta'
             'Numbers'

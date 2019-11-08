@@ -158,26 +158,29 @@ body
 
 .scrollbar
     position            absolute
-    top                 0
-    cursor              ns-resize
 
     &.left
+        top             0
         bottom          0
         left            0
         width           scrollbarWidth
-    &.right
-        right           0
-        width           10%
-        height          100%
+        cursor          ns-resize
+    &.bottom
+        left            0
+        bottom          0
+        height          scrollbarWidth
+        width           100%
+        cursor          ew-resize
 
 .scrollhandle
     position            absolute
     width               scrollhandleWidth
-    top                 0
     &.left
+        top             0
         left            0
-    &.right
-        right           0
+    &.bottom
+        left            0
+        bottom          0
   
 #cursor
     position                    absolute
@@ -211,10 +214,7 @@ body
 
 .layerScroll
     fill-abs()
-    overflow-x          visible
-    overflow-y          hidden
-    &::-webkit-scrollbar
-        height          2px
+    overflow            hidden
 
 .layers
     position            relative

@@ -6,7 +6,7 @@
 0000000     0000000   000       000       00000000  000   000
 ###
 
-{ kerror, matchr, empty, clamp, kstr, _ } = require 'kxk'
+{ matchr, empty, clamp, kstr, kerror, _ } = require 'kxk'
 
 State   = require './state'
 fuzzy   = require 'fuzzy'
@@ -48,7 +48,7 @@ class Buffer extends event
     numCursors:    -> @state.numCursors()
     numSelections: -> @state.numSelections()
     numHighlights: -> @state.numHighlights()
-
+    
     # these are used from tests and restore
     setCursors:    (c) -> @state = @state.setCursors    c
     setSelections: (s) -> @state = @state.setSelections s
