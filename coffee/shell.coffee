@@ -36,7 +36,7 @@ class Shell
         
         sep = ';'
         
-        klog 'SHELL' process.env.SHELL
+        # klog 'SHELL' process.env.SHELL
         
         if os.platform() != 'win32' #or process.env.SHELL
             sep = ':'        
@@ -63,7 +63,7 @@ class Shell
                 
         process.env.PATH = pth.map((s) -> slash.unslash s).join sep
         
-        klog 'PATH' process.env.PATH
+        # klog 'PATH' process.env.PATH
         
     cd: (dir) =>
         
@@ -158,63 +158,13 @@ class Shell
     
     shellCmd: (@cmd) =>
             
-        split = @cmd.split '|'
+        process.env.LINES   = @editor.scroll.fullLines
+        process.env.COLUMNS = parseInt @editor.layersWidth / @editor.size.charWidth
         
-        if split.length > 1
-            
-            # 00000000   000  00000000   00000000  
-            # 000   000  000  000   000  000       
-            # 00000000   000  00000000   0000000   
-            # 000        000  000        000       
-            # 000        000  000        00000000  
-            
-            pipe = (child, stdout, stderr) ->
-                
-                child.stdin.on 'error' (err) -> stderr.write 'stdin error' + err + '\n'
-                child.stderr.on 'data' (data) -> if not /^execvp\(\)/.test data then stderr.write data
-                child.stdout.pipe stdout
-            
-                child.on 'error' (err) ->
-                    process.stderr.write 'Failed to execute ' + err + '\n'
-                    firstChild.kill()
-
-            currentCommand = split[0]
-            args = currentCommand.split ' '
-            cmd = args.shift()
-            opt = encoding:'utf8' shell:true
-            firstChild = previousChild = @child = childp.spawn cmd, args, opt
-        
-            for i in [1...split.length]
-                currentCommand = split[i].trim()
-                args = currentCommand.split ' '
-                cmd = args.shift()
-                @child = childp.spawn cmd, args, opt
-                
-                pipe previousChild, @child.stdin, process.stderr
-        
-                previousChild = @child
-        
-            @child.stdout.on 'data' @onStdOut
-            @child.stderr.on 'data' @onStdErr
-        
-            @child.on 'close' (code) =>
-                firstChild.kill()
-                @onExit code
-        else
-        
-            # 00000000  000   000  00000000   0000000  
-            # 000        000 000   000       000       
-            # 0000000     00000    0000000   000       
-            # 000        000 000   000       000       
-            # 00000000  000   000  00000000   0000000  
-            
-            process.env.LINES   = @editor.scroll.fullLines
-            process.env.COLUMNS = parseInt @editor.layersWidth / @editor.size.charWidth
-            
-            @child = childp.exec @cmd, shell:false, env:process.env, cwd:process.cwd()    
-            @child.stdout.on 'data'  @onStdOut
-            @child.stderr.on 'data'  @onStdErr
-            @child.on        'close' @onExit
+        @child = childp.exec @cmd, shell:'bash' env:process.env, cwd:process.cwd()    
+        @child.stdout.on 'data'  @onStdOut
+        @child.stderr.on 'data'  @onStdErr
+        @child.on        'close' @onExit
             
         true
         
@@ -238,7 +188,7 @@ class Shell
             args.reverse()
             @child.kill()
             for arg in args
-                klog arg, wxw 'terminate' arg
+                wxw 'terminate' arg
         true
         
     # 00000000  000   000  000  000000000  

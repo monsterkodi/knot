@@ -6,7 +6,7 @@
    000     00000000  000   000     000           00000000  0000000    000     000      0000000   000   000
 ###
 
-{ post, stopEvent, keyinfo, prefs, clamp, empty, elem, kstr, drag, os, kerror, klog, $, _ } = require 'kxk'
+{ post, stopEvent, keyinfo, prefs, clamp, empty, elem, kstr, drag, os, kerror, $, _ } = require 'kxk'
   
 render       = require './render'
 EditorScroll = require './editorscroll'
@@ -297,7 +297,7 @@ class TextEditor extends Editor
         @size.fontSize     = fontSize
         @size.lineHeight   = fontSize * 1.22
         @size.charWidth    = fontSize * 0.6
-        klog "fontSize #{fontSize} #{@size.charWidth} #{@size.lineHeight}"
+        # klog "fontSize #{fontSize} #{@size.charWidth} #{@size.lineHeight}"
         @size.offsetX      = Math.floor @size.charWidth + @size.numbersWidth
 
         @scroll?.setLineHeight @size.lineHeight

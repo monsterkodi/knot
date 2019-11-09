@@ -6,7 +6,7 @@
 000   000  000   000  0000000  000   000     000     0000000  0000000    000   000  000   000  
 ###
 
-{ clamp, elem, drag, klog } = require 'kxk'
+{ clamp, elem, drag } = require 'kxk'
 
 Scroller = require '../tools/scroller'
 
@@ -14,8 +14,6 @@ class Hrzntlbar
 
     @: (@editor) ->
         
-        klog 'hrzntlbar'
-
         @editor.on 'linesShown'    @update
         @editor.on 'linesAppended' @update
 
