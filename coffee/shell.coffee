@@ -355,7 +355,7 @@ class Shell
         # for c in buf
             # klog "#{kstr.pad c, 3} 0x#{c.toString(16)} '#{String.fromCharCode(c)}'"
             
-        klog '================' data
+        # klog '================' data
             
         @editor.appendOutput data
         # @editor.setInputText @editor.lastLine()+data
@@ -363,7 +363,7 @@ class Shell
 
     onStdErr: (data) =>
 
-        klog '----------------' data
+        # klog '----------------' data
         
         # buf = Buffer.from data, 'utf8'
         # for c in buf
