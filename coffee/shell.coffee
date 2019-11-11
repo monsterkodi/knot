@@ -18,6 +18,10 @@ class Shell
 
     @: (@term) ->
         
+        @shellPath = 'C:/msys64/usr/bin/bash.exe'
+        if not slash.fileExists @shellPath
+            @shellPath = true
+        
         @editor = @term.editor
         @alias = new Alias @
         @chdir = new Chdir @
@@ -54,16 +58,16 @@ class Shell
                     exeDir = slash.join f.file, "#{f.name}-#{process.platform}-#{process.arch}"
                     if slash.isDir exeDir
                         # klog "add exe dir" exeDir
-                        pth.unshift exeDir
+                        pth.push exeDir
                         continue
                     binDir = slash.join f.file, "bin"
                     if slash.isDir binDir
                         # klog "add bin dir" binDir
-                        pth.unshift binDir
+                        pth.push binDir
                 
         process.env.PATH = pth.map((s) -> slash.unslash s).join sep
         
-        # klog 'PATH' process.env.PATH
+        klog 'PATH' process.env.PATH
         
     cd: (dir) =>
         
@@ -147,7 +151,6 @@ class Shell
             @dequeue()
             return true
             
-        # klog 'shellCmd' @cmd
         @shellCmd @cmd
                     
     #  0000000  000   000  00000000  000      000           0000000  00     00  0000000    
@@ -161,7 +164,7 @@ class Shell
         process.env.LINES   = @editor.scroll.fullLines
         process.env.COLUMNS = parseInt @editor.layersWidth / @editor.size.charWidth
         
-        @child = childp.exec @cmd, shell:'bash' env:process.env, cwd:process.cwd()    
+        @child = childp.exec @cmd, shell:@shellPath, env:process.env, cwd:process.cwd()    
         @child.stdout.on 'data'  @onStdOut
         @child.stderr.on 'data'  @onStdErr
         @child.on        'close' @onExit
