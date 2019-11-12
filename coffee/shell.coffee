@@ -6,11 +6,12 @@
 0000000   000   000  00000000  0000000  0000000
 ###
 
-{ post, history, childp, slash, valid, empty, args, os, klog, _ } = require 'kxk'
+{ post, history, childp, slash, valid, empty, args, klog, _ } = require 'kxk'
 
 History = require './history'
 Alias   = require './alias'
 Chdir   = require './chdir'
+Paths   = require './paths'
 psTree  = require 'ps-tree'
 wxw     = require 'wxw'
 
@@ -25,50 +26,12 @@ class Shell
         @editor = @term.editor
         @alias = new Alias @
         @chdir = new Chdir @
+        @paths = new Paths @
         @queue = []
         @inputQueue = []
     
-        @initPath()
-    
-    # 00000000    0000000   000000000  000   000  
-    # 000   000  000   000     000     000   000  
-    # 00000000   000000000     000     000000000  
-    # 000        000   000     000     000   000  
-    # 000        000   000     000     000   000  
-    
-    initPath: ->
-        
-        sep = ';'
-        
-        # klog 'SHELL' process.env.SHELL
-        
-        if os.platform() != 'win32' #or process.env.SHELL
-            sep = ':'        
+        @paths.init()
             
-        pth = process.env.PATH.split(sep).map (s) -> slash.path s
-
-        for a in ['node_modules/.bin' 'bin' '.']
-            if a not in pth
-                # klog "add to PATH #{a}"
-                pth.unshift a
-                
-        if slash.isDir '~/s'
-            for f in slash.list '~/s'
-                if f.type == 'dir'
-                    exeDir = slash.join f.file, "#{f.name}-#{process.platform}-#{process.arch}"
-                    if slash.isDir exeDir
-                        # klog "add exe dir" exeDir
-                        pth.push exeDir
-                        continue
-                    binDir = slash.join f.file, "bin"
-                    if slash.isDir binDir
-                        # klog "add bin dir" binDir
-                        pth.push binDir
-                
-        process.env.PATH = pth.map((s) -> slash.unslash s).join sep
-        
-        klog 'PATH' process.env.PATH
-        
     cd: (dir) =>
         
         if not slash.samePath dir, process.cwd()

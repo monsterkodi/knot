@@ -73,12 +73,19 @@ class Alias extends Cmmd
         if cmd == 'history' or cmd.startsWith 'history ' then return @histCmd  cmd
         if cmd == 'brain'   or cmd.startsWith 'brain '   then return @brainCmd cmd
         if cmd == 'alias'   or cmd.startsWith 'alias '   then return @aliasCmd cmd
+        if cmd == 'path'    or cmd.startsWith 'path '    then return @pathsCmd cmd
                 
         switch cmd
             when 'clear'   then return @term.clear()
             when 'cwd'     then return @editor.appendOutput slash.path process.cwd()
             when 'blink'   then return @editor.toggleBlink()
-                                
+
+    pathsCmd: (cmd) ->
+        
+        arg = cmd[6..].trim()
+        arg = 'list' if empty arg
+        @shell.paths.cmd @editor, arg
+            
     aliasCmd: (cmd) ->    
         
         if cmd == 'alias'

@@ -43,14 +43,14 @@ class Term
         ]
                 
         @editor.setText ''
-        
-        @editor.on 'changed' @onChanged
-        
+
         @shell   = new Shell @
         # @pty     = new PTY @
         @history = new History @
         @autocomplete = @editor.autocomplete
-                        
+        
+        @editor.on 'changed' @onChanged
+                                
         post.on 'fontSize' @onFontSize
                                 
     # 00     00  00000000  000000000   0000000   
@@ -219,7 +219,7 @@ class Term
     # 000       000  0000     000     000       000   000  
     # 00000000  000   000     000     00000000  000   000  
     
-    isShell: -> @shell.child and @shell.last.cmd.split(' ')[0] in ['bash' 'cmd' 'powershell' 'fish']
+    isShell: -> @shell?.child and @shell?.last.cmd.split(' ')[0] in ['bash' 'cmd' 'powershell' 'fish']
     
     onEnter: ->
         
