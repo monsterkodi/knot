@@ -6,7 +6,7 @@
 000        000   000     000     000   000  0000000   
 ###
 
-{ slash, os, klog } = require 'kxk'
+{ slash, os, _ } = require 'kxk'
 
 class Paths
 
@@ -25,33 +25,26 @@ class Paths
     
     init: ->
         
-        # klog 'SHELL' process.env.SHELL
-                    
         pth = process.env.PATH.split(@sep).map (s) -> slash.path s
 
         for a in ['/usr/bin' '/usr/local/bin' 'node_modules/.bin' 'bin' '.']
-            if a not in pth
-                # klog "add to PATH #{a}"
-                pth.unshift a
+            pth.unshift a
                 
         if slash.isDir '~/s'
             for f in slash.list '~/s'
                 if f.type == 'dir'
                     exeDir = slash.join f.file, "#{f.name}-#{process.platform}-#{process.arch}"
                     if slash.isDir exeDir
-                        # klog "add exe dir" exeDir
                         pth.push exeDir
                         continue
-                    binDir = slash.join f.file, "bin"
+                    binDir = slash.join f.file, 'bin'
                     if slash.isDir binDir
-                        # klog "add bin dir" binDir
                         pth.push binDir
                 
-        process.env.PATH = pth.map((s) -> slash.unslash s).join @sep
+        pth = pth.map (s) -> slash.unslash s
+        pth = _.uniq pth
+        process.env.PATH = pth.join @sep
         
-        for pth in process.env.PATH.split @sep
-            klog slash.path pth
-
     list: (editor) ->
         
         for pth in process.env.PATH.split @sep

@@ -41,8 +41,8 @@ class Alias extends Cmmd
             kp:     'k -p'
             km:     'k -m'
             kR:     'k -R'
-            l:      'color-ls'
-            ls:     'color-ls'
+            l:      'color-ls -n'
+            ls:     'color-ls -n'
             la:     'l -a'
             ll:     'l -l'
             lla:    'l -la'
@@ -53,6 +53,7 @@ class Alias extends Cmmd
             e:      'electron .'
             ed:     'e -D'
             ps:     'wmic PROCESS GET Name,ProcessId,ParentProcessId'
+            gimp:   '"C:/Program Files/GIMP 2/bin/gimp-2.10.exe"'
         super
 
     substitute: (cmd) ->
