@@ -126,6 +126,7 @@ class Shell
             
         process.env.LINES   = @editor.scroll.fullLines
         process.env.COLUMNS = parseInt @editor.layersWidth / @editor.size.charWidth
+        process.env.ADBLOCK = true
         
         @child = childp.exec @cmd, shell:@shellPath, env:process.env, cwd:process.cwd()    
         @child.stdout.on 'data'  @onStdOut
