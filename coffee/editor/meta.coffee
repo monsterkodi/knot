@@ -198,6 +198,26 @@ class Meta
         for meta in @metasAtLineIndex li
             return meta[2].href if meta[2].href?
 
+    prevMetaOfClass: (clss, li) ->
+        
+        for index in [li-1..0]
+            for m in @metasAtLineIndex index
+                if m[2].clss == clss
+                    return m
+
+    nextMetaOfClass: (clss, li) ->
+        
+        for index in [li+1...@editor.numLines()]
+            for m in @metasAtLineIndex index
+                if m[2].clss == clss
+                    return m
+
+    metaOfClassAtLine: (clss, li) ->
+        
+        for m in @metasAtLineIndex li
+            if m[2].clss == clss
+                return m
+                    
     nextMetaOfSameClass: (meta) ->
         
         for li in [meta[0]+1...@editor.numLines()]

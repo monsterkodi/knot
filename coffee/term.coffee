@@ -59,6 +59,29 @@ class Term
     # 000 0 000  000          000     000   000  
     # 000   000  00000000     000     000   000  
 
+    cursorToPrevPwd: ->
+        
+        if meta = @editor.meta.prevMetaOfClass 'pwd' @editor.mainCursor()[1]
+            @editor.singleCursorAtPos [0,meta[0]]
+
+    cursorToNextPwd: ->
+        
+        if meta = @editor.meta.nextMetaOfClass 'pwd' @editor.mainCursor()[1]
+            @editor.singleCursorAtPos [0,meta[0]]
+            
+    deleteOutputOfPwdMeta: (meta) ->
+        
+        meta ?= @editor.meta.metaOfClassAtLine 'pwd' @editor.mainCursor()[1]
+        return if not meta
+        
+        index = @editor.meta.metas.indexOf meta
+        if index < @editor.meta.metas.length-1
+            @editor.singleCursorAtPos [0,meta[0]]
+            if next = @editor.meta.nextMetaOfSameClass meta
+                for i in [meta[0]...next[0]]
+                    @editor.deleteSelectionOrCursorLines()
+            @editor.moveCursorsDown()
+            
     addDirMeta: (dir) ->
         
         @editor.meta.add
@@ -71,13 +94,7 @@ class Term
             click: (meta, event) =>
                 pos = kpos event
                 if pos.x < 40
-                    index = @editor.meta.metas.indexOf meta
-                    if index < @editor.meta.metas.length-1
-                        @editor.singleCursorAtPos [0,meta[0]]
-                        if next = @editor.meta.nextMetaOfSameClass meta
-                            for i in [meta[0]...next[0]]
-                                @editor.deleteSelectionOrCursorLines()
-                        @editor.moveCursorsDown()
+                    @deleteOutputOfPwdMeta meta
                 else
                     @editor.singleCursorAtEnd()
                     @shell.cd @editor.line meta[0]
@@ -251,10 +268,11 @@ class Term
         # return
                 
         switch combo
-            when 'enter'    then return @onEnter()
-            when 'alt+up'   then return @editor.moveCursorsUp()
-            when 'alt+down' then return @editor.moveCursorsDown()
-            when 'ctrl+c'   then return @shell.handleCancel()
+            when 'enter'      then return @onEnter()
+            when 'alt+up'     then return @cursorToPrevPwd()
+            when 'alt+down'   then return @cursorToNextPwd()
+            when 'alt+delete' then return @deleteOutputOfPwdMeta()
+            when 'ctrl+c'     then return @shell.handleCancel()
         
         if @isShell()
                 if char
