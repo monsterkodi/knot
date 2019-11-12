@@ -20,7 +20,7 @@ module.exports =
         moveCursorsAtBoundaryRight: 
             name: 'Move Cursors to End of Line'
             combo: 'command+right'
-            accels: ['ctrl+right' 'ctrl+e']
+            accels: ['ctrl+right']
                 
         moveCursorsToWordBoundary:
             name:   'move cursors to word boundaries'

@@ -277,11 +277,9 @@ class Term
         if @isShell()
                 if char
                     if key not in ['backspace']
-                        klog 'pipe char' char, key, combo
                         @shell.child.stdin.write char
                     else
                         @shell.child.stdin.write '\x08'
-                        klog 'backspace'
                 else
                     klog 'pipe key' key, combo
                     # return
@@ -292,6 +290,7 @@ class Term
                 switch combo
                     when 'up'     then return @history.prev()
                     when 'down'   then return @history.next()
+                    when 'ctrl+e' then return @editor.moveCursorsAtBoundaryRight()
         
         'unhandled'
         
