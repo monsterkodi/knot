@@ -122,16 +122,48 @@ class Shell
     #      000  000   000  000       000      000          000       000 0 000  000   000  
     # 0000000   000   000  00000000  0000000  0000000       0000000  000   000  0000000    
     
+    seperateCmdArgs: (cmd) ->
+        
+        next = (c, s) -> 
+            n = cmd.indexOf c, s+1
+            n = cmd.length if n<0
+            n
+        i = next ' '  0
+        n = next '"', -1
+        if n < i then i = 1 + next '"' n
+        exe = cmd[0...i]
+        args = []
+        while i++ < cmd.length
+            if cmd[i] != ' '
+                if cmd[i] == '"'
+                    n = next '"' i
+                    args.push cmd[i...n]
+                else
+                    n = next ' ' i
+                    args.push cmd[i...n]
+                i = n
+        [exe, args]        
+    
     shellCmd: (@cmd) =>
             
         process.env.LINES   = @editor.scroll.fullLines
         process.env.COLUMNS = parseInt @editor.layersWidth / @editor.size.charWidth
         process.env.ADBLOCK = true
         
-        @child = childp.exec @cmd, shell:@shellPath, env:process.env, cwd:process.cwd()    
-        @child.stdout.on 'data'  @onStdOut
-        @child.stderr.on 'data'  @onStdErr
-        @child.on        'close' @onExit
+        if @cmd.endsWith '&'
+            
+            [cmd, args] = @seperateCmdArgs @cmd[0...@cmd.length-1]
+                
+            # klog "detach |#{cmd}|" args
+            @spawn = childp.spawn cmd, args, detached:true, shell:@shellPath, env:process.env, cwd:process.cwd()    
+            @spawn.on 'close' (code) -> klog 'spawn exit' code
+            setImmediate @onDone
+        else
+        
+            @child = childp.exec @cmd, shell:@shellPath, env:process.env, cwd:process.cwd()    
+            @child.stdout.on 'data'  @onStdOut
+            @child.stderr.on 'data'  @onStdErr
+            @child.on        'close' @onExit
             
         true
         
@@ -146,7 +178,11 @@ class Shell
         @queue = []
         @inputQueue = []
         
-        return 'unhandled' if not @child
+        klog 'handleCancel' @child.pid
+        
+        if not @child
+            klog 'no child?'
+            return 'unhandled'
         
         psTree @child.pid, (err, children) =>
             
@@ -166,6 +202,7 @@ class Shell
         
     onExit: (code) =>
 
+        klog 'onExit' @child.pid
         killed = @child.killed
         delete @child
         

@@ -20,6 +20,7 @@ class History
     
     @init: =>
         
+        @maxHist = 100
         @list = prefs.get 'history' []
         post.on 'cmd' @onCmd
         
@@ -37,6 +38,8 @@ class History
                     break
         
         @list.push cmd
+        while @list.length > @maxHist
+            @list.shift()
         prefs.set 'history' @list
         
     @substitute: (cmd) ->

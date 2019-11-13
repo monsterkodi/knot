@@ -41,14 +41,14 @@ class Paths
                     if slash.isDir binDir
                         pth.push binDir
                 
-        pth = pth.map (s) -> slash.unslash s
+        pth = pth.map (s) -> slash.untilde s
         pth = _.uniq pth
         process.env.PATH = pth.join @sep
         
     list: (editor) ->
         
         for pth in process.env.PATH.split @sep
-            editor.appendOutput slash.path pth
+            editor.appendOutput pth
         
     cmd: (editor, cmd) ->
             
