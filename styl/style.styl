@@ -14,6 +14,16 @@ scrollbarWidth      = 10px
 scrollhandleWidth   = 8px
 thinBorder          = 1px solid
 
+selectionRadius       = 0.3em
+selectionRadiusCursor = 0.15em
+metaRadius            = 0.15em
+
+minimapWidth          = 130px
+scrollbarWidth        = 12px // transparent scroll area
+numbersWidth          = 36px
+editorPadding         = 100px
+thinBorder            = 1px solid
+
 @font-face 
     font-family     titlebarFont
     font-weight     normal
@@ -25,16 +35,6 @@ thinBorder          = 1px solid
     font-weight     normal
     font-style      normal
     src             url("../../node_modules/kxk/styl/Meslo.woff")
-
-selectionRadius       = 0.3em
-selectionRadiusCursor = 0.15em
-metaRadius            = 0.15em
-
-minimapWidth          = 130px
-scrollbarWidth        = 12px // transparent scroll area
-numbersWidth          = 36px
-editorPadding         = 100px
-thinBorder            = 1px solid
 
 // 0000000     0000000   0000000    000   000
 // 000   000  000   000  000   000   000 000 
@@ -126,12 +126,12 @@ body
     font-size           titlebarFontSize
     padding-left        6px
     padding-right       12px
-    padding-top         4px
+    padding-top         7px
     cursor              pointer
     
     box-sizing          border-box
     font-size           titlebarFontSize
-    font-family         fontMono
+    font-family         titlebarFont //fontMono
     
     &:not(.active)
         opacity         0.5
@@ -597,6 +597,7 @@ body
 // 000         0000000   000         0000000   000
 
 .popup
+    line-height         1.05
     z-index             9999
     position            absolute
     border-radius       3px

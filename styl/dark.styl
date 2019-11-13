@@ -9,13 +9,14 @@
 textFocusColor = #fff
 textBlurColor  = #444
 
-frameColor = #111111
-backColor  = #000000
-darkColor  = #0a0a0a
-shelfColor = #111111
+frameColor     = #111111
+backColor      = #000000
+darkColor      = #0a0a0a
+shelfColor     = #111111
 
-bgColor    = #181818
-titleColor = #222222
+separatorColor = #0e0e0e
+bgColor        = #181818
+titleColor     = #222222
 
 #main
     background          #000
@@ -529,7 +530,7 @@ titleColor = #222222
         & .popupCombo
             color           textBlurColor
     &.separator
-        border-top          1px solid titleColor
+        border-top          1px solid separatorColor
     &:not(:last-child)
         border-bottom       1px solid frameColor
 

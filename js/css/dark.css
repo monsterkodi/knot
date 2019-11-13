@@ -446,7 +446,7 @@
   color: #444;
 }
 .popupItem.separator {
-  border-top: 1px solid #222;
+  border-top: 1px solid #0e0e0e;
 }
 .popupItem:not(:last-child) {
   border-bottom: 1px solid #111;

@@ -71,11 +71,11 @@ body {
   font-size: 15px;
   padding-left: 6px;
   padding-right: 12px;
-  padding-top: 4px;
+  padding-top: 7px;
   cursor: pointer;
   box-sizing: border-box;
   font-size: 15px;
-  font-family: fontMono;
+  font-family: titlebarFont;
 }
 .tab:not(.active) {
   opacity: 0.5;
@@ -473,6 +473,7 @@ body {
   overflow: visible;
 }
 .popup {
+  line-height: 1.05;
   z-index: 9999;
   position: absolute;
   border-radius: 3px;
