@@ -1,8 +1,14 @@
 @font-face {
+  font-family: titlebarFont;
+  font-weight: normal;
+  font-style: normal;
+  src: url("../../node_modules/kxk/styl/Bahnschrift.woff");
+}
+@font-face {
   font-family: fontMono;
   font-weight: normal;
   font-style: normal;
-  src: url("../../pug/Meslo.woff");
+  src: url("../../node_modules/kxk/styl/Meslo.woff");
 }
 * {
   outline-width: 0;
@@ -135,7 +141,7 @@ body {
   padding-right: 6px;
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
-  font-family: Bahnschrift Light, Helvetica Neue, Ebrima, Varela Round, Helvetica, Arial;
+  font-family: titlebarFont;
   font-size: 14px;
   opacity: 0;
   transform: scaleY(0);
@@ -405,7 +411,7 @@ body {
   box-sizing: border-box;
   height: 30px;
   font-size: 15px;
-  font-family: Bahnschrift Light, Helvetica Neue, Ebrima, Varela Round, Helvetica, Arial;
+  font-family: titlebarFont;
   white-space: nowrap;
   pointer-events: auto;
   cursor: pointer;
@@ -416,7 +422,7 @@ body {
   flex-direction: row;
   padding-top: 7px;
   padding-right: 10px;
-  font: Bahnschrift Light, Helvetica Neue, Ebrima, Varela Round, Helvetica, Arial;
+  font: titlebarFont;
 }
 .titlebar-dot {
   display: inline-block;
@@ -471,7 +477,7 @@ body {
   position: absolute;
   border-radius: 3px;
   font-size: 15px;
-  font-family: Bahnschrift Light, Helvetica Neue, Ebrima, Varela Round, Helvetica, Arial;
+  font-family: titlebarFont;
 }
 .popupItem {
   padding: 4px;
