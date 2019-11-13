@@ -156,8 +156,17 @@ class Shell
                 
             # klog "detach |#{cmd}|" args
             @spawn = childp.spawn cmd, args, detached:true, shell:@shellPath, env:process.env, cwd:process.cwd()    
-            @spawn.on 'close' (code) -> klog 'spawn exit' code
-            setImmediate @onDone
+            @last.meta.pid = @spawn.pid
+            @spawn.on 'close' ((pid) => (code) => 
+                    klog 'spawn exit' code, pid
+                    for meta in @editor.meta.metasOfClass 'succ'
+                        if meta.pid == pid
+                            meta[2].number.text = '▶'
+                            meta[2].number.clss = 'succ'
+                            @editor.meta.update meta
+                            break
+                ) @spawn.pid
+            @onDone 'busy'
         else
         
             @child = childp.exec @cmd, shell:@shellPath, env:process.env, cwd:process.cwd()    
@@ -202,7 +211,7 @@ class Shell
         
     onExit: (code) =>
 
-        klog 'onExit' @child.pid
+        # klog 'onExit' @child.pid
         killed = @child.killed
         delete @child
         
@@ -243,7 +252,7 @@ class Shell
                 info = _.clone @last
                 delete info.meta
                 post.emit 'cmd' info # insert into global history and brain
-                @term.succMeta @last.meta
+                @term.succMeta @last.meta, lastCode
         if empty(@queue) and empty(@inputQueue)
             @term.pwd()
         else

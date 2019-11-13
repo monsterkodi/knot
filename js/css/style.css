@@ -218,7 +218,7 @@ body {
 .linenumber.cmd span {
   animation: cmdSpin 2s linear infinite;
 }
-.linenumber.input.busy span {
+.linenumber.busy span {
   animation: inputSpin 2s linear infinite;
 }
 .meta {

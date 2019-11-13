@@ -204,7 +204,7 @@ class Meta
             for m in @metasAtLineIndex index
                 if m[2].clss == clss
                     return m
-
+                    
     nextMetaOfClass: (clss, li) ->
         
         for index in [li+1...@editor.numLines()]
@@ -224,6 +224,15 @@ class Meta
             for m in @metasAtLineIndex li
                 if m[2].clss == meta[2].clss
                     return m
+                    
+    metasOfClass: (clss) ->
+        
+        metas = []
+        for li in [0...@editor.numLines()]
+            for m in @metasAtLineIndex li
+                if m[2].clss == clss
+                    metas.push m
+        metas
             
     #  0000000  000   000   0000000   000   000  000   000
     # 000       000   000  000   000  000 0 000  0000  000

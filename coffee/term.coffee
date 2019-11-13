@@ -135,11 +135,16 @@ class Term
         @editor.minimap.drawLines meta[0], meta[0]
         @editor.meta.update meta
         
-    succMeta: (meta) ->
+    succMeta: (meta, lastCode) ->
 
         @resetInput()
         
-        meta[2].number = text:'▶' clss:'succ'
+        if lastCode == 'busy'
+            meta[2].number = 
+                text: '\uf013'
+                clss: 'succ busy'
+        else
+            meta[2].number = text:'▶' clss:'succ'
         meta[2].clss = 'succ'
         
         meta[2].click = (meta, event) =>
