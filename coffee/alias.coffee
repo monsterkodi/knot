@@ -50,6 +50,8 @@ class Alias extends Cmmd
             sl:     'ls'
             al:     'la'
             all:    'lla'
+            pull:   'git pull'
+            revert: 'git checkout -- .'
             e:      'electron .'
             ed:     'e -D'
             ps:     'wmic PROCESS GET Name,ProcessId,ParentProcessId'
