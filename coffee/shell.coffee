@@ -6,7 +6,7 @@
 0000000   000   000  00000000  0000000  0000000
 ###
 
-{ post, history, childp, slash, valid, empty, args, klog, _ } = require 'kxk'
+{ _, args, childp, empty, history, klog, post, slash, valid } = require 'kxk'
 
 History = require './history'
 Alias   = require './alias'
@@ -247,12 +247,14 @@ class Shell
     
     onDone: (lastCode) =>
 
+        info = _.clone @last
+        delete info.meta
+        post.emit 'cmd' info # insert into global history and brain
+        
         if lastCode != 'fail' 
             if @last?.meta?
-                info = _.clone @last
-                delete info.meta
-                post.emit 'cmd' info # insert into global history and brain
                 @term.succMeta @last.meta, lastCode
+            
         if empty(@queue) and empty(@inputQueue)
             @term.pwd()
         else
