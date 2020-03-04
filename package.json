@@ -1,7 +1,7 @@
 {
   "name": "knot",
   "productName": "knot",
-  "version": "0.66.0",
+  "version": "0.67.0",
   "description": "terminal",
   "main": "js/main.js",
   "repository": {

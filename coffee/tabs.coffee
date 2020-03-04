@@ -6,7 +6,7 @@
    000     000   000  0000000    0000000 
 ###
 
-{ post, stopEvent, empty, slash, popup, elem, drag, kpos, $, _ } = require 'kxk'
+{ $, _, drag, elem, empty, kpos, popup, post, slash, stopEvent } = require 'kxk'
 
 Tab  = require './tab'
 Term = require './term'
@@ -229,7 +229,7 @@ class Tabs
     # 000       000   000  000  0000     000     000        000 000      000     
     #  0000000   0000000   000   000     000     00000000  000   000     000     
     
-    onContextMenu: (event) => stopEvent event, @showContextMenu pos event
+    onContextMenu: (event) => stopEvent event, @showContextMenu kpos event
               
     showContextMenu: (absPos) =>
         
