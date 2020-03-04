@@ -1,6 +1,6 @@
 name            knot
 productName     knot
-version         0.65.0
+version         0.66.0
 description     terminal
 main            js/main.js
 repository
@@ -16,7 +16,7 @@ bugs
 dependencies
                 chroma-js       ^2.1.0
                 fuzzy           ^0.1.3
-                kxk             ^0.375.0
+                kxk             ^0.380.0
                 node-pty        ^0.9.0
                 ps-tree         ^1.2.0
                 seamless-immutable  ^7.1.4
@@ -24,8 +24,8 @@ dependencies
 devDependencies
                 assert          ^2.0.0
                 chai            ^4.2.0
-                electron        ^7.1.9
-                electron-packager  ^14.2.0
-                electron-rebuild  ^1.8.8
-                konrad          ^0.173.0
-                mocha           ^7.0.0
+                electron        ^8.0.3
+                electron-packager  ^14.2.1
+                electron-rebuild  ^1.10.0
+                konrad          ^0.176.0
+                mocha           ^7.1.0

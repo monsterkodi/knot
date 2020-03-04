@@ -187,12 +187,10 @@ class Shell
         @queue = []
         @inputQueue = []
         
-        klog 'handleCancel' @child.pid
-        
         if not @child
             klog 'no child?'
             return 'unhandled'
-        
+            
         psTree @child.pid, (err, children) =>
             
             args = children.map (p) -> p.PID

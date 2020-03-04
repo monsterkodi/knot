@@ -6,7 +6,7 @@
    000     00000000  000   000  000   000  
 ###
 
-{ post, slash, elem, kpos, klog, $ } = require 'kxk'
+{ $, elem, klog, kpos, post, slash } = require 'kxk'
 
 BaseEditor = require './editor/editor'
 TextEditor = require './editor/texteditor'
@@ -128,6 +128,8 @@ class Term
     
     failMeta: (meta) ->
 
+        return if not meta
+        
         @resetInput()
         
         meta[2].number = text:'✖' clss:'fail'
@@ -136,6 +138,8 @@ class Term
         @editor.meta.update meta
         
     succMeta: (meta, lastCode) ->
+
+        return if not meta
 
         @resetInput()
         
