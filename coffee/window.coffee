@@ -6,7 +6,7 @@
 00     00  000  000   000  0000000     0000000   00     00  
 ###
 
-{ post, stopEvent, keyinfo, childp, stash, slash, prefs, empty, clamp, open, win, udp, os, kerror, klog, $, _ } = require 'kxk'
+{ $, _, childp, clamp, empty, kerror, keyinfo, klog, open, os, post, prefs, slash, stash, stopEvent, udp, win } = require 'kxk'
 
 Tabs     = require './tabs'
 Brain    = require './brain'
@@ -23,16 +23,12 @@ w = new win
     # onLoad: -> window.term.onResize()
     context: (items) -> onContext items
 
-window.win = electron.remote.getCurrentWindow()
-window.winID = window.win.id
-    
 # 00000000   00000000   00000000  00000000   0000000
 # 000   000  000   000  000       000       000
 # 00000000   0000000    0000000   000000    0000000
 # 000        000   000  000       000            000
 # 000        000   000  00000000  000       0000000
 
-# log "create stash #{window.winID}"
 window.stash = new stash "win/#{window.winID}"
 
 saveStash = ->
@@ -40,12 +36,6 @@ saveStash = ->
     post.emit 'stash'
     window.stash.save()
     post.toMain 'stashSaved'
-
-if bounds = window.stash.get 'bounds'
-    window.win.setBounds bounds
-
-if window.stash.get 'devTools'
-    window.win.webContents.openDevTools()
 
 window.tabs = tabs = new Tabs $ "#titlebar"
 window.brain = new Brain
@@ -63,21 +53,7 @@ term = -> (tabs.activeTab() ? tabs.tabs[0]).term
 
 onMove  = -> window.stash.set 'bounds' window.win.getBounds()
 
-clearListeners = ->
-
-    window.win.removeListener 'close' onClose
-    window.win.removeListener 'move'  onMove
-    window.win.webContents.removeAllListeners 'devtools-opened'
-    window.win.webContents.removeAllListeners 'devtools-closed'
-
-onClose = ->
-    
-    if electron.remote.BrowserWindow.getAllWindows().length > 1
-        window.stash.clear()
-        
-    clearListeners()
-
-window.win.on 'resize' -> tabs.resized()
+# window.win.on 'resize' -> tabs.resized()
 
 #  0000000   000   000  000       0000000    0000000   0000000
 # 000   000  0000  000  000      000   000  000   000  000   000
@@ -87,10 +63,7 @@ window.win.on 'resize' -> tabs.resized()
 
 window.onload = ->
 
-    window.win.on 'close' onClose
-    window.win.on 'move'  onMove
-    window.win.webContents.on 'devtools-opened' -> window.stash.set 'devTools' true
-    window.win.webContents.on 'devtools-closed' -> window.stash.set 'devTools'
+    # window.win.on 'move'  onMove
 
 # 00000000   00000000  000       0000000    0000000   0000000
 # 000   000  000       000      000   000  000   000  000   000
@@ -102,7 +75,6 @@ reloadWin = ->
 
     saveStash()
     clearListeners()
-    window.win.webContents.reloadIgnoringCache()
 
 #  0000000   00000000   00000000  000   000  
 # 000   000  000   000  000       0000  000  

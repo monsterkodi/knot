@@ -6,9 +6,9 @@
 000           000        000     
 ###
 
-{ title, klog } = require 'kxk'
+{ klog, title } = require 'kxk'
 
-pty = require 'node-pty'
+# pty = require 'node-pty'
 
 class PTY
 
@@ -25,18 +25,17 @@ class PTY
     
     spawn: ->
         
-        # shell = os.platform() == 'win32' and 'cmd' or 'bash'
-        shell = 'C:/msys64/usr/bin/bash.exe'
-        @pty = pty.spawn shell, [],
-            useConpty: true 
-            name: 'xterm-256color'
-            cols: parseInt (@editor.layers.offsetWidth - @editor.size.numbersWidth) / @editor.size.charWidth
-            rows: @editor.scroll.fullLines
-            cwd: process.cwd()
-            env: process.env
-         
-        klog '@pty rows' @pty.rows, 'cols' @pty.cols, @editor.layers.offsetWidth, @editor.size.charWidth, @editor.layers.offsetWidth / @editor.size.charWidth
-        @pty.onData @onData
+        # shell = 'C:/msys64/usr/bin/bash.exe'
+        # @pty = pty.spawn shell, [],
+            # useConpty: true 
+            # name: 'xterm-256color'
+            # cols: parseInt (@editor.layers.offsetWidth - @editor.size.numbersWidth) / @editor.size.charWidth
+            # rows: @editor.scroll.fullLines
+            # cwd: process.cwd()
+            # env: process.env
+#          
+        # klog '@pty rows' @pty.rows, 'cols' @pty.cols, @editor.layers.offsetWidth, @editor.size.charWidth, @editor.layers.offsetWidth / @editor.size.charWidth
+        # @pty.onData @onData
                   
     # 000   000  00000000  000   000  
     # 000  000   000        000 000   
