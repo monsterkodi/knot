@@ -6,7 +6,7 @@
 000   000  0000000  000  000   000  0000000 
 ###
 
-{ slash, empty } = require 'kxk'
+{ empty, slash } = require 'kxk'
 
 Cmmd    = require './cmmd'
 History = require './history'
@@ -46,7 +46,7 @@ class Alias extends Cmmd
             la:     'l -a'
             ll:     'l -l'
             lla:    'l -la'
-            lso:    'c:/msys64/usr/bin/ls.EXE'
+            lso:    '/bin/ls'
             sl:     'ls'
             al:     'la'
             all:    'lla'

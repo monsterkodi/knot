@@ -6,7 +6,7 @@
 000        000   000     000     000   000  0000000   
 ###
 
-{ slash, os, _ } = require 'kxk'
+{ _, os, slash } = require 'kxk'
 
 class Paths
 
@@ -27,7 +27,7 @@ class Paths
         
         pth = process.env.PATH.split(@sep).map (s) -> slash.path s
 
-        for a in ['/usr/bin' '/usr/local/bin' 'node_modules/.bin' 'bin' '.']
+        for a in ['/usr/bin' '/opt/homebrew/bin' '/opt/homebrew/sbin' '/usr/local/bin' 'node_modules/.bin' 'bin' '.']
             pth.unshift a
                 
         if slash.isDir '~/s'
