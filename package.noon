@@ -13,8 +13,6 @@ build
                 asar  false
                 mac
                   icon  img/app.icns
-scripts
-                postinstall  electron-builder install-app-deps
 author          monsterkodi
 license         Unlicense
 dependencies
