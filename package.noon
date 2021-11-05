@@ -18,7 +18,7 @@ license         Unlicense
 dependencies
                 chroma-js       ^2.1.2
                 fuzzy           ^0.1.3
-                kxk             ^0.418.0
+                kxk             ^0.419.0
                 ps-tree         ^1.2.0
                 seamless-immutable  ^7.1.4
                 wxw             ^1.89.0
@@ -27,5 +27,5 @@ devDependencies
                 chai            ^4.3.4
                 electron        ^15.3.0
                 electron-builder  ^22.13.1
-                konrad          ^0.189.0
+                konrad          ^0.191.0
                 mocha           ^9.1.3
